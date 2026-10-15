@@ -1,0 +1,1588 @@
+{
+  "meta": {
+    "title": "Can LLMs Tell Stories Out of Order?",
+    "subtitle": "A Corpus and Benchmark for Nonlinear Narrative Generation",
+    "byline": "arXiv Preprint",
+    "repo": "https://anonymous.4open.science/r/LLM-nonlinear-storytelling-2931",
+    "src": "Title block and abstract footnote"
+  },
+  "headline": {
+    "src": "Abstract; §5.1",
+    "modelsAboveHuman": 19,
+    "models": 19,
+    "freeTau": 0.638,
+    "humanTau": 0.456,
+    "pooledBandHit": 0.479,
+    "randomBandHit": 0.084,
+    "graphOverOrderReaders": 0.721,
+    "graphOverOrderJudge": 0.511
+  },
+  "corpus": {
+    "src": "Table 4",
+    "works": 83,
+    "graphs": 83,
+    "events": 1433,
+    "scenes": 1221,
+    "characters": 857,
+    "meanTau": 0.456,
+    "edges": 3478,
+    "edgeTypes": [
+      {
+        "type": "CAUSES",
+        "count": 1330,
+        "rule": "runs forward in chronology"
+      },
+      {
+        "type": "SHARES",
+        "count": 1397,
+        "rule": "undirected; must name what its endpoints share"
+      },
+      {
+        "type": "FORESHADOWS",
+        "count": 444,
+        "rule": "runs forward in chronology"
+      },
+      {
+        "type": "REVEALS",
+        "count": 307,
+        "rule": "runs forward in chronology and backward in the telling, backed by a matching question pair"
+      }
+    ],
+    "edgeRulesSrc": "§H, What the corpus build checks",
+    "questionThreads": 657,
+    "preConditions": 1459,
+    "postConditions": 1688,
+    "knowledgeClaims": 2504,
+    "nonlinearWorks": 73,
+    "chronicleWorks": 10,
+    "media": {
+      "src": "Corpus source counts (generated/numbers.tex, \\SrcLine)",
+      "items": [
+        {
+          "label": "Film",
+          "count": 71
+        },
+        {
+          "label": "Novel",
+          "count": 7
+        },
+        {
+          "label": "Play",
+          "count": 2
+        },
+        {
+          "label": "Musical",
+          "count": 2
+        },
+        {
+          "label": "Short story",
+          "count": 1
+        }
+      ]
+    }
+  },
+  "shapes": {
+    "src": "Definitions: §L (wording the models saw); descriptions and examples: §A; T1 rows: Table 5; work counts: corpus category counts (\\CatLine)",
+    "curveSrc": "Figure 4 selection rule (work nearest its category's median in (τ, LIS)) applied to the released file dataset/dataset_anonymized.csv; τ matches the Figure 4 subcaptions",
+    "bandSrc": "Min–max of τ and LIS over each category's gold tellings, from the same released file",
+    "items": [
+      {
+        "key": "chronicle",
+        "name": "Chronicle",
+        "works": 10,
+        "definition": "The chronological ranks run 1, 2, 3 … n in told order. Simultaneous events appearing in either order still qualify.",
+        "description": "The telling follows chronology. The line sits on the diagonal, broken at most where two things happen at once and the telling has to pick an order for them.",
+        "example": "Montfort identifies chronological stretches of Thucydides’ The Peloponnesian War as chronicles.",
+        "exampleWorks": [
+          "The Peloponnesian War"
+        ],
+        "t1": {
+          "bandHit": 0.053,
+          "modelTau": 0.957,
+          "humanTau": 0.912,
+          "agree": 0.878,
+          "exactForm": 0.889
+        },
+        "curve": {
+          "work": "S72",
+          "order": [
+            1,
+            2,
+            4,
+            3,
+            5,
+            6,
+            7,
+            9,
+            8,
+            10,
+            11,
+            12,
+            14,
+            13,
+            15,
+            16,
+            17,
+            18
+          ],
+          "tau": 0.96
+        },
+        "band": {
+          "tau": [
+            0.621,
+            0.974
+          ],
+          "lis": [
+            0.6,
+            0.9
+          ]
+        }
+      },
+      {
+        "key": "analepsis",
+        "name": "Analepsis",
+        "works": 22,
+        "definition": "One timeline dominates (it holds more than about three quarters of the scenes) and the remaining scenes are insertions from earlier than that timeline.",
+        "description": "One timeline dominates, and the telling interrupts it with material from earlier, then returns to the dominant timeline. This is the flashback, and it is by a wide margin the most common nonlinear shape in the corpus.",
+        "example": "In Lost, for example, flashbacks revisit the characters’ lives before they were stranded on the island.",
+        "exampleWorks": [
+          "Lost"
+        ],
+        "t1": {
+          "bandHit": 0.684,
+          "modelTau": 0.637,
+          "humanTau": 0.696,
+          "agree": 0.552,
+          "exactForm": null
+        },
+        "curve": {
+          "work": "S08",
+          "order": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            8,
+            11,
+            1,
+            12,
+            14,
+            15,
+            16,
+            13,
+            17,
+            18,
+            2,
+            19,
+            20
+          ],
+          "tau": 0.68
+        },
+        "band": {
+          "tau": [
+            0.346,
+            0.942
+          ],
+          "lis": [
+            0.5,
+            0.95
+          ]
+        }
+      },
+      {
+        "key": "prolepsis",
+        "name": "Prolepsis",
+        "works": 10,
+        "definition": "One timeline dominates (it holds more than about three quarters of the scenes) and the remaining scenes are insertions from later than the dominant timeline. The inserted scene must be a real scene the reader can later place, not a vague premonition.",
+        "definitionNote": "The paper prints this definition with its opening cross-reference to analepsis expanded; the completed runs used the original wording (§L).",
+        "description": "A mirror of analepsis where one timeline dominates and the telling interrupts it with material from later, then returns to the dominant timeline.",
+        "example": "Arrival, for example, presents episodes from a character’s future.",
+        "exampleWorks": [
+          "Arrival"
+        ],
+        "t1": {
+          "bandHit": 0.721,
+          "modelTau": 0.671,
+          "humanTau": 0.755,
+          "agree": 0.635,
+          "exactForm": null
+        },
+        "curve": {
+          "work": "S68",
+          "order": [
+            14,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            15
+          ],
+          "tau": 0.75
+        },
+        "band": {
+          "tau": [
+            0.516,
+            0.926
+          ],
+          "lis": [
+            0.824,
+            0.947
+          ]
+        }
+      },
+      {
+        "key": "zigzag",
+        "name": "Zigzag",
+        "works": 10,
+        "definition": "The scenes split into two time periods that alternate on a regular beat; each period progresses in its own consistent direction; and the paired scenes are semantically related (echo, explanation, or contrast). One of the two strands may run backward.",
+        "description": "Two periods alternate on a regular beat, each progressing in a consistent direction, with paired scenes related by echo, explanation or contrast. The line makes a regular sawtooth.",
+        "example": "In Memento, the black-and-white scenes move forward while the color scenes move backward.",
+        "exampleWorks": [
+          "Memento"
+        ],
+        "t1": {
+          "bandHit": 0.826,
+          "modelTau": 0.407,
+          "humanTau": 0.423,
+          "agree": 0.396,
+          "exactForm": null
+        },
+        "curve": {
+          "work": "S62",
+          "order": [
+            11,
+            1,
+            12,
+            2,
+            13,
+            3,
+            4,
+            14,
+            5,
+            6,
+            15,
+            7,
+            8,
+            16,
+            9,
+            10,
+            17
+          ],
+          "tau": 0.43
+        },
+        "band": {
+          "tau": [
+            -0.085,
+            0.941
+          ],
+          "lis": [
+            0.5,
+            0.824
+          ]
+        }
+      },
+      {
+        "key": "syllepsis",
+        "name": "Syllepsis",
+        "works": 11,
+        "definition": "There is no dominant timeline, but the scenes form blocks grouped by a nameable non-temporal principle: place, character, theme, or object. You must be able to state the principle.",
+        "description": "No timeline dominates; the scenes are grouped by something other than time, such as place, character, theme or object. The line is blocky, orderly inside each block and unordered between them.",
+        "example": "The multiple plotlines of Pulp Fiction and Love Actually illustrate this grouping principle.",
+        "exampleWorks": [
+          "Pulp Fiction",
+          "Love Actually"
+        ],
+        "t1": {
+          "bandHit": 0.507,
+          "modelTau": 0.516,
+          "humanTau": 0.526,
+          "agree": 0.355,
+          "exactForm": null
+        },
+        "curve": {
+          "work": "S37",
+          "order": [
+            3,
+            10,
+            11,
+            1,
+            2,
+            6,
+            7,
+            8,
+            9,
+            4,
+            5,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "tau": 0.62
+        },
+        "band": {
+          "tau": [
+            0.147,
+            0.8
+          ],
+          "lis": [
+            0.389,
+            0.812
+          ]
+        }
+      },
+      {
+        "key": "retrograde",
+        "name": "Retrograde",
+        "works": 10,
+        "definition": "The ranks run n … 3, 2, 1 throughout, and there is no present-day scene the narrative keeps returning to.",
+        "description": "The telling runs backwards: a descending staircase, not a descending line. Scenes are told in reverse order while each scene plays forward inside itself. The pure reversal is the shape no work in the corpus has and the one models produce when instructed.",
+        "example": "The color strand of Memento offers a familiar example: successive scenes lead back to earlier events.",
+        "exampleWorks": [
+          "Memento"
+        ],
+        "t1": {
+          "bandHit": 0.011,
+          "modelTau": -0.973,
+          "humanTau": -0.781,
+          "agree": 0.764,
+          "exactForm": 0.936
+        },
+        "curve": {
+          "work": "S54",
+          "order": [
+            14,
+            11,
+            12,
+            13,
+            9,
+            10,
+            7,
+            8,
+            5,
+            6,
+            3,
+            4,
+            1,
+            2
+          ],
+          "tau": -0.82
+        },
+        "band": {
+          "tau": [
+            -0.923,
+            -0.429
+          ],
+          "lis": [
+            0.154,
+            0.357
+          ]
+        }
+      },
+      {
+        "key": "achrony",
+        "name": "Achrony",
+        "works": 10,
+        "definition": "You cannot confidently assign chronological ranks because the text gives no dates, no ageing, no causal signposts, and no other ordering cues. Stop here only if the order is genuinely unrecoverable, not merely withheld until a late reveal.",
+        "description": "The corpus uses a narrower operational label than narratology: the chronology must remain reconstructable, while the telling follows no statable ordering pattern and is not merely awaiting a late reveal. The line wanders. The definition the models saw describes unrecoverable chronology, which the corpus excludes.",
+        "example": "In the broader narratological sense, achrony describes a telling whose temporal relations cannot readily be established, as in Robbe-Grillet’s La Jalousie.",
+        "exampleWorks": [
+          "La Jalousie"
+        ],
+        "t1": {
+          "bandHit": 0.3,
+          "modelTau": 0.171,
+          "humanTau": 0.363,
+          "agree": 0.22,
+          "exactForm": null
+        },
+        "curve": {
+          "work": "S79",
+          "order": [
+            1,
+            10,
+            14,
+            12,
+            13,
+            2,
+            3,
+            5,
+            4,
+            6,
+            7,
+            9,
+            8,
+            11,
+            15
+          ],
+          "tau": 0.26
+        },
+        "band": {
+          "tau": [
+            0.118,
+            0.621
+          ],
+          "lis": [
+            0.333,
+            0.667
+          ]
+        }
+      }
+    ]
+  },
+  "tasks": {
+    "src": "§4.1 and §D",
+    "items": [
+      {
+        "id": "T1",
+        "name": "Cued transposition",
+        "alias": "instructed",
+        "input": "Events in chronological order, plus a named shape and its definition",
+        "output": "A told order (a permutation of 1 … n)",
+        "score": "Band hit and τ"
+      },
+      {
+        "id": "T2",
+        "name": "Free transposition",
+        "alias": "left alone",
+        "input": "Events in chronological order, no shape instruction",
+        "output": "A told order (a permutation of 1 … n)",
+        "score": "τ against chronology"
+      },
+      {
+        "id": "T3",
+        "name": "Reconstruction",
+        "alias": null,
+        "input": "Events in the gold telling order",
+        "output": "The underlying chronology",
+        "score": "τ against the gold chronology, and exact match"
+      },
+      {
+        "id": "T4",
+        "name": "Classification",
+        "alias": null,
+        "input": "Events in the gold telling order, with all seven definitions",
+        "output": "One of the seven labels",
+        "score": "Accuracy"
+      },
+      {
+        "id": "T5",
+        "name": "Prose",
+        "alias": "T5a cued · T5b free",
+        "input": "Events in chronological order, with a named shape (T5a) or without one (T5b)",
+        "output": "A 550–750-word story",
+        "score": "Aligned back to the events, then pairwise preference by a judge and by readers"
+      }
+    ]
+  },
+  "leaderboard": {
+    "src": "Table 1",
+    "note": "Band-hit intervals are about ±0.11, so adjacent ranks are not distinguishable.",
+    "bandHitCIHalf": 0.11,
+    "columns": [
+      {
+        "key": "t1Band",
+        "task": "T1 cued",
+        "label": "band hit",
+        "closestTo": null
+      },
+      {
+        "key": "t1Tau",
+        "task": "T1 cued",
+        "label": "τ",
+        "closestTo": 0.456
+      },
+      {
+        "key": "t3TauRec",
+        "task": "T3 reconstruct",
+        "label": "τ_rec",
+        "closestTo": null
+      },
+      {
+        "key": "t3Exact",
+        "task": "T3 reconstruct",
+        "label": "exact",
+        "closestTo": null
+      },
+      {
+        "key": "t4Acc",
+        "task": "T4",
+        "label": "acc.",
+        "closestTo": null
+      },
+      {
+        "key": "t2TauFree",
+        "task": "T2",
+        "label": "τ free",
+        "closestTo": 0.456
+      }
+    ],
+    "rows": [
+      {
+        "id": "gemini-3-1-pro",
+        "model": "Gemini 3.1 Pro",
+        "open": false,
+        "t1Band": 0.602,
+        "t1Tau": 0.409,
+        "t3TauRec": 0.882,
+        "t3Exact": 0.253,
+        "t4Acc": 0.747,
+        "t2TauFree": 0.785,
+        "valid": {
+          "t1": 83,
+          "t3": 83,
+          "t4": 83,
+          "t2": 83
+        }
+      },
+      {
+        "id": "gemini-3-6-flash",
+        "model": "Gemini 3.6 Flash",
+        "open": false,
+        "t1Band": 0.578,
+        "t1Tau": 0.456,
+        "t3TauRec": 0.88,
+        "t3Exact": 0.217,
+        "t4Acc": 0.795,
+        "t2TauFree": 0.808,
+        "valid": {
+          "t1": 83,
+          "t3": 83,
+          "t4": 83,
+          "t2": 83
+        }
+      },
+      {
+        "id": "claude-opus-5",
+        "model": "Claude Opus 5",
+        "open": false,
+        "t1Band": 0.566,
+        "t1Tau": 0.416,
+        "t3TauRec": 0.886,
+        "t3Exact": 0.193,
+        "t4Acc": 0.614,
+        "t2TauFree": 0.615,
+        "valid": {
+          "t1": 83,
+          "t3": 83,
+          "t4": 83,
+          "t2": 82
+        }
+      },
+      {
+        "id": "grok-4-5",
+        "model": "Grok 4.5",
+        "open": false,
+        "t1Band": 0.566,
+        "t1Tau": 0.398,
+        "t3TauRec": 0.877,
+        "t3Exact": 0.205,
+        "t4Acc": 0.699,
+        "t2TauFree": 0.485,
+        "valid": {
+          "t1": 83,
+          "t3": 83,
+          "t4": 83,
+          "t2": 83
+        }
+      },
+      {
+        "id": "gpt-5-6-luna",
+        "model": "GPT-5.6 Luna",
+        "open": false,
+        "t1Band": 0.55,
+        "t1Tau": 0.413,
+        "t3TauRec": 0.815,
+        "t3Exact": 0.129,
+        "t4Acc": 0.486,
+        "t2TauFree": 0.664,
+        "valid": {
+          "t1": 80,
+          "t3": 70,
+          "t4": 70,
+          "t2": 70
+        }
+      },
+      {
+        "id": "claude-sonnet-5",
+        "model": "Claude Sonnet 5",
+        "open": false,
+        "t1Band": 0.542,
+        "t1Tau": 0.458,
+        "t3TauRec": 0.807,
+        "t3Exact": 0.072,
+        "t4Acc": 0.422,
+        "t2TauFree": 0.793,
+        "valid": {
+          "t1": 83,
+          "t3": 83,
+          "t4": 83,
+          "t2": 82
+        }
+      },
+      {
+        "id": "glm-5-2",
+        "model": "GLM-5.2",
+        "open": true,
+        "t1Band": 0.542,
+        "t1Tau": 0.472,
+        "t3TauRec": 0.868,
+        "t3Exact": 0.193,
+        "t4Acc": 0.602,
+        "t2TauFree": 0.708,
+        "valid": {
+          "t1": 83,
+          "t3": 83,
+          "t4": 83,
+          "t2": 83
+        }
+      },
+      {
+        "id": "llama-4-maverick",
+        "model": "Llama 4 Maverick",
+        "open": true,
+        "t1Band": 0.53,
+        "t1Tau": 0.408,
+        "t3TauRec": 0.59,
+        "t3Exact": 0,
+        "t4Acc": 0.301,
+        "t2TauFree": 0.48,
+        "valid": {
+          "t1": 83,
+          "t3": 83,
+          "t4": 83,
+          "t2": 83
+        }
+      },
+      {
+        "id": "gpt-5-6-sol",
+        "model": "GPT-5.6 Sol",
+        "open": false,
+        "t1Band": 0.506,
+        "t1Tau": 0.383,
+        "t3TauRec": 0.892,
+        "t3Exact": 0.243,
+        "t4Acc": 0.671,
+        "t2TauFree": 0.626,
+        "valid": {
+          "t1": 81,
+          "t3": 70,
+          "t4": 70,
+          "t2": 68
+        }
+      },
+      {
+        "id": "nemotron-3-ultra",
+        "model": "Nemotron 3 Ultra",
+        "open": true,
+        "t1Band": 0.494,
+        "t1Tau": 0.484,
+        "t3TauRec": 0.409,
+        "t3Exact": 0.06,
+        "t4Acc": 0.506,
+        "t2TauFree": 0.562,
+        "valid": {
+          "t1": 83,
+          "t3": 83,
+          "t4": 83,
+          "t2": 83
+        }
+      },
+      {
+        "id": "deepseek-v4-pro",
+        "model": "DeepSeek V4 Pro",
+        "open": true,
+        "t1Band": 0.47,
+        "t1Tau": 0.442,
+        "t3TauRec": 0.519,
+        "t3Exact": 0.06,
+        "t4Acc": 0.47,
+        "t2TauFree": 0.678,
+        "valid": {
+          "t1": 83,
+          "t3": 83,
+          "t4": 83,
+          "t2": 83
+        }
+      },
+      {
+        "id": "gpt-5-6-terra",
+        "model": "GPT-5.6 Terra",
+        "open": false,
+        "t1Band": 0.438,
+        "t1Tau": 0.41,
+        "t3TauRec": 0.882,
+        "t3Exact": 0.171,
+        "t4Acc": 0.648,
+        "t2TauFree": 0.531,
+        "valid": {
+          "t1": 80,
+          "t3": 70,
+          "t4": 71,
+          "t2": 68
+        }
+      },
+      {
+        "id": "claude-haiku-4-5",
+        "model": "Claude Haiku 4.5",
+        "open": false,
+        "t1Band": 0.434,
+        "t1Tau": 0.376,
+        "t3TauRec": 0.799,
+        "t3Exact": 0.108,
+        "t4Acc": 0.47,
+        "t2TauFree": 0.681,
+        "valid": {
+          "t1": 83,
+          "t3": 83,
+          "t4": 83,
+          "t2": 83
+        }
+      },
+      {
+        "id": "gpt-oss-120b",
+        "model": "gpt-oss-120b",
+        "open": true,
+        "t1Band": 0.434,
+        "t1Tau": 0.218,
+        "t3TauRec": 0.675,
+        "t3Exact": 0.024,
+        "t4Acc": 0.277,
+        "t2TauFree": 0.568,
+        "valid": {
+          "t1": 83,
+          "t3": 83,
+          "t4": 83,
+          "t2": 83
+        }
+      },
+      {
+        "id": "qwen3-235b-a22b",
+        "model": "Qwen3-235B-A22B",
+        "open": true,
+        "t1Band": 0.41,
+        "t1Tau": 0.314,
+        "t3TauRec": 0.683,
+        "t3Exact": 0.012,
+        "t4Acc": 0.41,
+        "t2TauFree": 0.532,
+        "valid": {
+          "t1": 83,
+          "t3": 83,
+          "t4": 83,
+          "t2": 83
+        }
+      },
+      {
+        "id": "mistral-small-3-2",
+        "model": "Mistral Small 3.2",
+        "open": true,
+        "t1Band": 0.398,
+        "t1Tau": 0.311,
+        "t3TauRec": 0.598,
+        "t3Exact": 0.024,
+        "t4Acc": 0.313,
+        "t2TauFree": 0.61,
+        "valid": {
+          "t1": 83,
+          "t3": 83,
+          "t4": 83,
+          "t2": 83
+        }
+      },
+      {
+        "id": "deepseek-v4-flash",
+        "model": "DeepSeek V4 Flash",
+        "open": true,
+        "t1Band": 0.386,
+        "t1Tau": 0.447,
+        "t3TauRec": 0.684,
+        "t3Exact": 0.108,
+        "t4Acc": 0.41,
+        "t2TauFree": 0.604,
+        "valid": {
+          "t1": 83,
+          "t3": 83,
+          "t4": 83,
+          "t2": 83
+        }
+      },
+      {
+        "id": "kimi-k2-0905",
+        "model": "Kimi K2 0905",
+        "open": true,
+        "t1Band": 0.361,
+        "t1Tau": 0.421,
+        "t3TauRec": 0.761,
+        "t3Exact": 0.06,
+        "t4Acc": 0.422,
+        "t2TauFree": 0.76,
+        "valid": {
+          "t1": 83,
+          "t3": 83,
+          "t4": 83,
+          "t2": 83
+        }
+      },
+      {
+        "id": "llama-3-3-70b",
+        "model": "Llama 3.3 70B",
+        "open": true,
+        "t1Band": 0.289,
+        "t1Tau": 0.108,
+        "t3TauRec": 0.672,
+        "t3Exact": 0.012,
+        "t4Acc": 0.313,
+        "t2TauFree": 0.614,
+        "valid": {
+          "t1": 83,
+          "t3": 83,
+          "t4": 83,
+          "t2": 83
+        }
+      }
+    ],
+    "reference": [
+      {
+        "id": "pooled",
+        "model": "pooled",
+        "t1Band": 0.479,
+        "t1Tau": 0.386,
+        "t3TauRec": 0.743,
+        "t3Exact": 0.111,
+        "t4Acc": 0.502,
+        "t2TauFree": 0.638
+      },
+      {
+        "id": "human",
+        "model": "[reference] human",
+        "t1Band": 1,
+        "t1BandNote": "1 by definition",
+        "t1Tau": 0.456,
+        "t3TauRec": null,
+        "t3Exact": null,
+        "t4Acc": null,
+        "t2TauFree": 0.456
+      },
+      {
+        "id": "random",
+        "model": "[baseline] random",
+        "t1Band": 0.084,
+        "t1Tau": 0.015,
+        "t3TauRec": null,
+        "t3Exact": null,
+        "t4Acc": 0.143,
+        "t2TauFree": 0.015
+      }
+    ],
+    "pooling": "Pooled is the mean over valid outputs of the 19 models (make_tables.py), so each row weighs by its valid count; the GPT-5.6 models refuse some works.",
+    "validSrc": "Valid outputs per model and task, experiments/results/per_row.csv (released with the code)"
+  },
+  "rq1": {
+    "src": "§5.1",
+    "freeTau": 0.638,
+    "freeLis": 0.796,
+    "freeTauRange": [
+      0.48,
+      0.808
+    ],
+    "leastChronoModel": "Llama 4 Maverick",
+    "signTestP": "3.8 × 10⁻⁶",
+    "proseFreeTau": 0.989,
+    "proseAllChronoModels": 3,
+    "proseModels": 8,
+    "pooledBandHit": 0.479,
+    "bandHitRange": [
+      0.289,
+      0.602
+    ],
+    "randomBandHit": 0.084,
+    "validRate": 0.995,
+    "sceneContiguity": 0.976,
+    "retroExactReversal": 0.936,
+    "chronExactIdentity": 0.889,
+    "bandHitWithoutRuleShapes": 0.621,
+    "sceneReversalRetroHits": 6,
+    "retroWorks": 10,
+    "retroTauRange": [
+      -0.92,
+      -0.43
+    ],
+    "chronTauRange": [
+      0.62,
+      0.97
+    ],
+    "judgedBandRange": [
+      0.68,
+      0.83
+    ]
+  },
+  "rq2": {
+    "src": "§5.2; Table 7 (de-dating 2 × 2); Figure 13 (T4 confusion)",
+    "pooledTauRec": 0.743,
+    "tauRecRange": [
+      0.409,
+      0.892
+    ],
+    "tellingWorth": 0.035,
+    "modelsAboveFloor": 7,
+    "floorCorrelation": 0.837,
+    "anchorsBefore": 0.063,
+    "anchorsAfter": 0.007,
+    "floorShareTau": 0.961,
+    "floorShareExact": 0.421,
+    "pairAccFloor": 0.925,
+    "pairAccTold": 0.942,
+    "dedate": {
+      "src": "Table 7",
+      "rows": [
+        {
+          "events": "as written",
+          "telling": "shuffled, none",
+          "tau": 0.849,
+          "exact": 0.085
+        },
+        {
+          "events": "as written",
+          "telling": "gold told order",
+          "tau": 0.884,
+          "exact": 0.202
+        },
+        {
+          "events": "de-dated",
+          "telling": "shuffled, none",
+          "tau": 0.844,
+          "exact": 0.096
+        },
+        {
+          "events": "de-dated",
+          "telling": "gold told order",
+          "tau": 0.878,
+          "exact": 0.181
+        }
+      ]
+    },
+    "classify": {
+      "pooled": 0.502,
+      "best": 0.795,
+      "bestModel": "Gemini 3.6 Flash",
+      "chance": 0.143,
+      "majority": 0.265,
+      "achronySelf": 0.071,
+      "rhoClassBand": 0.717,
+      "rhoClassRec": 0.747,
+      "rhoWriteRead": 0.088
+    },
+    "confusion": {
+      "src": "Figure 13 (values printed in the figure; row-normalized, pooled over 19 models)",
+      "labels": [
+        "Achrony",
+        "Analepsis",
+        "Chronicle",
+        "Prolepsis",
+        "Retrograde",
+        "Syllepsis",
+        "Zigzag"
+      ],
+      "matrix": [
+        [
+          0.07,
+          0.46,
+          0.04,
+          0.1,
+          0,
+          0.24,
+          0.09
+        ],
+        [
+          0.01,
+          0.66,
+          0.07,
+          0.12,
+          0,
+          0.11,
+          0.04
+        ],
+        [
+          0.01,
+          0.13,
+          0.64,
+          0.01,
+          0,
+          0.15,
+          0.06
+        ],
+        [
+          0,
+          0.29,
+          0.11,
+          0.56,
+          0,
+          0.01,
+          0.03
+        ],
+        [
+          0.01,
+          0.3,
+          0.03,
+          0.07,
+          0.48,
+          0.08,
+          0.03
+        ],
+        [
+          0,
+          0.33,
+          0.05,
+          0.03,
+          0.01,
+          0.49,
+          0.09
+        ],
+        [
+          0,
+          0.33,
+          0.05,
+          0.11,
+          0.01,
+          0.11,
+          0.4
+        ]
+      ]
+    }
+  },
+  "rq3": {
+    "src": "§5.3; Table 8",
+    "judgeG1vsG0": {
+      "wins": 31,
+      "losses": 14,
+      "ties": 11,
+      "p": "0.016"
+    },
+    "judgeG1vsG2": {
+      "wins": 23,
+      "losses": 22,
+      "ties": 11
+    },
+    "pdsComponentsUp": 5,
+    "pinnedPct": 0.055,
+    "bestModel": "Claude Sonnet 5",
+    "bestDelta": 0.25,
+    "worstModel": "Gemini 3.6 Flash",
+    "worstDelta": -0.035,
+    "evenOutcomeProb": "0.0022",
+    "conditions": {
+      "src": "Table 8",
+      "rows": [
+        {
+          "id": "G0",
+          "label": "no graph",
+          "tau": 0.362,
+          "bandHit": 0.411,
+          "agree": 0.554,
+          "pds": 3.85,
+          "group": "condition"
+        },
+        {
+          "id": "G1",
+          "label": "full graph",
+          "tau": 0.415,
+          "bandHit": 0.518,
+          "agree": 0.554,
+          "pds": 4.1,
+          "group": "condition"
+        },
+        {
+          "id": "G2",
+          "label": "told order (oracle)",
+          "tau": 0.333,
+          "bandHit": 0.982,
+          "agree": 0.998,
+          "pds": 3.94,
+          "group": "condition"
+        },
+        {
+          "id": "-causes",
+          "label": "− CAUSES / FORESHADOWS",
+          "tau": 0.417,
+          "bandHit": 0.429,
+          "agree": 0.557,
+          "pds": 4.18,
+          "group": "ablation"
+        },
+        {
+          "id": "-prepost",
+          "label": "− pre / post",
+          "tau": 0.44,
+          "bandHit": 0.464,
+          "agree": 0.557,
+          "pds": 4.14,
+          "group": "ablation"
+        },
+        {
+          "id": "-learns",
+          "label": "− learns",
+          "tau": 0.399,
+          "bandHit": 0.464,
+          "agree": 0.561,
+          "pds": 4.05,
+          "group": "ablation"
+        },
+        {
+          "id": "-questions",
+          "label": "− questions / REVEALS",
+          "tau": 0.383,
+          "bandHit": 0.464,
+          "agree": 0.502,
+          "pds": 3.99,
+          "group": "ablation"
+        },
+        {
+          "id": "-participants",
+          "label": "− participants / location",
+          "tau": 0.409,
+          "bandHit": 0.5,
+          "agree": 0.526,
+          "pds": 4.04,
+          "group": "ablation"
+        }
+      ]
+    }
+  },
+  "rq4": {
+    "src": "§5.4",
+    "judge": {
+      "free": 68,
+      "cued": 19,
+      "ties": 24,
+      "pairs": 111,
+      "p": "1.2 × 10⁻⁷",
+      "modelsLosing": 8
+    },
+    "readers": {
+      "free": 200,
+      "cued": 64,
+      "ties": 30
+    },
+    "pdsFree": 3.74,
+    "pdsCued": 3.6,
+    "byShape": {
+      "chronicle": 0.32,
+      "chronicleN": 37,
+      "chronicleP": "0.047",
+      "retrograde": 0.48
+    },
+    "early": {
+      "asScored": 0.214,
+      "cleanG0": 0.083,
+      "cleanG1": 0.085,
+      "cleanG2": 0,
+      "p": "0.125",
+      "rcgCeiling": 0.12
+    }
+  },
+  "readers": {
+    "src": "§4.2 and §5.5",
+    "nReaders": 71,
+    "nResponses": 3528,
+    "nSittings": 294,
+    "nStories": 14,
+    "perSitting": "four blind comparisons and one close reading",
+    "questions": [
+      "Which is the better story overall: more engaging, better told, more satisfying to read?",
+      "Which was harder to follow?",
+      "Whose ending tied things together better?"
+    ],
+    "bonferroni": 0.0042,
+    "alpha": {
+      "better": 0.415,
+      "harder": 0.112,
+      "ending": 0.073
+    },
+    "repeatDecisive": 0.93,
+    "repeatAll": 0.76,
+    "verdicts": {
+      "src": "Table 2",
+      "comparisons": [
+        {
+          "id": "cued",
+          "first": "instructed",
+          "second": "left alone",
+          "better": {
+            "w": 64,
+            "l": 200,
+            "t": 30,
+            "rate": 0.242,
+            "p": "<0.0001",
+            "tag": "against"
+          },
+          "harder": {
+            "w": 197,
+            "l": 47,
+            "t": 50,
+            "rate": 0.807,
+            "p": "<0.0001",
+            "tag": "against"
+          },
+          "ending": {
+            "w": 114,
+            "l": 134,
+            "t": 46,
+            "rate": 0.46,
+            "p": "0.23",
+            "tag": null
+          },
+          "adjRate": 0.246,
+          "adjTag": "survives"
+        },
+        {
+          "id": "order",
+          "first": "full graph",
+          "second": "told order",
+          "better": {
+            "w": 181,
+            "l": 70,
+            "t": 43,
+            "rate": 0.721,
+            "p": "<0.0001",
+            "tag": "headline"
+          },
+          "harder": {
+            "w": 115,
+            "l": 108,
+            "t": 71,
+            "rate": 0.516,
+            "p": "0.69",
+            "tag": null
+          },
+          "ending": {
+            "w": 141,
+            "l": 106,
+            "t": 47,
+            "rate": 0.571,
+            "p": "0.0303",
+            "tag": null
+          },
+          "adjRate": 0.707,
+          "adjTag": "survives"
+        },
+        {
+          "id": "list",
+          "first": "full graph",
+          "second": "event list",
+          "better": {
+            "w": 154,
+            "l": 105,
+            "t": 35,
+            "rate": 0.595,
+            "p": "0.0028",
+            "tag": "survives"
+          },
+          "harder": {
+            "w": 123,
+            "l": 102,
+            "t": 69,
+            "rate": 0.547,
+            "p": "0.18",
+            "tag": null
+          },
+          "ending": {
+            "w": 133,
+            "l": 103,
+            "t": 58,
+            "rate": 0.564,
+            "p": "0.0588",
+            "tag": null
+          },
+          "adjRate": 0.518,
+          "adjTag": "length"
+        },
+        {
+          "id": "layer",
+          "first": "full graph",
+          "second": "one layer removed",
+          "better": {
+            "w": 79,
+            "l": 180,
+            "t": 35,
+            "rate": 0.305,
+            "p": "<0.0001",
+            "tag": "against"
+          },
+          "harder": {
+            "w": 140,
+            "l": 86,
+            "t": 68,
+            "rate": 0.619,
+            "p": "0.0004",
+            "tag": "against"
+          },
+          "ending": {
+            "w": 110,
+            "l": 119,
+            "t": 65,
+            "rate": 0.48,
+            "p": "0.60",
+            "tag": null
+          },
+          "adjRate": 0.304,
+          "adjTag": "against"
+        }
+      ],
+      "tags": {
+        "headline": "headline",
+        "survives": "survives every check",
+        "against": "against hypothesis",
+        "length": "fails length adjustment"
+      }
+    },
+    "preference": {
+      "src": "Figure 3 (shares and 95% intervals from teaser_b_compact.tex)",
+      "rows": [
+        {
+          "id": "cued",
+          "first": "instructed",
+          "second": "left alone",
+          "reader": [
+            0.2424,
+            0.1853,
+            0.304
+          ],
+          "judge": [
+            0.2184,
+            0.1417,
+            0.3135
+          ]
+        },
+        {
+          "id": "order",
+          "first": "graph",
+          "second": "told order",
+          "reader": [
+            0.7211,
+            0.6707,
+            0.7692
+          ],
+          "judge": [
+            0.5111,
+            0.3682,
+            0.6526
+          ]
+        },
+        {
+          "id": "list",
+          "first": "graph",
+          "second": "event list",
+          "reader": [
+            0.5946,
+            0.5409,
+            0.6458
+          ],
+          "judge": [
+            0.6889,
+            0.5451,
+            0.8092
+          ]
+        },
+        {
+          "id": "layer",
+          "first": "graph",
+          "second": "layer removed",
+          "reader": [
+            0.305,
+            0.2473,
+            0.3654
+          ],
+          "judge": [
+            0.5238,
+            0.4287,
+            0.6176
+          ]
+        }
+      ],
+      "caption": "Unadjusted preference rates. Human readers favor graph-guided stories over those given a telling order or an event list; the automatic judge’s ties on two comparisons fail to capture clear reader preferences. “Layer removed” pools comparisons in which one group of graph annotations is omitted."
+    },
+    "judgeVsReaders": {
+      "src": "Table 13",
+      "rows": [
+        {
+          "id": "cued",
+          "first": "instructed",
+          "second": "left alone",
+          "judge": [
+            19,
+            68
+          ],
+          "judgeRate": 0.218,
+          "readers": [
+            64,
+            200
+          ],
+          "readerRate": 0.242,
+          "delta": 0.024,
+          "n": 67,
+          "kappa": 0.278,
+          "ci": [
+            0.01,
+            0.54
+          ],
+          "verdict": "weak"
+        },
+        {
+          "id": "order",
+          "first": "full graph",
+          "second": "told order",
+          "judge": [
+            23,
+            22
+          ],
+          "judgeRate": 0.511,
+          "readers": [
+            181,
+            70
+          ],
+          "readerRate": 0.721,
+          "delta": 0.21,
+          "n": 35,
+          "kappa": 0.242,
+          "ci": [
+            -0.11,
+            0.56
+          ],
+          "verdict": "weak"
+        },
+        {
+          "id": "list",
+          "first": "full graph",
+          "second": "event list",
+          "judge": [
+            31,
+            14
+          ],
+          "judgeRate": 0.689,
+          "readers": [
+            154,
+            105
+          ],
+          "readerRate": 0.595,
+          "delta": -0.094,
+          "n": 31,
+          "kappa": 0.625,
+          "ci": [
+            0.28,
+            0.91
+          ],
+          "verdict": "agrees"
+        },
+        {
+          "id": "layer",
+          "first": "full graph",
+          "second": "one layer removed",
+          "judge": [
+            55,
+            50
+          ],
+          "judgeRate": 0.524,
+          "readers": [
+            79,
+            180
+          ],
+          "readerRate": 0.305,
+          "delta": -0.219,
+          "n": 77,
+          "kappa": -0.03,
+          "ci": [
+            -0.23,
+            0.18
+          ],
+          "verdict": "unrelated"
+        }
+      ],
+      "pooledAgreement": 0.662,
+      "pooledKappa": 0.306,
+      "pooledCI": [
+        0.17,
+        0.43
+      ],
+      "individualAgreement": 0.679,
+      "individualN": 779,
+      "pdsCorrelation": 0.43,
+      "pdsN": 193,
+      "pdsGap": 0.28
+    },
+    "metrics": {
+      "src": "§5.5.5",
+      "harderTauN": 918,
+      "harderTauDelta": -0.171,
+      "harderTauR": -0.34,
+      "bandSplitN": 381,
+      "bandSplitRate": 0.34
+    },
+    "lengthDetail": {
+      "cuedWords": [
+        747,
+        711
+      ],
+      "listWords": [
+        649,
+        603
+      ],
+      "listLongerWins": 0.61,
+      "cuedLengthMatched": 0.3
+    }
+  },
+  "summary": {
+    "src": "Table 3 (the paper at a glance; the reader study revised the shaded rows RQ3 and RQ5)",
+    "rows": [
+      {
+        "rq": "RQ1",
+        "name": "Controllability",
+        "found": "Every model tells a story more chronologically than its published telling; cued for a shape, band hit is 47.9%, and the two misses are the literal solutions of rules stated on events.",
+        "careful": "The reference works were chosen for nonlinearity, both free tasks list events chronologically, and no prompt marks scenes. Band hit is negatively associated with reader preference, partly through condition.",
+        "revised": false
+      },
+      {
+        "rq": "RQ2",
+        "name": "Task validity",
+        "found": "Reconstruction reaches τ_rec = 0.743; naming the shape reaches 50.2%, with analepsis a sink.",
+        "careful": "96.1% of that τ is reachable with the story deleted (by entailment or prior knowledge of the work), and readers reach only 0.537: report the floor, prefer exact match.",
+        "revised": false
+      },
+      {
+        "rq": "RQ3",
+        "name": "Representation",
+        "found": "The graph raises compliance from 41.1% to 51.8%, almost all in one model, and readers prefer it to a supplied told order 72% of the time.",
+        "careful": "The judge saw no effect, and the two prompts differ in more than the graph. The edge over an event list is a length effect, and readers prefer every one-layer ablation to the full graph.",
+        "revised": true
+      },
+      {
+        "rq": "RQ4",
+        "name": "Cost of control",
+        "found": "Cued tellings lose to a model’s own free telling under the judge (68–19) and readers (76%), even for chronicle. As scored, the reveal comes after fewer than three events in 21.4% of stories.",
+        "careful": "Two scoring cases inflate the early rate (8.3% without them). Retrospective coherence gain is capped near 0.12 by the same floor.",
+        "revised": false
+      },
+      {
+        "rq": "RQ5",
+        "name": "Evaluation validity",
+        "found": "The judge matches 71 readers on the one large effect, and readers overturn both of its ties (κ = −0.030 on layer removal).",
+        "careful": "Item-level agreement does not track effect size; fourteen stories, two generators in the layer-removal study, no comparison against human-written prose.",
+        "revised": true
+      }
+    ]
+  }
+}

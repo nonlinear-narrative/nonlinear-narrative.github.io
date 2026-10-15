@@ -1,0 +1,101 @@
+{
+  "figure2": {
+    "src": "Figure 2 (overview_variant_d.tex); the telling order also matches work S02 in the released corpus",
+    "work": "S02",
+    "category": "zigzag",
+    "n": 18,
+    "telling": [18, 6, 17, 1, 16, 2, 15, 4, 14, 3, 13, 7, 8, 9, 10, 11, 5, 12],
+    "roles": {
+      "consequence": [18],
+      "explanation": [12],
+      "clue": [4, 13, 17]
+    },
+    "legend": [
+      { "role": "consequence", "label": "consequence" },
+      { "role": "explanation", "label": "explanation" },
+      { "role": "clue", "label": "recorded clues" },
+      { "role": "other", "label": "other events" }
+    ],
+    "rows": {
+      "chronology": { "label": "Chronology", "term": "fabula" },
+      "telling": { "label": "Telling", "term": "syuzhet" }
+    },
+    "pictograms": {
+      "src": "Descriptions of the miniatures, from the comments in the figure source; they describe the drawing, not the event",
+      "items": {
+        "1": "two people compare a document",
+        "2": "two people exchange an item",
+        "3": "a remembered encounter",
+        "4": "an identity record",
+        "5": "an encounter with a fallen person",
+        "6": "a remembered clue",
+        "7": "a person beside a fire",
+        "8": "a written note",
+        "9": "a camera and a fallen person",
+        "10": "a house and a car",
+        "11": "two people speak",
+        "12": "a person creates a false record",
+        "13": "a person checks a mark",
+        "14": "two people at a counter",
+        "15": "a conversation",
+        "16": "a person and a car",
+        "17": "two people with a named record",
+        "18": "Roy is killed"
+      }
+    },
+    "question": { "id": "q1", "text": "why is Martin certain Roy is the target?", "opens": 18, "closes": 12 },
+    "intervening": 16,
+    "interveningLabel": "16 intervening events",
+    "cards": [
+      { "event": 18, "told": 1, "title": "Roy is killed", "lines": ["Martin acts on a note", "he believes is true."], "note": "raises q1" },
+      { "event": 17, "told": 3, "title": "A record names Roy", "lines": ["A registration links", "the target to a name."] },
+      { "event": 11, "told": 16, "title": "Roy gives his account", "lines": ["The revenge, Roy says,", "already happened."] },
+      { "event": 12, "told": 18, "title": "A false record is made", "lines": ["Martin knowingly makes", "Roy his next target."], "note": "resolves q1" }
+    ],
+    "gaps": [1, 12, 1],
+    "reveals": {
+      "from": 12,
+      "to": 18,
+      "label": "REVEALS: e12 explains e18",
+      "detail": "Earlier in chronology (12 < 18); later in the telling (18 > 1)."
+    },
+    "caption": "The same events, two orders: the explanation precedes the consequence in chronology but arrives last in the telling. Opening with Roy’s death and withholding why he became the target across 16 intervening events turns a known outcome into an unresolved question.",
+    "expected": { "tau": -0.085, "lis": 0.5, "hops": 13, "src": "§D formulas applied to the telling; also the corpus record for S02 (tau −0.085, LIS 0.5)" }
+  },
+  "figure1": {
+    "src": "Figure 1 (teaser_a.tex: \\teaserUncuedOrder, \\teaserBackwardOrder, \\teaserPublishedOrder)",
+    "n": 12,
+    "tellings": [
+      {
+        "id": "uncued",
+        "label": "No backward cue",
+        "callout": "One backward step",
+        "order": [1, 2, 3, 4, 6, 5, 7, 8, 9, 10, 11, 12],
+        "tau": 0.97,
+        "highlight": [5, 6],
+        "marker": "triangle"
+      },
+      {
+        "id": "backward",
+        "label": "Backward cue",
+        "callout": "Exact event reversal",
+        "order": [12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
+        "tau": -1.0,
+        "highlight": [6, 7],
+        "marker": "square"
+      },
+      {
+        "id": "published",
+        "label": "Published telling",
+        "callout": "Forward scene run",
+        "order": [11, 12, 9, 10, 8, 7, 6, 5, 3, 4, 1, 2],
+        "tau": -0.88,
+        "highlight": [9, 10],
+        "marker": "circle"
+      }
+    ],
+    "axes": { "telling": "telling", "tellingTerm": "syuzhet", "chronology": "chronology", "chronologyTerm": "fabula" },
+    "caption": "Without a cue, the model stays near chronology; a backward cue yields exact reversal, while the published telling preserves forward scene runs. Kendall’s τ measures agreement with chronology: +1 denotes chronological order and −1 exact reversal.",
+    "closing": "+1 denotes chronological order and −1 exact reversal."
+  }
+}

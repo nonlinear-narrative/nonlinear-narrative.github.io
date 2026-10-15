@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Can LLMs Tell Stories Out of Order? · Nonlinear narrative generation</title>
+<meta name="description" content="A corpus of 83 published nonlinear works annotated in both chronological and telling order, a five-task benchmark for 19 language models, and a 71-reader study.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f2e9d8">
+<meta name="color-scheme" content="light dark">
+<script>
+  (function () {
+    var root = document.documentElement;
+    root.classList.add('js');
+    try {
+      var saved = localStorage.getItem('nonlinear-theme');
+      if (saved === 'dark' || saved === 'light') root.dataset.theme = saved;
+    } catch (e) { /* storage unavailable: follow the system theme */ }
+  })();
+</script>
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/page.css">
+<link rel="stylesheet" href="assets/css/hero.css">
+<script type="module" src="assets/js/page.js"></script>
+</head>
+<body>
+<svg class="visually-hidden" aria-hidden="true" focusable="false">
+  <symbol id="i-cursor" viewBox="0 0 24 24"><path d="M6 4h2v2h2v2h2v2h2v2h2v2h-2v2h-2v2h-2v2H8v2H6V4z"/></symbol>
+  <symbol id="i-paper" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M5 2h10v2h2v2h2v16H5zM7 4v16h10V8h-4V4zM9 11h6v2H9zm0 4h6v2H9z"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 6h2v2H8zM6 8h2v2H6zM4 10h2v4H4zM6 14h2v2H6zM8 16h2v2H8zM14 6h2v2h-2zM16 8h2v2h-2zM18 10h2v4h-2zM16 14h2v2h-2zM14 16h2v2h-2z"/></symbol>
+  <symbol id="i-brace" viewBox="0 0 24 24"><path d="M8 4h3v2H8zM7 6h2v4H7zM5 10h2v4H5zM7 14h2v4H7zM8 18h3v2H8zM13 4h3v2h-3zM15 6h2v4h-2zM17 10h2v4h-2zM15 14h2v4h-2zM13 18h3v2h-3z"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4h2v16H7zM9 6h2v12H9zM11 8h2v8h-2zM13 10h2v4h-2z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></symbol>
+  <symbol id="i-replay" viewBox="0 0 24 24"><path d="M8 4h8v2H8zM16 6h2v2h-2zM18 8h2v8h-2zM16 16h2v2h-2zM8 18h8v2H8zM6 16h2v2H6zM4 12h2v4H4zM3 5h6v2H5v4H3z"/></symbol>
+  <symbol id="i-prev" viewBox="0 0 24 24"><path d="M15 4h2v16h-2zM13 6h2v12h-2zM11 8h2v8h-2zM9 10h2v4H9z"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M7 4h2v16H7zM9 6h2v12H9zM11 8h2v8h-2zM13 10h2v4h-2z"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M8 2h12v14H8zm2 2v10h8V4zM4 8h2v12h10v2H4z"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M13 3h8v8h-2V7h-2v2h-2v2h-2v2h-2v2H9v-2h2v-2h2V9h2V7h2V5h-4zM3 5h8v2H5v12h12v-6h2v8H3z"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M11 4h2v2h2v2h2v2h-4v10h-2V10H7V8h2V6h2z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><path d="M10 1h4v3h-4zM10 20h4v3h-4zM1 10h3v4H1zM20 10h3v4h-3zM4 4h3v3H4zM17 4h3v3h-3zM4 17h3v3H4zM17 17h3v3h-3zM8 6h8v2H8zM6 8h2v8H6zM16 8h2v8h-2zM8 16h8v2H8z"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M8 2h6v2H8zM6 4h4v2H6zM4 6h4v2H4zM2 8h4v8H2zM4 16h4v2H4zM6 18h12v2H6zM8 20h8v2H8zM10 4h2v6h-2zM12 10h2v2h-2zM14 12h6v2h-6zM18 14h4v2h-4zM16 16h4v2h-4z"/></symbol>
+</svg>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="header-title-strip">
+    <span class="header-title">Can LLMs Tell Stories Out of Order?</span>
+    <span class="header-status">arXiv Preprint</span>
+  </div>
+  <div class="header-inner">
+    <a class="brand" href="#top">nonlinear narrative</a>
+    <nav aria-label="Sections">
+      <a href="#overview"><svg class="cursor" aria-hidden="true"><use href="#i-cursor"/></svg><span>Overview</span></a>
+      <a href="#shapes"><svg class="cursor" aria-hidden="true"><use href="#i-cursor"/></svg><span>Shapes</span></a>
+      <a href="#benchmark"><svg class="cursor" aria-hidden="true"><use href="#i-cursor"/></svg><span>Benchmark</span></a>
+      <a href="#findings"><svg class="cursor" aria-hidden="true"><use href="#i-cursor"/></svg><span>Findings</span></a>
+      <a href="#readers"><svg class="cursor" aria-hidden="true"><use href="#i-cursor"/></svg><span>Readers</span></a>
+      <a href="#cite"><svg class="cursor" aria-hidden="true"><use href="#i-cursor"/></svg><span>Cite</span></a>
+    </nav>
+    <button class="theme-toggle" type="button" data-theme-toggle hidden><svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg><span>Night</span></button>
+  </div>
+</header>
+
+<main id="main" class="site-shell">
+  <p class="file-warning" data-file-warning hidden>This page is open from a file, so its charts and animation cannot load their data. Run <code>python3 -m http.server 8000</code> in this folder and open <code>http://localhost:8000</code>.</p>
+
+  <!-- 1. Title block -->
+  <section id="top" class="title-block game-window" aria-labelledby="page-title">
+    <div class="window-title"><span>Corpus &amp; benchmark</span><span class="window-index">83 works · 19 models · 71 readers</span></div>
+    <div class="title-body">
+      <div class="title-art title-art--arrival" aria-hidden="true">
+        <img src="assets/img/title-arrival.png" width="160" height="160" alt="" decoding="async" draggable="false">
+      </div>
+      <div class="title-copy">
+        <h1 id="page-title">Can LLMs Tell Stories Out of Order?</h1>
+        <p class="subtitle">A Corpus and Benchmark for Nonlinear Narrative Generation</p>
+        <p class="byline">arXiv Preprint</p>
+        <div class="link-row">
+          <a class="btn btn-primary" href="paper.pdf" data-paper-link><svg class="icon" aria-hidden="true"><use href="#i-paper"/></svg><span>Paper</span></a>
+          <a class="btn" href="https://anonymous.4open.science/r/LLM-nonlinear-storytelling-2931" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-code"/></svg><span>Code &amp; Data</span><svg class="icon icon-trail" aria-hidden="true"><use href="#i-out"/></svg></a>
+          <a class="btn" href="#cite"><svg class="icon" aria-hidden="true"><use href="#i-brace"/></svg><span>BibTeX</span></a>
+        </div>
+      </div>
+      <div class="title-art title-art--black-hole" aria-hidden="true">
+        <img src="assets/img/title-interstellar.png" width="160" height="160" alt="" decoding="async" draggable="false">
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Hero animation: Figure 2, then Figure 1 -->
+  <section id="overview" class="section" aria-labelledby="overview-title">
+    <div class="game-window hero-window">
+      <div class="window-title"><h2 id="overview-title">One story, two orders</h2><span class="window-index" data-hero-index>Figures 1 &amp; 2</span></div>
+      <figure class="hero" data-hero aria-labelledby="hero-caption-title">
+        <div class="hero-stage" data-hero-stage>
+          <p class="hero-static">The animation needs JavaScript. The caption and the two lists below give the same orders and scores.</p>
+        </div>
+        <p class="hero-narration" data-hero-narration aria-live="polite"></p>
+        <div class="hero-controls" data-hero-controls hidden>
+          <div class="control-group" data-motion-controls>
+            <button class="btn" type="button" data-hero-play aria-label="Pause"><svg class="icon" aria-hidden="true"><use href="#i-pause"/></svg><span>Pause</span></button>
+            <button class="btn" type="button" data-hero-replay><svg class="icon" aria-hidden="true"><use href="#i-replay"/></svg><span>Replay</span></button>
+            <button class="btn" type="button" data-hero-speed aria-label="Speed: 1×, switch to 2×">1×</button>
+          </div>
+          <div class="control-group" data-step-controls hidden>
+            <button class="btn" type="button" data-hero-back><svg class="icon" aria-hidden="true"><use href="#i-prev"/></svg><span>Back</span></button>
+            <button class="btn" type="button" data-hero-next><span>Next</span><svg class="icon" aria-hidden="true"><use href="#i-next"/></svg></button>
+          </div>
+          <div class="scene-buttons" role="group" aria-label="Scenes">
+            <button class="btn scene-btn" type="button" data-scene="0"><span class="scene-num">1</span><span class="scene-label">Three tellings</span></button>
+            <button class="btn scene-btn" type="button" data-scene="1"><span class="scene-num">2</span><span class="scene-label">The reveal</span></button>
+            <button class="btn scene-btn" type="button" data-scene="2"><span class="scene-num">3</span><span class="scene-label">Scoring the order</span></button>
+          </div>
+          <label class="scrubber"><span class="visually-hidden">Animation position</span><input type="range" min="0" max="1000" step="1" value="0" data-hero-scrub></label>
+          <p class="keys-hint">Keys: Space plays or pauses, ← → change scene.</p>
+        </div>
+        <figcaption>
+          <p id="hero-caption-title"><strong>Redrawn from Figures 1 and 2 of the paper.</strong>
+          <strong>Figure 1:</strong> Without a cue, the model stays near chronology (τ = +0.97); a backward cue yields exact reversal (τ = −1.00), while the published telling preserves forward scene runs (τ = −0.88). Kendall’s τ measures agreement with chronology: +1 denotes chronological order and −1 exact reversal.
+          <strong>Figure 2:</strong> The same events, two orders: the explanation precedes the consequence in chronology but arrives last in the telling. Opening with Roy’s death and withholding why he became the target across 16 intervening events turns a known outcome into an unresolved question.
+          The telling of these 18 events scores Kendall’s τ = −0.085, LIS = 0.50 and 13 hops.</p>
+        </figcaption>
+        <div class="hero-orders">
+          <details>
+            <summary>Both orders as lists</summary>
+            <div class="orders-lists">
+              <div><p class="orders-title">No backward cue, τ = +0.97</p><ol class="order-list"><li>1</li><li>2</li><li>3</li><li>4</li><li>6</li><li>5</li><li>7</li><li>8</li><li>9</li><li>10</li><li>11</li><li>12</li></ol></div>
+              <div><p class="orders-title">Backward cue, τ = −1.00</p><ol class="order-list"><li>12</li><li>11</li><li>10</li><li>9</li><li>8</li><li>7</li><li>6</li><li>5</li><li>4</li><li>3</li><li>2</li><li>1</li></ol></div>
+              <div><p class="orders-title">Published telling, τ = −0.88</p><ol class="order-list"><li>11</li><li>12</li><li>9</li><li>10</li><li>8</li><li>7</li><li>6</li><li>5</li><li>3</li><li>4</li><li>1</li><li>2</li></ol></div>
+              <div><p class="orders-title">Chronology (<em>fabula</em>)</p><ol class="order-list"><li>e<sub>1</sub></li><li>e<sub>2</sub></li><li>e<sub>3</sub></li><li>e<sub>4</sub></li><li>e<sub>5</sub></li><li>e<sub>6</sub></li><li>e<sub>7</sub></li><li>e<sub>8</sub></li><li>e<sub>9</sub></li><li>e<sub>10</sub></li><li>e<sub>11</sub></li><li>e<sub>12</sub></li><li>e<sub>13</sub></li><li>e<sub>14</sub></li><li>e<sub>15</sub></li><li>e<sub>16</sub></li><li>e<sub>17</sub></li><li>e<sub>18</sub></li></ol></div>
+              <div><p class="orders-title">Telling (<em>syuzhet</em>)</p><ol class="order-list"><li>e<sub>18</sub></li><li>e<sub>6</sub></li><li>e<sub>17</sub></li><li>e<sub>1</sub></li><li>e<sub>16</sub></li><li>e<sub>2</sub></li><li>e<sub>15</sub></li><li>e<sub>4</sub></li><li>e<sub>14</sub></li><li>e<sub>3</sub></li><li>e<sub>13</sub></li><li>e<sub>7</sub></li><li>e<sub>8</sub></li><li>e<sub>9</sub></li><li>e<sub>10</sub></li><li>e<sub>11</sub></li><li>e<sub>5</sub></li><li>e<sub>12</sub></li></ol></div>
+            </div>
+          </details>
+        </div>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 3. TL;DR -->
+  <section class="section tldr game-window" aria-labelledby="tldr-title">
+    <div class="window-title"><h2 id="tldr-title">TL;DR</h2><span class="window-index">Abstract</span></div>
+    <div class="window-body">
+      <p class="lead"><strong>Every story has two orders: the order in which things happened and the order in which it is told. A story is nonlinear when these two orders differ.</strong> For each of 83 published works, the authors annotate one list of events in both orders, with a story graph of what causes, plants and explains what, then ask 19 language models to tell, read and write those stories out of order.</p>
+      <div class="stat-tiles stat-tiles-3">
+        <div class="stat-tile">
+          <p class="stat-value">19 of 19</p>
+          <p class="stat-label">models tell a story more chronologically than its published telling when left alone (pooled τ <span data-k="headline.freeTau" data-f="d3">0.638</span> against <span data-k="headline.humanTau" data-f="d3">0.456</span>).</p>
+        </div>
+        <div class="stat-tile">
+          <p class="stat-value" data-k="headline.pooledBandHit" data-f="p1">47.9%</p>
+          <p class="stat-label">of tellings land in the human range for a requested shape, against <span data-k="headline.randomBandHit" data-f="p1">8.4%</span> for random permutations.</p>
+        </div>
+        <div class="stat-tile">
+          <p class="stat-value"><span data-k="headline.graphOverOrderReaders" data-f="p0">72%</span> <span class="stat-vs">vs</span> <span data-k="headline.graphOverOrderJudge" data-f="p0">51%</span></p>
+          <p class="stat-label">readers’ and the automated judge’s preference for the graph-guided story over the told-order one, out of decisive verdicts.</p>
+        </div>
+      </div>
+      <details class="abstract">
+        <summary>Read the abstract</summary>
+        <p>Every story has two orders: the order in which things happened and the order in which it is told. A story is nonlinear when these two orders differ. We introduce a benchmark of 83 published works to measure whether language models can tell nonlinear stories. For each story, we annotate a single list of events in two orders, chronological and as narrated, along with a story graph that captures how events causally depend on one another and when each character learns key information. When events are given chronologically, all 19 models tell stories that are, on average, more chronological than human-written ones. When prompted to use a specific structure, the models’ orderings fall within the human range about half the time. We compare a model’s stories of the same events under different conditions, using both an automated judge and 71 human readers. Both prefer the chronological story a model writes by default over the nonlinear one it writes when asked, and 81% of readers also find the nonlinear version harder to follow. 72% of the readers strongly prefer graph-based stories to narrated ones, but the judge doesn’t pick up on this difference. Our results suggest that language models struggle to control narrative order, especially with complex structures.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- 4. Seven shapes -->
+  <section id="shapes" class="section game-window" aria-labelledby="shapes-title">
+    <div class="window-title"><h2 id="shapes-title">Seven shapes</h2><span class="window-index">§3 · Fig. 4 · Table 5</span></div>
+    <div class="window-body">
+      <p class="lead">Every work carries one of seven structural labels, which describe the order of its scenes. Each panel draws one corpus work as a story curve: told position runs across and chronological position up, so a chronological telling is the dotted diagonal. The work shown is the one nearest its category’s median in (τ, LIS), the selection Figure 4 uses.</p>
+      <div class="shape-browser" data-shapes>
+        <div class="shape-nav" data-shape-nav hidden>
+          <button class="btn step-btn" type="button" data-shape-prev aria-label="Previous shape"><svg class="icon" aria-hidden="true"><use href="#i-prev"/></svg></button>
+          <div class="shape-tabs" role="tablist" aria-label="Shapes">
+            <button class="shape-tab" type="button" role="tab" id="tab-chronicle" aria-controls="shape-chronicle" aria-selected="true" tabindex="0">Chronicle</button>
+            <button class="shape-tab" type="button" role="tab" id="tab-analepsis" aria-controls="shape-analepsis" aria-selected="false" tabindex="-1">Analepsis</button>
+            <button class="shape-tab" type="button" role="tab" id="tab-prolepsis" aria-controls="shape-prolepsis" aria-selected="false" tabindex="-1">Prolepsis</button>
+            <button class="shape-tab" type="button" role="tab" id="tab-zigzag" aria-controls="shape-zigzag" aria-selected="false" tabindex="-1">Zigzag</button>
+            <button class="shape-tab" type="button" role="tab" id="tab-syllepsis" aria-controls="shape-syllepsis" aria-selected="false" tabindex="-1">Syllepsis</button>
+            <button class="shape-tab" type="button" role="tab" id="tab-retrograde" aria-controls="shape-retrograde" aria-selected="false" tabindex="-1">Retrograde</button>
+            <button class="shape-tab" type="button" role="tab" id="tab-achrony" aria-controls="shape-achrony" aria-selected="false" tabindex="-1">Achrony</button>
+          </div>
+          <button class="btn step-btn" type="button" data-shape-next aria-label="Next shape"><svg class="icon" aria-hidden="true"><use href="#i-next"/></svg></button>
+          <button class="btn shape-play" type="button" data-shape-play aria-label="Pause story curve animation">Pause</button>
+          <span class="shape-status" data-shape-status aria-hidden="true">1 / 7</span>
+        </div>
+        <article class="shape-panel" id="shape-chronicle" role="tabpanel" aria-labelledby="tab-chronicle" data-shape="chronicle">
+          <div class="shape-curve" data-curve="0">
+            <p class="curve-fallback">Told order of the nearest-median work (18 events): 1 2 4 3 5 6 7 9 8 10 11 12 14 13 15 16 17 18</p>
+          </div>
+          <div class="shape-text">
+            <h3 class="shape-name">Chronicle <span class="tag"><span data-k="shapes.items.0.works" data-f="int">10</span>&nbsp;works</span></h3>
+            <p><span data-k="shapes.items.0.description">The telling follows chronology. The line sits on the diagonal, broken at most where two things happen at once and the telling has to pick an order for them.</span> <span class="shape-example" data-k="shapes.items.0.example">Montfort identifies chronological stretches of Thucydides’ The Peloponnesian War as chronicles.</span></p>
+            <blockquote class="definition">
+              <p class="definition-label">Definition the models saw (§L)</p>
+              <p>“<span data-k="shapes.items.0.definition">The chronological ranks run 1, 2, 3 … n in told order. Simultaneous events appearing in either order still qualify.</span>”</p>
+            </blockquote>
+            
+            <p class="stats-label">T1, asked for this shape (Table 5)</p>
+            <dl class="shape-stats"><div><dt>band hit</dt><dd><span data-k="shapes.items.0.t1.bandHit" data-f="d3">0.053</span></dd></div><div><dt>model τ</dt><dd><span data-k="shapes.items.0.t1.modelTau" data-f="d3">0.957</span></dd></div><div><dt>human τ</dt><dd><span data-k="shapes.items.0.t1.humanTau" data-f="d3">0.912</span></dd></div><div><dt>agreement with gold</dt><dd><span data-k="shapes.items.0.t1.agree" data-f="d3">0.878</span></dd></div><div><dt>exact identities</dt><dd><span data-k="shapes.items.0.t1.exactForm" data-f="d3">0.889</span></dd></div></dl>
+            <p class="small">Human band: τ from <span data-k="shapes.items.0.band.tau.0" data-f="d2">0.62</span> to <span data-k="shapes.items.0.band.tau.1" data-f="d2">0.97</span>, LIS from <span data-k="shapes.items.0.band.lis.0" data-f="d2">0.60</span> to <span data-k="shapes.items.0.band.lis.1" data-f="d2">0.90</span>. Curve: work S72, τ = <span data-k="shapes.items.0.curve.tau" data-f="s2">+0.96</span>.</p>
+          </div>
+        </article>
+        <article class="shape-panel" id="shape-analepsis" role="tabpanel" aria-labelledby="tab-analepsis" data-shape="analepsis" data-inactive>
+          <div class="shape-curve" data-curve="1">
+            <p class="curve-fallback">Told order of the nearest-median work (20 events): 3 4 5 6 7 9 10 8 11 1 12 14 15 16 13 17 18 2 19 20</p>
+          </div>
+          <div class="shape-text">
+            <h3 class="shape-name">Analepsis <span class="tag"><span data-k="shapes.items.1.works" data-f="int">22</span>&nbsp;works</span></h3>
+            <p><span data-k="shapes.items.1.description">One timeline dominates, and the telling interrupts it with material from earlier, then returns to the dominant timeline. This is the flashback, and it is by a wide margin the most common nonlinear shape in the corpus.</span> <span class="shape-example" data-k="shapes.items.1.example">In Lost, for example, flashbacks revisit the characters’ lives before they were stranded on the island.</span></p>
+            <blockquote class="definition">
+              <p class="definition-label">Definition the models saw (§L)</p>
+              <p>“<span data-k="shapes.items.1.definition">One timeline dominates (it holds more than about three quarters of the scenes) and the remaining scenes are insertions from earlier than that timeline.</span>”</p>
+            </blockquote>
+            
+            <p class="stats-label">T1, asked for this shape (Table 5)</p>
+            <dl class="shape-stats"><div><dt>band hit</dt><dd><span data-k="shapes.items.1.t1.bandHit" data-f="d3">0.684</span></dd></div><div><dt>model τ</dt><dd><span data-k="shapes.items.1.t1.modelTau" data-f="d3">0.637</span></dd></div><div><dt>human τ</dt><dd><span data-k="shapes.items.1.t1.humanTau" data-f="d3">0.696</span></dd></div><div><dt>agreement with gold</dt><dd><span data-k="shapes.items.1.t1.agree" data-f="d3">0.552</span></dd></div></dl>
+            <p class="small">Human band: τ from <span data-k="shapes.items.1.band.tau.0" data-f="d2">0.35</span> to <span data-k="shapes.items.1.band.tau.1" data-f="d2">0.94</span>, LIS from <span data-k="shapes.items.1.band.lis.0" data-f="d2">0.50</span> to <span data-k="shapes.items.1.band.lis.1" data-f="d2">0.95</span>. Curve: work S08, τ = <span data-k="shapes.items.1.curve.tau" data-f="s2">+0.68</span>.</p>
+          </div>
+        </article>
+        <article class="shape-panel" id="shape-prolepsis" role="tabpanel" aria-labelledby="tab-prolepsis" data-shape="prolepsis" data-inactive>
+          <div class="shape-curve" data-curve="2">
+            <p class="curve-fallback">Told order of the nearest-median work (15 events): 14 1 2 3 4 5 6 7 8 9 10 11 12 13 15</p>
+          </div>
+          <div class="shape-text">
+            <h3 class="shape-name">Prolepsis <span class="tag"><span data-k="shapes.items.2.works" data-f="int">10</span>&nbsp;works</span></h3>
+            <p><span data-k="shapes.items.2.description">A mirror of analepsis where one timeline dominates and the telling interrupts it with material from later, then returns to the dominant timeline.</span> <span class="shape-example" data-k="shapes.items.2.example">Arrival, for example, presents episodes from a character’s future.</span></p>
+            <blockquote class="definition">
+              <p class="definition-label">Definition the models saw (§L)</p>
+              <p>“<span data-k="shapes.items.2.definition">One timeline dominates (it holds more than about three quarters of the scenes) and the remaining scenes are insertions from later than the dominant timeline. The inserted scene must be a real scene the reader can later place, not a vague premonition.</span>”</p>
+            </blockquote>
+            <p class="small">The paper prints this definition with its opening cross-reference to analepsis expanded; the completed runs used the original wording (§L).</p>
+            <p class="stats-label">T1, asked for this shape (Table 5)</p>
+            <dl class="shape-stats"><div><dt>band hit</dt><dd><span data-k="shapes.items.2.t1.bandHit" data-f="d3">0.721</span></dd></div><div><dt>model τ</dt><dd><span data-k="shapes.items.2.t1.modelTau" data-f="d3">0.671</span></dd></div><div><dt>human τ</dt><dd><span data-k="shapes.items.2.t1.humanTau" data-f="d3">0.755</span></dd></div><div><dt>agreement with gold</dt><dd><span data-k="shapes.items.2.t1.agree" data-f="d3">0.635</span></dd></div></dl>
+            <p class="small">Human band: τ from <span data-k="shapes.items.2.band.tau.0" data-f="d2">0.52</span> to <span data-k="shapes.items.2.band.tau.1" data-f="d2">0.93</span>, LIS from <span data-k="shapes.items.2.band.lis.0" data-f="d2">0.82</span> to <span data-k="shapes.items.2.band.lis.1" data-f="d2">0.95</span>. Curve: work S68, τ = <span data-k="shapes.items.2.curve.tau" data-f="s2">+0.75</span>.</p>
+          </div>
+        </article>
+        <article class="shape-panel" id="shape-zigzag" role="tabpanel" aria-labelledby="tab-zigzag" data-shape="zigzag" data-inactive>
+          <div class="shape-curve" data-curve="3">
+            <p class="curve-fallback">Told order of the nearest-median work (17 events): 11 1 12 2 13 3 4 14 5 6 15 7 8 16 9 10 17</p>
+          </div>
+          <div class="shape-text">
+            <h3 class="shape-name">Zigzag <span class="tag"><span data-k="shapes.items.3.works" data-f="int">10</span>&nbsp;works</span></h3>
+            <p><span data-k="shapes.items.3.description">Two periods alternate on a regular beat, each progressing in a consistent direction, with paired scenes related by echo, explanation or contrast. The line makes a regular sawtooth.</span> <span class="shape-example" data-k="shapes.items.3.example">In Memento, the black-and-white scenes move forward while the color scenes move backward.</span></p>
+            <blockquote class="definition">
+              <p class="definition-label">Definition the models saw (§L)</p>
+              <p>“<span data-k="shapes.items.3.definition">The scenes split into two time periods that alternate on a regular beat; each period progresses in its own consistent direction; and the paired scenes are semantically related (echo, explanation, or contrast). One of the two strands may run backward.</span>”</p>
+            </blockquote>
+            
+            <p class="stats-label">T1, asked for this shape (Table 5)</p>
+            <dl class="shape-stats"><div><dt>band hit</dt><dd><span data-k="shapes.items.3.t1.bandHit" data-f="d3">0.826</span></dd></div><div><dt>model τ</dt><dd><span data-k="shapes.items.3.t1.modelTau" data-f="d3">0.407</span></dd></div><div><dt>human τ</dt><dd><span data-k="shapes.items.3.t1.humanTau" data-f="d3">0.423</span></dd></div><div><dt>agreement with gold</dt><dd><span data-k="shapes.items.3.t1.agree" data-f="d3">0.396</span></dd></div></dl>
+            <p class="small">Human band: τ from <span data-k="shapes.items.3.band.tau.0" data-f="d2">−0.09</span> to <span data-k="shapes.items.3.band.tau.1" data-f="d2">0.94</span>, LIS from <span data-k="shapes.items.3.band.lis.0" data-f="d2">0.50</span> to <span data-k="shapes.items.3.band.lis.1" data-f="d2">0.82</span>. Curve: work S62, τ = <span data-k="shapes.items.3.curve.tau" data-f="s2">+0.43</span>.</p>
+          </div>
+        </article>
+        <article class="shape-panel" id="shape-syllepsis" role="tabpanel" aria-labelledby="tab-syllepsis" data-shape="syllepsis" data-inactive>
+          <div class="shape-curve" data-curve="4">
+            <p class="curve-fallback">Told order of the nearest-median work (17 events): 3 10 11 1 2 6 7 8 9 4 5 12 13 14 15 16 17</p>
+          </div>
+          <div class="shape-text">
+            <h3 class="shape-name">Syllepsis <span class="tag"><span data-k="shapes.items.4.works" data-f="int">11</span>&nbsp;works</span></h3>
+            <p><span data-k="shapes.items.4.description">No timeline dominates; the scenes are grouped by something other than time, such as place, character, theme or object. The line is blocky, orderly inside each block and unordered between them.</span> <span class="shape-example" data-k="shapes.items.4.example">The multiple plotlines of Pulp Fiction and Love Actually illustrate this grouping principle.</span></p>
+            <blockquote class="definition">
+              <p class="definition-label">Definition the models saw (§L)</p>
+              <p>“<span data-k="shapes.items.4.definition">There is no dominant timeline, but the scenes form blocks grouped by a nameable non-temporal principle: place, character, theme, or object. You must be able to state the principle.</span>”</p>
+            </blockquote>
+            
+            <p class="stats-label">T1, asked for this shape (Table 5)</p>
+            <dl class="shape-stats"><div><dt>band hit</dt><dd><span data-k="shapes.items.4.t1.bandHit" data-f="d3">0.507</span></dd></div><div><dt>model τ</dt><dd><span data-k="shapes.items.4.t1.modelTau" data-f="d3">0.516</span></dd></div><div><dt>human τ</dt><dd><span data-k="shapes.items.4.t1.humanTau" data-f="d3">0.526</span></dd></div><div><dt>agreement with gold</dt><dd><span data-k="shapes.items.4.t1.agree" data-f="d3">0.355</span></dd></div></dl>
+            <p class="small">Human band: τ from <span data-k="shapes.items.4.band.tau.0" data-f="d2">0.15</span> to <span data-k="shapes.items.4.band.tau.1" data-f="d2">0.80</span>, LIS from <span data-k="shapes.items.4.band.lis.0" data-f="d2">0.39</span> to <span data-k="shapes.items.4.band.lis.1" data-f="d2">0.81</span>. Curve: work S37, τ = <span data-k="shapes.items.4.curve.tau" data-f="s2">+0.62</span>.</p>
+          </div>
+        </article>
+        <article class="shape-panel" id="shape-retrograde" role="tabpanel" aria-labelledby="tab-retrograde" data-shape="retrograde" data-inactive>
+          <div class="shape-curve" data-curve="5">
+            <p class="curve-fallback">Told order of the nearest-median work (14 events): 14 11 12 13 9 10 7 8 5 6 3 4 1 2</p>
+          </div>
+          <div class="shape-text">
+            <h3 class="shape-name">Retrograde <span class="tag"><span data-k="shapes.items.5.works" data-f="int">10</span>&nbsp;works</span></h3>
+            <p><span data-k="shapes.items.5.description">The telling runs backwards: a descending staircase, not a descending line. Scenes are told in reverse order while each scene plays forward inside itself. The pure reversal is the shape no work in the corpus has and the one models produce when instructed.</span> <span class="shape-example" data-k="shapes.items.5.example">The color strand of Memento offers a familiar example: successive scenes lead back to earlier events.</span></p>
+            <blockquote class="definition">
+              <p class="definition-label">Definition the models saw (§L)</p>
+              <p>“<span data-k="shapes.items.5.definition">The ranks run n … 3, 2, 1 throughout, and there is no present-day scene the narrative keeps returning to.</span>”</p>
+            </blockquote>
+            
+            <p class="stats-label">T1, asked for this shape (Table 5)</p>
+            <dl class="shape-stats"><div><dt>band hit</dt><dd><span data-k="shapes.items.5.t1.bandHit" data-f="d3">0.011</span></dd></div><div><dt>model τ</dt><dd><span data-k="shapes.items.5.t1.modelTau" data-f="d3">−0.973</span></dd></div><div><dt>human τ</dt><dd><span data-k="shapes.items.5.t1.humanTau" data-f="d3">−0.781</span></dd></div><div><dt>agreement with gold</dt><dd><span data-k="shapes.items.5.t1.agree" data-f="d3">0.764</span></dd></div><div><dt>exact reversals</dt><dd><span data-k="shapes.items.5.t1.exactForm" data-f="d3">0.936</span></dd></div></dl>
+            <p class="small">Human band: τ from <span data-k="shapes.items.5.band.tau.0" data-f="d2">−0.92</span> to <span data-k="shapes.items.5.band.tau.1" data-f="d2">−0.43</span>, LIS from <span data-k="shapes.items.5.band.lis.0" data-f="d2">0.15</span> to <span data-k="shapes.items.5.band.lis.1" data-f="d2">0.36</span>. Curve: work S54, τ = <span data-k="shapes.items.5.curve.tau" data-f="s2">−0.82</span>.</p>
+          </div>
+        </article>
+        <article class="shape-panel" id="shape-achrony" role="tabpanel" aria-labelledby="tab-achrony" data-shape="achrony" data-inactive>
+          <div class="shape-curve" data-curve="6">
+            <p class="curve-fallback">Told order of the nearest-median work (15 events): 1 10 14 12 13 2 3 5 4 6 7 9 8 11 15</p>
+          </div>
+          <div class="shape-text">
+            <h3 class="shape-name">Achrony <span class="tag"><span data-k="shapes.items.6.works" data-f="int">10</span>&nbsp;works</span></h3>
+            <p><span data-k="shapes.items.6.description">The corpus uses a narrower operational label than narratology: the chronology must remain reconstructable, while the telling follows no statable ordering pattern and is not merely awaiting a late reveal. The line wanders. The definition the models saw describes unrecoverable chronology, which the corpus excludes.</span> <span class="shape-example" data-k="shapes.items.6.example">In the broader narratological sense, achrony describes a telling whose temporal relations cannot readily be established, as in Robbe-Grillet’s La Jalousie.</span></p>
+            <blockquote class="definition">
+              <p class="definition-label">Definition the models saw (§L)</p>
+              <p>“<span data-k="shapes.items.6.definition">You cannot confidently assign chronological ranks because the text gives no dates, no ageing, no causal signposts, and no other ordering cues. Stop here only if the order is genuinely unrecoverable, not merely withheld until a late reveal.</span>”</p>
+            </blockquote>
+            
+            <p class="stats-label">T1, asked for this shape (Table 5)</p>
+            <dl class="shape-stats"><div><dt>band hit</dt><dd><span data-k="shapes.items.6.t1.bandHit" data-f="d3">0.300</span></dd></div><div><dt>model τ</dt><dd><span data-k="shapes.items.6.t1.modelTau" data-f="d3">0.171</span></dd></div><div><dt>human τ</dt><dd><span data-k="shapes.items.6.t1.humanTau" data-f="d3">0.363</span></dd></div><div><dt>agreement with gold</dt><dd><span data-k="shapes.items.6.t1.agree" data-f="d3">0.220</span></dd></div></dl>
+            <p class="small">Human band: τ from <span data-k="shapes.items.6.band.tau.0" data-f="d2">0.12</span> to <span data-k="shapes.items.6.band.tau.1" data-f="d2">0.62</span>, LIS from <span data-k="shapes.items.6.band.lis.0" data-f="d2">0.33</span> to <span data-k="shapes.items.6.band.lis.1" data-f="d2">0.67</span>. Curve: work S79, τ = <span data-k="shapes.items.6.curve.tau" data-f="s2">+0.26</span>.</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Corpus -->
+  <section id="corpus" class="section game-window" aria-labelledby="corpus-title">
+    <div class="window-title"><h2 id="corpus-title">The corpus</h2><span class="window-index">§3 · Table 4</span></div>
+    <div class="window-body">
+      <p class="lead">Each work is reduced to 12–20 key events, written as one self-contained sentence each, so the same sentences can be read in chronological order or in the work’s telling order. A telling is then a permutation of those events, and every score is arithmetic on that permutation rather than text matching.</p>
+      <div class="stat-tiles">
+        <div class="stat-tile"><p class="stat-value" data-k="corpus.works" data-f="int">83</p><p class="stat-label">works annotated in both orders (<span data-k="corpus.nonlinearWorks" data-f="int">73</span> nonlinear, <span data-k="corpus.chronicleWorks" data-f="int">10</span> chronicles)</p></div>
+        <div class="stat-tile"><p class="stat-value" data-k="corpus.events" data-f="int">1,433</p><p class="stat-label">event nodes</p></div>
+        <div class="stat-tile"><p class="stat-value" data-k="corpus.scenes" data-f="int">1,221</p><p class="stat-label">scenes, contiguous in both orders</p></div>
+        <div class="stat-tile"><p class="stat-value" data-k="corpus.characters" data-f="int">857</p><p class="stat-label">characters</p></div>
+        <div class="stat-tile"><p class="stat-value" data-k="corpus.edges" data-f="int">3,478</p><p class="stat-label">typed edges in hand-written story graphs</p></div>
+        <div class="stat-tile"><p class="stat-value" data-k="corpus.questionThreads" data-f="int">657</p><p class="stat-label">reader-question threads</p></div>
+        <div class="stat-tile"><p class="stat-value" data-k="corpus.knowledgeClaims" data-f="int">2,504</p><p class="stat-label">character and reader knowledge claims</p></div>
+        <div class="stat-tile"><p class="stat-value" data-k="corpus.meanTau" data-f="d3">0.456</p><p class="stat-label">mean τ of the told order</p></div>
+      </div>
+
+      <h3 class="sub-heading">Sources</h3>
+      <p>Works were selected by structural shape, beginning with films and adding novels, plays, musicals and a short story until every category had at least ten examples. The sample covers the seven shapes; it does not estimate how common they are.</p>
+      <div class="media-bar" role="img" aria-label="Sources: Film 71, Novel 7, Play 2, Musical 2, Short story 1">
+        <span class="media-seg media-film" style="flex-grow:71"></span><span class="media-seg media-novel" style="flex-grow:7"></span><span class="media-seg media-play" style="flex-grow:2"></span><span class="media-seg media-musical" style="flex-grow:2"></span><span class="media-seg media-short-story" style="flex-grow:1"></span>
+      </div>
+      <ul class="media-legend">
+      <li><span class="swatch media-film" aria-hidden="true"></span>Film <span data-k="corpus.media.items.0.count" data-f="int">71</span></li>
+      <li><span class="swatch media-novel" aria-hidden="true"></span>Novel <span data-k="corpus.media.items.1.count" data-f="int">7</span></li>
+      <li><span class="swatch media-play" aria-hidden="true"></span>Play <span data-k="corpus.media.items.2.count" data-f="int">2</span></li>
+      <li><span class="swatch media-musical" aria-hidden="true"></span>Musical <span data-k="corpus.media.items.3.count" data-f="int">2</span></li>
+      <li><span class="swatch media-short-story" aria-hidden="true"></span>Short story <span data-k="corpus.media.items.4.count" data-f="int">1</span></li>
+      </ul>
+
+      <h3 class="sub-heading">The story graph</h3>
+      <p>Each event is a node. A node records a subject–verb–object core, participants and location, world-state pre- and post-conditions (<span data-k="corpus.preConditions" data-f="int">1,459</span> and <span data-k="corpus.postConditions" data-f="int">1,688</span>), what the event teaches each character and the reader, and the questions it raises or resolves. Four edge types connect the nodes, and a machine check enforces each one’s rule:</p>
+      <ul class="edge-cards">
+      <li class="edge-card edge-causes">
+        <svg class="edge-glyph" viewBox="0 0 24 28" aria-hidden="true"><path d="M2 14h20v2H2zM18 12h2v2h-2zM18 16h2v2h-2zM16 10h2v2h-2zM16 18h2v2h-2z"/></svg>
+        <p class="edge-type">CAUSES</p>
+        <p class="edge-count" data-k="corpus.edgeTypes.0.count" data-f="int">1,330</p>
+        <p class="edge-rule" data-k="corpus.edgeTypes.0.rule">runs forward in chronology</p>
+      </li>
+      <li class="edge-card edge-foreshadows">
+        <svg class="edge-glyph" viewBox="0 0 24 28" aria-hidden="true"><path d="M2 14h4v2H2zM8 14h4v2H8zM14 14h6v2h-6zM18 12h2v2h-2zM18 16h2v2h-2zM16 10h2v2h-2zM16 18h2v2h-2z"/></svg>
+        <p class="edge-type">FORESHADOWS</p>
+        <p class="edge-count" data-k="corpus.edgeTypes.2.count" data-f="int">444</p>
+        <p class="edge-rule" data-k="corpus.edgeTypes.2.rule">runs forward in chronology</p>
+      </li>
+      <li class="edge-card edge-reveals">
+        <svg class="edge-glyph" viewBox="0 0 24 28" aria-hidden="true"><path d="M4 14h18v2H4zM4 12h2v2H4zM4 16h2v2H4zM6 10h2v2H6zM6 18h2v2H6z"/></svg>
+        <p class="edge-type">REVEALS</p>
+        <p class="edge-count" data-k="corpus.edgeTypes.3.count" data-f="int">307</p>
+        <p class="edge-rule" data-k="corpus.edgeTypes.3.rule">runs forward in chronology and backward in the telling, backed by a matching question pair</p>
+      </li>
+      <li class="edge-card edge-shares">
+        <svg class="edge-glyph" viewBox="0 0 24 28" aria-hidden="true"><path d="M2 12h4v6H2zM18 12h4v6h-4zM6 14h12v2H6z"/></svg>
+        <p class="edge-type">SHARES</p>
+        <p class="edge-count" data-k="corpus.edgeTypes.1.count" data-f="int">1,397</p>
+        <p class="edge-rule" data-k="corpus.edgeTypes.1.rule">undirected; must name what its endpoints share</p>
+      </li>
+      </ul>
+      <div class="reveal-explainer">
+        <p>A <strong>reveal</strong> is an event that occurs before the event it explains in chronology but appears after it in the telling. A <strong>reader question</strong> is an uncertainty raised by one narrated event and resolved by a later one. In the overview animation, e<sub>12</sub> <span class="edge-word">REVEALS</span> e<sub>18</sub>: e<sub>18</sub> raises q<sub>1</sub> at told position 1 and e<sub>12</sub> resolves it at told position 18.</p>
+        <p class="small">Graphs given to models omit the fields that state chronological and telling positions. Evaluation uses anonymized twins that replace identifying details while keeping event counts and permutations; validation rejects source proper nouns and verbatim source sentences. The checks catch inconsistency, not misreading, so each label’s rationale is released with it.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Benchmark -->
+  <section id="benchmark" class="section game-window" aria-labelledby="benchmark-title">
+    <div class="window-title"><h2 id="benchmark-title">Five tasks, nineteen models</h2><span class="window-index">§4 · Table 1</span></div>
+    <div class="window-body">
+      <p class="lead">Two tasks ask a model to produce a telling, two ask it to read one, and the fifth asks for prose. Tables label the cued and free conditions <em>instructed</em> and <em>left alone</em>.</p>
+      <div class="task-table-wrap">
+        <table class="task-table">
+          <caption class="visually-hidden">The five tasks: input, output and score</caption>
+          <thead><tr><th scope="col">Task</th><th scope="col">Input</th><th scope="col">Output</th><th scope="col">Scored by</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><span class="task-id">T1</span><span class="task-name">Cued transposition</span><span class="task-alias">instructed</span></th><td data-label="in" data-k="tasks.items.0.input">Events in chronological order, plus a named shape and its definition</td><td data-label="out" data-k="tasks.items.0.output">A told order (a permutation of 1&nbsp;…&nbsp;n)</td><td data-label="scored by" data-k="tasks.items.0.score">Band hit and τ</td></tr>
+            <tr><th scope="row"><span class="task-id">T2</span><span class="task-name">Free transposition</span><span class="task-alias">left alone</span></th><td data-label="in" data-k="tasks.items.1.input">Events in chronological order, no shape instruction</td><td data-label="out" data-k="tasks.items.1.output">A told order (a permutation of 1&nbsp;…&nbsp;n)</td><td data-label="scored by" data-k="tasks.items.1.score">τ against chronology</td></tr>
+            <tr><th scope="row"><span class="task-id">T3</span><span class="task-name">Reconstruction</span></th><td data-label="in" data-k="tasks.items.2.input">Events in the gold telling order</td><td data-label="out" data-k="tasks.items.2.output">The underlying chronology</td><td data-label="scored by" data-k="tasks.items.2.score">τ against the gold chronology, and exact match</td></tr>
+            <tr><th scope="row"><span class="task-id">T4</span><span class="task-name">Classification</span></th><td data-label="in" data-k="tasks.items.3.input">Events in the gold telling order, with all seven definitions</td><td data-label="out" data-k="tasks.items.3.output">One of the seven labels</td><td data-label="scored by" data-k="tasks.items.3.score">Accuracy</td></tr>
+            <tr><th scope="row"><span class="task-id">T5</span><span class="task-name">Prose</span><span class="task-alias">T5a cued · T5b free</span></th><td data-label="in" data-k="tasks.items.4.input">Events in chronological order, with a named shape (T5a) or without one (T5b)</td><td data-label="out" data-k="tasks.items.4.output">A 550–750-word story</td><td data-label="scored by" data-k="tasks.items.4.score">Aligned back to the events, then pairwise preference by a judge and by readers</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small">Prompts list one self-contained event sentence per line and mark neither scene boundaries nor simultaneous events. Ordering tasks decode at temperature 0 with low reasoning effort; prose decodes at 0.7. The prose and graph studies use 14 works, two per shape.</p>
+
+      <dl class="metric-defs">
+        <div><dt>Kendall’s τ</dt><dd>Agreement between the telling and chronology, from +1 for chronological order to −1 for exact reversal. A telling counts as effectively chronological at τ ≥ 0.95.</dd></div>
+        <div><dt>LIS</dt><dd>The longest increasing subsequence over n: the largest share of events already told in chronological order, gaps allowed.</dd></div>
+        <div><dt>Band hit</dt><dd>Both τ and LIS fall inside the min–max range of the gold tellings for the target shape. It measures resemblance to published works, not the shape itself.</dd></div>
+      </dl>
+
+      <h3 class="sub-heading" id="leaderboard-title">Benchmark grid</h3>
+      <p class="table-note">Sorted by T1 band hit. <strong>Bold</strong>: best per column (in the τ columns, closest to the human <span data-k="headline.humanTau" data-f="d3">0.456</span>, descriptive only). <span class="open-tag">open</span> marks open-weights models. <span data-k="leaderboard.note">Band-hit intervals are about ±0.11, so adjacent ranks are not distinguishable.</span> Read T3 τ<sub>rec</sub> against the no-story floor (RQ2 below). Select a column heading to sort.</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-labelledby="leaderboard-title">
+        <table class="data-table leaderboard" data-leaderboard>
+          <caption class="visually-hidden">Table 1: benchmark grid for 19 models, with the pooled row, the human reference and the random baseline</caption>
+          <thead>
+            <tr class="group-row">
+              <th scope="col" rowspan="2" class="col-model"><button type="button" class="sort-btn" data-sort="model">Model</button></th>
+              <th scope="colgroup" colspan="2">T1 cued</th>
+              <th scope="colgroup" colspan="2">T3 reconstruct</th>
+              <th scope="col">T4</th>
+              <th scope="col">T2</th>
+            </tr>
+            <tr>
+              <th scope="col" aria-sort="descending"><button type="button" class="sort-btn" data-sort="t1Band">band hit</button></th>
+              <th scope="col"><button type="button" class="sort-btn" data-sort="t1Tau">τ</button></th>
+              <th scope="col"><button type="button" class="sort-btn" data-sort="t3TauRec">τ<sub>rec</sub></button></th>
+              <th scope="col"><button type="button" class="sort-btn" data-sort="t3Exact">exact</button></th>
+              <th scope="col"><button type="button" class="sort-btn" data-sort="t4Acc">acc.</button></th>
+              <th scope="col"><button type="button" class="sort-btn" data-sort="t2TauFree">τ free</button></th>
+            </tr>
+          </thead>
+          <tbody data-lb-body>
+            <tr data-row="gemini-3-1-pro" data-index="0"><th scope="row"><span class="model-name" data-k="leaderboard.rows.0.model">Gemini 3.1 Pro</span></th><td class="num best" data-k="leaderboard.rows.0.t1Band" data-f="d3" data-v="0.602"><strong>0.602</strong></td><td class="num" data-k="leaderboard.rows.0.t1Tau" data-f="d3" data-v="0.409">0.409</td><td class="num" data-k="leaderboard.rows.0.t3TauRec" data-f="d3" data-v="0.882">0.882</td><td class="num best" data-k="leaderboard.rows.0.t3Exact" data-f="d3" data-v="0.253"><strong>0.253</strong></td><td class="num" data-k="leaderboard.rows.0.t4Acc" data-f="d3" data-v="0.747">0.747</td><td class="num" data-k="leaderboard.rows.0.t2TauFree" data-f="d3" data-v="0.785">0.785</td></tr>
+            <tr data-row="gemini-3-6-flash" data-index="1"><th scope="row"><span class="model-name" data-k="leaderboard.rows.1.model">Gemini 3.6 Flash</span></th><td class="num" data-k="leaderboard.rows.1.t1Band" data-f="d3" data-v="0.578">0.578</td><td class="num best" data-k="leaderboard.rows.1.t1Tau" data-f="d3" data-v="0.456"><strong>0.456</strong></td><td class="num" data-k="leaderboard.rows.1.t3TauRec" data-f="d3" data-v="0.88">0.880</td><td class="num" data-k="leaderboard.rows.1.t3Exact" data-f="d3" data-v="0.217">0.217</td><td class="num best" data-k="leaderboard.rows.1.t4Acc" data-f="d3" data-v="0.795"><strong>0.795</strong></td><td class="num" data-k="leaderboard.rows.1.t2TauFree" data-f="d3" data-v="0.808">0.808</td></tr>
+            <tr data-row="claude-opus-5" data-index="2"><th scope="row"><span class="model-name" data-k="leaderboard.rows.2.model">Claude Opus 5</span></th><td class="num" data-k="leaderboard.rows.2.t1Band" data-f="d3" data-v="0.566">0.566</td><td class="num" data-k="leaderboard.rows.2.t1Tau" data-f="d3" data-v="0.416">0.416</td><td class="num" data-k="leaderboard.rows.2.t3TauRec" data-f="d3" data-v="0.886">0.886</td><td class="num" data-k="leaderboard.rows.2.t3Exact" data-f="d3" data-v="0.193">0.193</td><td class="num" data-k="leaderboard.rows.2.t4Acc" data-f="d3" data-v="0.614">0.614</td><td class="num" data-k="leaderboard.rows.2.t2TauFree" data-f="d3" data-v="0.615">0.615</td></tr>
+            <tr data-row="grok-4-5" data-index="3"><th scope="row"><span class="model-name" data-k="leaderboard.rows.3.model">Grok 4.5</span></th><td class="num" data-k="leaderboard.rows.3.t1Band" data-f="d3" data-v="0.566">0.566</td><td class="num" data-k="leaderboard.rows.3.t1Tau" data-f="d3" data-v="0.398">0.398</td><td class="num" data-k="leaderboard.rows.3.t3TauRec" data-f="d3" data-v="0.877">0.877</td><td class="num" data-k="leaderboard.rows.3.t3Exact" data-f="d3" data-v="0.205">0.205</td><td class="num" data-k="leaderboard.rows.3.t4Acc" data-f="d3" data-v="0.699">0.699</td><td class="num" data-k="leaderboard.rows.3.t2TauFree" data-f="d3" data-v="0.485">0.485</td></tr>
+            <tr data-row="gpt-5-6-luna" data-index="4"><th scope="row"><span class="model-name" data-k="leaderboard.rows.4.model">GPT-5.6 Luna</span></th><td class="num" data-k="leaderboard.rows.4.t1Band" data-f="d3" data-v="0.55">0.550</td><td class="num" data-k="leaderboard.rows.4.t1Tau" data-f="d3" data-v="0.413">0.413</td><td class="num" data-k="leaderboard.rows.4.t3TauRec" data-f="d3" data-v="0.815">0.815</td><td class="num" data-k="leaderboard.rows.4.t3Exact" data-f="d3" data-v="0.129">0.129</td><td class="num" data-k="leaderboard.rows.4.t4Acc" data-f="d3" data-v="0.486">0.486</td><td class="num" data-k="leaderboard.rows.4.t2TauFree" data-f="d3" data-v="0.664">0.664</td></tr>
+            <tr data-row="claude-sonnet-5" data-index="5"><th scope="row"><span class="model-name" data-k="leaderboard.rows.5.model">Claude Sonnet 5</span></th><td class="num" data-k="leaderboard.rows.5.t1Band" data-f="d3" data-v="0.542">0.542</td><td class="num" data-k="leaderboard.rows.5.t1Tau" data-f="d3" data-v="0.458">0.458</td><td class="num" data-k="leaderboard.rows.5.t3TauRec" data-f="d3" data-v="0.807">0.807</td><td class="num" data-k="leaderboard.rows.5.t3Exact" data-f="d3" data-v="0.072">0.072</td><td class="num" data-k="leaderboard.rows.5.t4Acc" data-f="d3" data-v="0.422">0.422</td><td class="num" data-k="leaderboard.rows.5.t2TauFree" data-f="d3" data-v="0.793">0.793</td></tr>
+            <tr data-row="glm-5-2" data-index="6"><th scope="row"><span class="model-name is-open" data-k="leaderboard.rows.6.model">GLM-5.2</span> <span class="open-tag">open</span></th><td class="num" data-k="leaderboard.rows.6.t1Band" data-f="d3" data-v="0.542">0.542</td><td class="num" data-k="leaderboard.rows.6.t1Tau" data-f="d3" data-v="0.472">0.472</td><td class="num" data-k="leaderboard.rows.6.t3TauRec" data-f="d3" data-v="0.868">0.868</td><td class="num" data-k="leaderboard.rows.6.t3Exact" data-f="d3" data-v="0.193">0.193</td><td class="num" data-k="leaderboard.rows.6.t4Acc" data-f="d3" data-v="0.602">0.602</td><td class="num" data-k="leaderboard.rows.6.t2TauFree" data-f="d3" data-v="0.708">0.708</td></tr>
+            <tr data-row="llama-4-maverick" data-index="7"><th scope="row"><span class="model-name is-open" data-k="leaderboard.rows.7.model">Llama 4 Maverick</span> <span class="open-tag">open</span></th><td class="num" data-k="leaderboard.rows.7.t1Band" data-f="d3" data-v="0.53">0.530</td><td class="num" data-k="leaderboard.rows.7.t1Tau" data-f="d3" data-v="0.408">0.408</td><td class="num" data-k="leaderboard.rows.7.t3TauRec" data-f="d3" data-v="0.59">0.590</td><td class="num" data-k="leaderboard.rows.7.t3Exact" data-f="d3" data-v="0">0.000</td><td class="num" data-k="leaderboard.rows.7.t4Acc" data-f="d3" data-v="0.301">0.301</td><td class="num best" data-k="leaderboard.rows.7.t2TauFree" data-f="d3" data-v="0.48"><strong>0.480</strong></td></tr>
+            <tr data-row="gpt-5-6-sol" data-index="8"><th scope="row"><span class="model-name" data-k="leaderboard.rows.8.model">GPT-5.6 Sol</span></th><td class="num" data-k="leaderboard.rows.8.t1Band" data-f="d3" data-v="0.506">0.506</td><td class="num" data-k="leaderboard.rows.8.t1Tau" data-f="d3" data-v="0.383">0.383</td><td class="num best" data-k="leaderboard.rows.8.t3TauRec" data-f="d3" data-v="0.892"><strong>0.892</strong></td><td class="num" data-k="leaderboard.rows.8.t3Exact" data-f="d3" data-v="0.243">0.243</td><td class="num" data-k="leaderboard.rows.8.t4Acc" data-f="d3" data-v="0.671">0.671</td><td class="num" data-k="leaderboard.rows.8.t2TauFree" data-f="d3" data-v="0.626">0.626</td></tr>
+            <tr data-row="nemotron-3-ultra" data-index="9"><th scope="row"><span class="model-name is-open" data-k="leaderboard.rows.9.model">Nemotron 3 Ultra</span> <span class="open-tag">open</span></th><td class="num" data-k="leaderboard.rows.9.t1Band" data-f="d3" data-v="0.494">0.494</td><td class="num" data-k="leaderboard.rows.9.t1Tau" data-f="d3" data-v="0.484">0.484</td><td class="num" data-k="leaderboard.rows.9.t3TauRec" data-f="d3" data-v="0.409">0.409</td><td class="num" data-k="leaderboard.rows.9.t3Exact" data-f="d3" data-v="0.06">0.060</td><td class="num" data-k="leaderboard.rows.9.t4Acc" data-f="d3" data-v="0.506">0.506</td><td class="num" data-k="leaderboard.rows.9.t2TauFree" data-f="d3" data-v="0.562">0.562</td></tr>
+            <tr data-row="deepseek-v4-pro" data-index="10"><th scope="row"><span class="model-name is-open" data-k="leaderboard.rows.10.model">DeepSeek V4 Pro</span> <span class="open-tag">open</span></th><td class="num" data-k="leaderboard.rows.10.t1Band" data-f="d3" data-v="0.47">0.470</td><td class="num" data-k="leaderboard.rows.10.t1Tau" data-f="d3" data-v="0.442">0.442</td><td class="num" data-k="leaderboard.rows.10.t3TauRec" data-f="d3" data-v="0.519">0.519</td><td class="num" data-k="leaderboard.rows.10.t3Exact" data-f="d3" data-v="0.06">0.060</td><td class="num" data-k="leaderboard.rows.10.t4Acc" data-f="d3" data-v="0.47">0.470</td><td class="num" data-k="leaderboard.rows.10.t2TauFree" data-f="d3" data-v="0.678">0.678</td></tr>
+            <tr data-row="gpt-5-6-terra" data-index="11"><th scope="row"><span class="model-name" data-k="leaderboard.rows.11.model">GPT-5.6 Terra</span></th><td class="num" data-k="leaderboard.rows.11.t1Band" data-f="d3" data-v="0.438">0.438</td><td class="num" data-k="leaderboard.rows.11.t1Tau" data-f="d3" data-v="0.41">0.410</td><td class="num" data-k="leaderboard.rows.11.t3TauRec" data-f="d3" data-v="0.882">0.882</td><td class="num" data-k="leaderboard.rows.11.t3Exact" data-f="d3" data-v="0.171">0.171</td><td class="num" data-k="leaderboard.rows.11.t4Acc" data-f="d3" data-v="0.648">0.648</td><td class="num" data-k="leaderboard.rows.11.t2TauFree" data-f="d3" data-v="0.531">0.531</td></tr>
+            <tr data-row="claude-haiku-4-5" data-index="12"><th scope="row"><span class="model-name" data-k="leaderboard.rows.12.model">Claude Haiku 4.5</span></th><td class="num" data-k="leaderboard.rows.12.t1Band" data-f="d3" data-v="0.434">0.434</td><td class="num" data-k="leaderboard.rows.12.t1Tau" data-f="d3" data-v="0.376">0.376</td><td class="num" data-k="leaderboard.rows.12.t3TauRec" data-f="d3" data-v="0.799">0.799</td><td class="num" data-k="leaderboard.rows.12.t3Exact" data-f="d3" data-v="0.108">0.108</td><td class="num" data-k="leaderboard.rows.12.t4Acc" data-f="d3" data-v="0.47">0.470</td><td class="num" data-k="leaderboard.rows.12.t2TauFree" data-f="d3" data-v="0.681">0.681</td></tr>
+            <tr data-row="gpt-oss-120b" data-index="13"><th scope="row"><span class="model-name is-open" data-k="leaderboard.rows.13.model">gpt-oss-120b</span> <span class="open-tag">open</span></th><td class="num" data-k="leaderboard.rows.13.t1Band" data-f="d3" data-v="0.434">0.434</td><td class="num" data-k="leaderboard.rows.13.t1Tau" data-f="d3" data-v="0.218">0.218</td><td class="num" data-k="leaderboard.rows.13.t3TauRec" data-f="d3" data-v="0.675">0.675</td><td class="num" data-k="leaderboard.rows.13.t3Exact" data-f="d3" data-v="0.024">0.024</td><td class="num" data-k="leaderboard.rows.13.t4Acc" data-f="d3" data-v="0.277">0.277</td><td class="num" data-k="leaderboard.rows.13.t2TauFree" data-f="d3" data-v="0.568">0.568</td></tr>
+            <tr data-row="qwen3-235b-a22b" data-index="14"><th scope="row"><span class="model-name is-open" data-k="leaderboard.rows.14.model">Qwen3-235B-A22B</span> <span class="open-tag">open</span></th><td class="num" data-k="leaderboard.rows.14.t1Band" data-f="d3" data-v="0.41">0.410</td><td class="num" data-k="leaderboard.rows.14.t1Tau" data-f="d3" data-v="0.314">0.314</td><td class="num" data-k="leaderboard.rows.14.t3TauRec" data-f="d3" data-v="0.683">0.683</td><td class="num" data-k="leaderboard.rows.14.t3Exact" data-f="d3" data-v="0.012">0.012</td><td class="num" data-k="leaderboard.rows.14.t4Acc" data-f="d3" data-v="0.41">0.410</td><td class="num" data-k="leaderboard.rows.14.t2TauFree" data-f="d3" data-v="0.532">0.532</td></tr>
+            <tr data-row="mistral-small-3-2" data-index="15"><th scope="row"><span class="model-name is-open" data-k="leaderboard.rows.15.model">Mistral Small 3.2</span> <span class="open-tag">open</span></th><td class="num" data-k="leaderboard.rows.15.t1Band" data-f="d3" data-v="0.398">0.398</td><td class="num" data-k="leaderboard.rows.15.t1Tau" data-f="d3" data-v="0.311">0.311</td><td class="num" data-k="leaderboard.rows.15.t3TauRec" data-f="d3" data-v="0.598">0.598</td><td class="num" data-k="leaderboard.rows.15.t3Exact" data-f="d3" data-v="0.024">0.024</td><td class="num" data-k="leaderboard.rows.15.t4Acc" data-f="d3" data-v="0.313">0.313</td><td class="num" data-k="leaderboard.rows.15.t2TauFree" data-f="d3" data-v="0.61">0.610</td></tr>
+            <tr data-row="deepseek-v4-flash" data-index="16"><th scope="row"><span class="model-name is-open" data-k="leaderboard.rows.16.model">DeepSeek V4 Flash</span> <span class="open-tag">open</span></th><td class="num" data-k="leaderboard.rows.16.t1Band" data-f="d3" data-v="0.386">0.386</td><td class="num" data-k="leaderboard.rows.16.t1Tau" data-f="d3" data-v="0.447">0.447</td><td class="num" data-k="leaderboard.rows.16.t3TauRec" data-f="d3" data-v="0.684">0.684</td><td class="num" data-k="leaderboard.rows.16.t3Exact" data-f="d3" data-v="0.108">0.108</td><td class="num" data-k="leaderboard.rows.16.t4Acc" data-f="d3" data-v="0.41">0.410</td><td class="num" data-k="leaderboard.rows.16.t2TauFree" data-f="d3" data-v="0.604">0.604</td></tr>
+            <tr data-row="kimi-k2-0905" data-index="17"><th scope="row"><span class="model-name is-open" data-k="leaderboard.rows.17.model">Kimi K2 0905</span> <span class="open-tag">open</span></th><td class="num" data-k="leaderboard.rows.17.t1Band" data-f="d3" data-v="0.361">0.361</td><td class="num" data-k="leaderboard.rows.17.t1Tau" data-f="d3" data-v="0.421">0.421</td><td class="num" data-k="leaderboard.rows.17.t3TauRec" data-f="d3" data-v="0.761">0.761</td><td class="num" data-k="leaderboard.rows.17.t3Exact" data-f="d3" data-v="0.06">0.060</td><td class="num" data-k="leaderboard.rows.17.t4Acc" data-f="d3" data-v="0.422">0.422</td><td class="num" data-k="leaderboard.rows.17.t2TauFree" data-f="d3" data-v="0.76">0.760</td></tr>
+            <tr data-row="llama-3-3-70b" data-index="18"><th scope="row"><span class="model-name is-open" data-k="leaderboard.rows.18.model">Llama 3.3 70B</span> <span class="open-tag">open</span></th><td class="num" data-k="leaderboard.rows.18.t1Band" data-f="d3" data-v="0.289">0.289</td><td class="num" data-k="leaderboard.rows.18.t1Tau" data-f="d3" data-v="0.108">0.108</td><td class="num" data-k="leaderboard.rows.18.t3TauRec" data-f="d3" data-v="0.672">0.672</td><td class="num" data-k="leaderboard.rows.18.t3Exact" data-f="d3" data-v="0.012">0.012</td><td class="num" data-k="leaderboard.rows.18.t4Acc" data-f="d3" data-v="0.313">0.313</td><td class="num" data-k="leaderboard.rows.18.t2TauFree" data-f="d3" data-v="0.614">0.614</td></tr>
+          </tbody>
+          <tbody class="reference-rows">
+            <tr class="ref-row ref-pooled"><th scope="row"><em data-k="leaderboard.reference.0.model">pooled</em></th><td class="num"><span data-k="leaderboard.reference.0.t1Band" data-f="d3">0.479</span></td><td class="num"><span data-k="leaderboard.reference.0.t1Tau" data-f="d3">0.386</span></td><td class="num"><span data-k="leaderboard.reference.0.t3TauRec" data-f="d3">0.743</span></td><td class="num"><span data-k="leaderboard.reference.0.t3Exact" data-f="d3">0.111</span></td><td class="num"><span data-k="leaderboard.reference.0.t4Acc" data-f="d3">0.502</span></td><td class="num"><span data-k="leaderboard.reference.0.t2TauFree" data-f="d3">0.638</span></td></tr>
+            <tr class="ref-row ref-human"><th scope="row"><em data-k="leaderboard.reference.1.model">[reference] human</em></th><td class="num"><span data-k="leaderboard.reference.1.t1Band" data-f="d3">1.000</span><span aria-label="by definition">†</span></td><td class="num"><span data-k="leaderboard.reference.1.t1Tau" data-f="d3">0.456</span></td><td class="na">—</td><td class="na">—</td><td class="na">—</td><td class="num"><span data-k="leaderboard.reference.1.t2TauFree" data-f="d3">0.456</span></td></tr>
+            <tr class="ref-row ref-random"><th scope="row"><em data-k="leaderboard.reference.2.model">[baseline] random</em></th><td class="num"><span data-k="leaderboard.reference.2.t1Band" data-f="d3">0.084</span></td><td class="num"><span data-k="leaderboard.reference.2.t1Tau" data-f="d3">0.015</span></td><td class="na">—</td><td class="na">—</td><td class="num"><span data-k="leaderboard.reference.2.t4Acc" data-f="d3">0.143</span></td><td class="num"><span data-k="leaderboard.reference.2.t2TauFree" data-f="d3">0.015</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small">Human band hit (†) is 1 by definition. <span data-k="leaderboard.pooling">Pooled is the mean over valid outputs of the 19 models (make_tables.py), so each row weighs by its valid count; the GPT-5.6 models refuse some works.</span> The three GPT-5.6 models refuse 12.7–13.0% of attempts at the dark-literary end of the corpus.</p>
+    </div>
+  </section>
+
+  <!-- 7. Findings -->
+  <section id="findings" class="section game-window" aria-labelledby="findings-title">
+    <div class="window-title"><h2 id="findings-title">Findings</h2><span class="window-index">RQ1–RQ5 · Table 3</span></div>
+    <div class="window-body findings">
+      <p class="lead">Five research questions. Each entry gives the paper’s one-line answer, a redrawn chart and the caveat the paper attaches to it. The reader study revised RQ3 and RQ5.</p>
+
+      <details class="finding" open>
+        <summary><span class="rq">RQ1</span><span class="rq-name">Controllability</span><span class="rq-claim">Every model tells a story more chronologically than its published telling; cued for a shape, band hit is 47.9%, and the two misses are the literal solutions of rules stated on events.</span></summary>
+        <div class="finding-body">
+          <div class="mini-stats">
+            <p><span class="mini-value" data-k="rq1.freeTau" data-f="d3">0.638</span><span class="mini-label">pooled T2 τ, left alone (human <span data-k="headline.humanTau" data-f="d3">0.456</span>)</span></p>
+            <p><span class="mini-value" data-k="rq1.pooledBandHit" data-f="p1">47.9%</span><span class="mini-label">T1 band hit when cued (random <span data-k="rq1.randomBandHit" data-f="p1">8.4%</span>)</span></p>
+            <p><span class="mini-value" data-k="rq1.retroExactReversal" data-f="p1">93.6%</span><span class="mini-label">of retrograde outputs are the exact reversal</span></p>
+            <p><span class="mini-value" data-k="rq1.chronExactIdentity" data-f="p1">88.9%</span><span class="mini-label">of chronicle outputs are the exact identity</span></p>
+          </div>
+          <figure class="chart-figure">
+            <figcaption class="chart-title">T1 band hit by requested shape, pooled over models</figcaption>
+            <div class="chart" data-chart="shape-bars"></div>
+            <details class="table-view"><summary>Table view (Table 5)</summary><table class="data-table compact">
+<thead><tr><th scope="col">Requested shape</th><th scope="col">band hit</th><th scope="col">model τ</th><th scope="col">human τ</th><th scope="col">agree gold</th><th scope="col">exact form</th></tr></thead>
+<tbody>
+<tr><th scope="row">Zigzag</th><td class="num" data-k="shapes.items.3.t1.bandHit" data-f="d3">0.826</td><td class="num" data-k="shapes.items.3.t1.modelTau" data-f="d3">0.407</td><td class="num" data-k="shapes.items.3.t1.humanTau" data-f="d3">0.423</td><td class="num" data-k="shapes.items.3.t1.agree" data-f="d3">0.396</td><td class="na num">—</td></tr>
+<tr><th scope="row">Prolepsis</th><td class="num" data-k="shapes.items.2.t1.bandHit" data-f="d3">0.721</td><td class="num" data-k="shapes.items.2.t1.modelTau" data-f="d3">0.671</td><td class="num" data-k="shapes.items.2.t1.humanTau" data-f="d3">0.755</td><td class="num" data-k="shapes.items.2.t1.agree" data-f="d3">0.635</td><td class="na num">—</td></tr>
+<tr><th scope="row">Analepsis</th><td class="num" data-k="shapes.items.1.t1.bandHit" data-f="d3">0.684</td><td class="num" data-k="shapes.items.1.t1.modelTau" data-f="d3">0.637</td><td class="num" data-k="shapes.items.1.t1.humanTau" data-f="d3">0.696</td><td class="num" data-k="shapes.items.1.t1.agree" data-f="d3">0.552</td><td class="na num">—</td></tr>
+<tr><th scope="row">Syllepsis</th><td class="num" data-k="shapes.items.4.t1.bandHit" data-f="d3">0.507</td><td class="num" data-k="shapes.items.4.t1.modelTau" data-f="d3">0.516</td><td class="num" data-k="shapes.items.4.t1.humanTau" data-f="d3">0.526</td><td class="num" data-k="shapes.items.4.t1.agree" data-f="d3">0.355</td><td class="na num">—</td></tr>
+<tr><th scope="row">Achrony</th><td class="num" data-k="shapes.items.6.t1.bandHit" data-f="d3">0.300</td><td class="num" data-k="shapes.items.6.t1.modelTau" data-f="d3">0.171</td><td class="num" data-k="shapes.items.6.t1.humanTau" data-f="d3">0.363</td><td class="num" data-k="shapes.items.6.t1.agree" data-f="d3">0.220</td><td class="na num">—</td></tr>
+<tr><th scope="row">Chronicle</th><td class="num" data-k="shapes.items.0.t1.bandHit" data-f="d3">0.053</td><td class="num" data-k="shapes.items.0.t1.modelTau" data-f="d3">0.957</td><td class="num" data-k="shapes.items.0.t1.humanTau" data-f="d3">0.912</td><td class="num" data-k="shapes.items.0.t1.agree" data-f="d3">0.878</td><td class="num" data-k="shapes.items.0.t1.exactForm" data-f="d3">0.889</td></tr>
+<tr><th scope="row">Retrograde</th><td class="num" data-k="shapes.items.5.t1.bandHit" data-f="d3">0.011</td><td class="num" data-k="shapes.items.5.t1.modelTau" data-f="d3">−0.973</td><td class="num" data-k="shapes.items.5.t1.humanTau" data-f="d3">−0.781</td><td class="num" data-k="shapes.items.5.t1.agree" data-f="d3">0.764</td><td class="num" data-k="shapes.items.5.t1.exactForm" data-f="d3">0.936</td></tr>
+</tbody></table></details>
+          </figure>
+          <p>Format is not the bottleneck: <span data-k="rq1.validRate" data-f="p1">99.5%</span> of outputs are valid permutations. The prompts state <span class="sc">Retrograde</span> and <span class="sc">Chronicle</span> as rules over event ranks, and on events each rule has exactly one solution, the reversal or the identity; no corpus work is either. Reversing the scenes and playing each forward, which is what published reverse chronology does, hits the retrograde band for <span data-k="rq1.sceneReversalRetroHits" data-f="int">6</span> of ten works. Without the two rule shapes, pooled band hit is <span data-k="rq1.bandHitWithoutRuleShapes" data-f="p1">62.1%</span>. The paper calls this <em>over-compliance</em> and reads it as a specification effect. In prose the free telling is more chronological still (τ = <span data-k="rq1.proseFreeTau" data-f="d3">0.989</span>).</p>
+          <aside class="caveat"><p class="caveat-title">What to be careful about</p><p data-k="summary.rows.0.careful">The reference works were chosen for nonlinearity, both free tasks list events chronologically, and no prompt marks scenes. Band hit is negatively associated with reader preference, partly through condition.</p></aside>
+        </div>
+      </details>
+
+      <details class="finding">
+        <summary><span class="rq">RQ2</span><span class="rq-name">Task validity</span><span class="rq-claim">Reconstruction reaches τ<sub>rec</sub> = 0.743; naming the shape reaches 50.2%, with analepsis a sink.</span></summary>
+        <div class="finding-body">
+          <div class="mini-stats">
+            <p><span class="mini-value" data-k="rq2.pooledTauRec" data-f="d3">0.743</span><span class="mini-label">pooled T3 τ<sub>rec</sub></span></p>
+            <p><span class="mini-value" data-k="rq2.floorShareTau" data-f="p1">96.1%</span><span class="mini-label">of that τ survives deleting the telling</span></p>
+            <p><span class="mini-value" data-k="rq2.floorShareExact" data-f="p1">42.1%</span><span class="mini-label">of exact reconstructions survive it</span></p>
+            <p><span class="mini-value" data-k="rq2.classify.pooled" data-f="p1">50.2%</span><span class="mini-label">T4 accuracy (chance <span data-k="rq2.classify.chance" data-f="p1">14.3%</span>)</span></p>
+          </div>
+          <figure class="chart-figure">
+            <figcaption class="chart-title">The no-story floor: three strong solvers, with and without the telling</figcaption>
+            <div class="chart" data-chart="floor"></div>
+            <details class="table-view"><summary>Table view (Table 7)</summary><table class="data-table compact">
+<thead><tr><th scope="col">Event list</th><th scope="col">Telling</th><th scope="col">τ</th><th scope="col">exact</th></tr></thead>
+<tbody>
+<tr><td>as written</td><td>shuffled, none</td><td class="num" data-k="rq2.dedate.rows.0.tau" data-f="d3">0.849</td><td class="num" data-k="rq2.dedate.rows.0.exact" data-f="d3">0.085</td></tr>
+<tr><td>as written</td><td>gold told order</td><td class="num" data-k="rq2.dedate.rows.1.tau" data-f="d3">0.884</td><td class="num" data-k="rq2.dedate.rows.1.exact" data-f="d3">0.202</td></tr>
+<tr><td>de-dated</td><td>shuffled, none</td><td class="num" data-k="rq2.dedate.rows.2.tau" data-f="d3">0.844</td><td class="num" data-k="rq2.dedate.rows.2.exact" data-f="d3">0.096</td></tr>
+<tr><td>de-dated</td><td>gold told order</td><td class="num" data-k="rq2.dedate.rows.3.tau" data-f="d3">0.878</td><td class="num" data-k="rq2.dedate.rows.3.exact" data-f="d3">0.181</td></tr>
+</tbody></table></details>
+          </figure>
+          <p>Given the events in random order, three strong solvers reach τ = 0.849, against 0.884 with the telling, so the telling is worth +<span data-k="rq2.tellingWorth" data-f="d3">0.035</span> τ. Only <span data-k="rq2.modelsAboveFloor" data-f="int">7</span> of 19 models clear that floor. Rewriting the events to remove dates cut explicit anchors from <span data-k="rq2.anchorsBefore" data-f="p1">6.3%</span> of events to <span data-k="rq2.anchorsAfter" data-f="p1">0.7%</span> and moved the floor by only −0.005. Exact match is the more revealing score: the telling lifts it from 8.5% to 20.2%.</p>
+          <figure class="chart-figure">
+            <figcaption class="chart-title">T4 confusion, row-normalized and pooled over 19 models</figcaption>
+            <div class="chart" data-chart="confusion"></div>
+            <details class="table-view"><summary>Table view (Figure 13)</summary><table class="data-table compact">
+<thead><tr><th scope="col">gold ↓ / predicted →</th><th scope="col">Achrony</th><th scope="col">Analepsis</th><th scope="col">Chronicle</th><th scope="col">Prolepsis</th><th scope="col">Retrograde</th><th scope="col">Syllepsis</th><th scope="col">Zigzag</th></tr></thead>
+<tbody>
+<tr><th scope="row">Achrony</th><td class="num" data-k="rq2.confusion.matrix.0.0" data-f="d2">0.07</td><td class="num" data-k="rq2.confusion.matrix.0.1" data-f="d2">0.46</td><td class="num" data-k="rq2.confusion.matrix.0.2" data-f="d2">0.04</td><td class="num" data-k="rq2.confusion.matrix.0.3" data-f="d2">0.10</td><td class="num" data-k="rq2.confusion.matrix.0.4" data-f="d2">0.00</td><td class="num" data-k="rq2.confusion.matrix.0.5" data-f="d2">0.24</td><td class="num" data-k="rq2.confusion.matrix.0.6" data-f="d2">0.09</td></tr>
+<tr><th scope="row">Analepsis</th><td class="num" data-k="rq2.confusion.matrix.1.0" data-f="d2">0.01</td><td class="num" data-k="rq2.confusion.matrix.1.1" data-f="d2">0.66</td><td class="num" data-k="rq2.confusion.matrix.1.2" data-f="d2">0.07</td><td class="num" data-k="rq2.confusion.matrix.1.3" data-f="d2">0.12</td><td class="num" data-k="rq2.confusion.matrix.1.4" data-f="d2">0.00</td><td class="num" data-k="rq2.confusion.matrix.1.5" data-f="d2">0.11</td><td class="num" data-k="rq2.confusion.matrix.1.6" data-f="d2">0.04</td></tr>
+<tr><th scope="row">Chronicle</th><td class="num" data-k="rq2.confusion.matrix.2.0" data-f="d2">0.01</td><td class="num" data-k="rq2.confusion.matrix.2.1" data-f="d2">0.13</td><td class="num" data-k="rq2.confusion.matrix.2.2" data-f="d2">0.64</td><td class="num" data-k="rq2.confusion.matrix.2.3" data-f="d2">0.01</td><td class="num" data-k="rq2.confusion.matrix.2.4" data-f="d2">0.00</td><td class="num" data-k="rq2.confusion.matrix.2.5" data-f="d2">0.15</td><td class="num" data-k="rq2.confusion.matrix.2.6" data-f="d2">0.06</td></tr>
+<tr><th scope="row">Prolepsis</th><td class="num" data-k="rq2.confusion.matrix.3.0" data-f="d2">0.00</td><td class="num" data-k="rq2.confusion.matrix.3.1" data-f="d2">0.29</td><td class="num" data-k="rq2.confusion.matrix.3.2" data-f="d2">0.11</td><td class="num" data-k="rq2.confusion.matrix.3.3" data-f="d2">0.56</td><td class="num" data-k="rq2.confusion.matrix.3.4" data-f="d2">0.00</td><td class="num" data-k="rq2.confusion.matrix.3.5" data-f="d2">0.01</td><td class="num" data-k="rq2.confusion.matrix.3.6" data-f="d2">0.03</td></tr>
+<tr><th scope="row">Retrograde</th><td class="num" data-k="rq2.confusion.matrix.4.0" data-f="d2">0.01</td><td class="num" data-k="rq2.confusion.matrix.4.1" data-f="d2">0.30</td><td class="num" data-k="rq2.confusion.matrix.4.2" data-f="d2">0.03</td><td class="num" data-k="rq2.confusion.matrix.4.3" data-f="d2">0.07</td><td class="num" data-k="rq2.confusion.matrix.4.4" data-f="d2">0.48</td><td class="num" data-k="rq2.confusion.matrix.4.5" data-f="d2">0.08</td><td class="num" data-k="rq2.confusion.matrix.4.6" data-f="d2">0.03</td></tr>
+<tr><th scope="row">Syllepsis</th><td class="num" data-k="rq2.confusion.matrix.5.0" data-f="d2">0.00</td><td class="num" data-k="rq2.confusion.matrix.5.1" data-f="d2">0.33</td><td class="num" data-k="rq2.confusion.matrix.5.2" data-f="d2">0.05</td><td class="num" data-k="rq2.confusion.matrix.5.3" data-f="d2">0.03</td><td class="num" data-k="rq2.confusion.matrix.5.4" data-f="d2">0.01</td><td class="num" data-k="rq2.confusion.matrix.5.5" data-f="d2">0.49</td><td class="num" data-k="rq2.confusion.matrix.5.6" data-f="d2">0.09</td></tr>
+<tr><th scope="row">Zigzag</th><td class="num" data-k="rq2.confusion.matrix.6.0" data-f="d2">0.00</td><td class="num" data-k="rq2.confusion.matrix.6.1" data-f="d2">0.33</td><td class="num" data-k="rq2.confusion.matrix.6.2" data-f="d2">0.05</td><td class="num" data-k="rq2.confusion.matrix.6.3" data-f="d2">0.11</td><td class="num" data-k="rq2.confusion.matrix.6.4" data-f="d2">0.01</td><td class="num" data-k="rq2.confusion.matrix.6.5" data-f="d2">0.11</td><td class="num" data-k="rq2.confusion.matrix.6.6" data-f="d2">0.40</td></tr>
+</tbody></table></details>
+          </figure>
+          <p>Five of the six other classes send 29–46% of their items to <span class="sc">Analepsis</span>, so “a dominant timeline with flashbacks” is the models’ fallback. <span class="sc">Achrony</span> is recognized <span data-k="rq2.classify.achronySelf" data-f="p1">7.1%</span> of the time, partly because the definition the models saw describes unrecoverable chronology, which the corpus excludes. Across models, naming a shape predicts both other abilities (ρ = <span data-k="rq2.classify.rhoClassBand" data-f="d3">0.717</span> with T1 band hit, <span data-k="rq2.classify.rhoClassRec" data-f="d3">0.747</span> with T3 τ<sub>rec</sub>), while those two barely predict each other (ρ = <span data-k="rq2.classify.rhoWriteRead" data-f="d3">0.088</span>).</p>
+          <aside class="caveat"><p class="caveat-title">What to be careful about</p><p data-k="summary.rows.1.careful">96.1% of that τ is reachable with the story deleted (by entailment or prior knowledge of the work), and readers reach only 0.537: report the floor, prefer exact match.</p></aside>
+        </div>
+      </details>
+
+      <details class="finding">
+        <summary><span class="rq">RQ3</span><span class="rq-name">Representation</span><span class="rq-claim">The graph raises compliance from 41.1% to 51.8%, almost all in one model, and readers prefer it to a supplied told order 72% of the time.</span><span class="tag tag-headline revised-tag">revised by readers</span></summary>
+        <div class="finding-body">
+          <p>Every condition uses the cued prose prompt (T5a), so the requested shape and its definition are always present. <code>G0</code> adds nothing, <code>G1</code> adds the full story graph without its position fields, and <code>G2</code> supplies the gold told order and requires the story to follow it. Five ablations each remove one annotation group from <code>G1</code>.</p>
+          <figure class="chart-figure">
+            <figcaption class="chart-title">The scaffolding study: band hit by condition</figcaption>
+            <div class="chart" data-chart="graph-study"></div>
+            <details class="table-view"><summary>Table view (Table 8)</summary><table class="data-table compact">
+<thead><tr><th scope="col">Condition</th><th scope="col">τ</th><th scope="col">band hit</th><th scope="col">agree</th><th scope="col">PDS</th></tr></thead>
+<tbody>
+<tr><th scope="row"><code>G0</code> no graph</th><td class="num" data-k="rq3.conditions.rows.0.tau" data-f="d3">0.362</td><td class="num" data-k="rq3.conditions.rows.0.bandHit" data-f="d3">0.411</td><td class="num" data-k="rq3.conditions.rows.0.agree" data-f="d3">0.554</td><td class="num" data-k="rq3.conditions.rows.0.pds" data-f="d2">3.85</td></tr>
+<tr><th scope="row"><code>G1</code> full graph</th><td class="num" data-k="rq3.conditions.rows.1.tau" data-f="d3">0.415</td><td class="num" data-k="rq3.conditions.rows.1.bandHit" data-f="d3">0.518</td><td class="num" data-k="rq3.conditions.rows.1.agree" data-f="d3">0.554</td><td class="num" data-k="rq3.conditions.rows.1.pds" data-f="d2">4.10</td></tr>
+<tr><th scope="row"><code>G2</code> told order (oracle)</th><td class="num" data-k="rq3.conditions.rows.2.tau" data-f="d3">0.333</td><td class="num" data-k="rq3.conditions.rows.2.bandHit" data-f="d3">0.982</td><td class="num" data-k="rq3.conditions.rows.2.agree" data-f="d3">0.998</td><td class="num" data-k="rq3.conditions.rows.2.pds" data-f="d2">3.94</td></tr>
+<tr class="ablation"><th scope="row">− CAUSES / FORESHADOWS</th><td class="num" data-k="rq3.conditions.rows.3.tau" data-f="d3">0.417</td><td class="num" data-k="rq3.conditions.rows.3.bandHit" data-f="d3">0.429</td><td class="num" data-k="rq3.conditions.rows.3.agree" data-f="d3">0.557</td><td class="num" data-k="rq3.conditions.rows.3.pds" data-f="d2">4.18</td></tr>
+<tr class="ablation"><th scope="row">− pre / post</th><td class="num" data-k="rq3.conditions.rows.4.tau" data-f="d3">0.440</td><td class="num" data-k="rq3.conditions.rows.4.bandHit" data-f="d3">0.464</td><td class="num" data-k="rq3.conditions.rows.4.agree" data-f="d3">0.557</td><td class="num" data-k="rq3.conditions.rows.4.pds" data-f="d2">4.14</td></tr>
+<tr class="ablation"><th scope="row">− learns</th><td class="num" data-k="rq3.conditions.rows.5.tau" data-f="d3">0.399</td><td class="num" data-k="rq3.conditions.rows.5.bandHit" data-f="d3">0.464</td><td class="num" data-k="rq3.conditions.rows.5.agree" data-f="d3">0.561</td><td class="num" data-k="rq3.conditions.rows.5.pds" data-f="d2">4.05</td></tr>
+<tr class="ablation"><th scope="row">− questions / REVEALS</th><td class="num" data-k="rq3.conditions.rows.6.tau" data-f="d3">0.383</td><td class="num" data-k="rq3.conditions.rows.6.bandHit" data-f="d3">0.464</td><td class="num" data-k="rq3.conditions.rows.6.agree" data-f="d3">0.502</td><td class="num" data-k="rq3.conditions.rows.6.pds" data-f="d2">3.99</td></tr>
+<tr class="ablation"><th scope="row">− participants / location</th><td class="num" data-k="rq3.conditions.rows.7.tau" data-f="d3">0.409</td><td class="num" data-k="rq3.conditions.rows.7.bandHit" data-f="d3">0.500</td><td class="num" data-k="rq3.conditions.rows.7.agree" data-f="d3">0.526</td><td class="num" data-k="rq3.conditions.rows.7.pds" data-f="d2">4.04</td></tr>
+</tbody></table></details>
+          </figure>
+          <p>Under the judge, <code>G1</code> beats <code>G0</code> <span data-k="rq3.judgeG1vsG0.wins" data-f="int">31</span>–<span data-k="rq3.judgeG1vsG0.losses" data-f="int">14</span> with <span data-k="rq3.judgeG1vsG0.ties" data-f="int">11</span> ties (p = 0.016), but the gain disappears after adjusting for length. Against the told order the judge splits <span data-k="rq3.judgeG1vsG2.wins" data-f="int">23</span>–<span data-k="rq3.judgeG1vsG2.losses" data-f="int">22</span>, while readers choose <code>G1</code> in 72% of decisive verdicts; at the reader rate, an even outcome over 45 judgments has probability 0.0022. <span data-k="rq3.bestModel">Claude Sonnet 5</span> supplies almost all of the structural gain (+0.250 band hit; Gemini 3.6 Flash −0.035; the other two none), and agreement with the gold telling does not move (0.554 to 0.554). The <span class="edge-word">REVEALS</span> edges fix only <span data-k="rq3.pinnedPct" data-f="p1">5.5%</span> of told-order pairs.</p>
+          <aside class="caveat"><p class="caveat-title">What to be careful about</p><p data-k="summary.rows.2.careful">The judge saw no effect, and the two prompts differ in more than the graph. The edge over an event list is a length effect, and readers prefer every one-layer ablation to the full graph.</p></aside>
+        </div>
+      </details>
+
+      <details class="finding">
+        <summary><span class="rq">RQ4</span><span class="rq-name">Cost of control</span><span class="rq-claim">Cued tellings lose to a model’s own free telling under the judge (68–19) and readers (76%), even for chronicle. As scored, the reveal comes after fewer than three events in 21.4% of stories.</span></summary>
+        <div class="finding-body">
+          <figure class="chart-figure">
+            <figcaption class="chart-title">Instructed against left alone: who wins the pair</figcaption>
+            <div class="chart" data-chart="cued-split"></div>
+            <details class="table-view"><summary>Table view</summary><table class="data-table compact">
+<thead><tr><th scope="col">Instrument</th><th scope="col">instructed wins</th><th scope="col">ties</th><th scope="col">left alone wins</th></tr></thead>
+<tbody>
+<tr><th scope="row">Judge (Gemini 3.1 Pro), <span data-k="rq4.judge.pairs" data-f="int">111</span> pairs</th><td class="num" data-k="rq4.judge.cued" data-f="int">19</td><td class="num" data-k="rq4.judge.ties" data-f="int">24</td><td class="num" data-k="rq4.judge.free" data-f="int">68</td></tr>
+<tr><th scope="row">Readers</th><td class="num" data-k="rq4.readers.cued" data-f="int">64</td><td class="num" data-k="rq4.readers.ties" data-f="int">30</td><td class="num" data-k="rq4.readers.free" data-f="int">200</td></tr>
+</tbody></table></details>
+          </figure>
+          <p>All <span data-k="rq4.judge.modelsLosing" data-f="int">8</span> prose models lose to their own free telling, and the depth scale agrees more mildly (PDS <span data-k="rq4.pdsFree" data-f="d2">3.74</span> against <span data-k="rq4.pdsCued" data-f="d2">3.60</span>). Readers called the instructed version harder to follow 81% of the time. Length favors the instructed texts, which are longer, so length does not explain the loss. The cued story also loses when the requested shape is <span class="sc">Chronicle</span> (<span data-k="rq4.byShape.chronicle" data-f="d2">0.32</span>, n = 37), which asks for little reordering, so part of the penalty is the instruction itself.</p>
+          <p><strong>Premature disclosure is suggestive.</strong> Two works inflate the early-disclosure count: one has no designated reveal and one is a chronicle whose explanation is its third event. Without them, fewer than three events precede the reveal in <span data-k="rq4.early.cleanG0" data-f="p1">8.3%</span> of stories without a graph, <span data-k="rq4.early.cleanG1" data-f="p1">8.5%</span> with one, and none when the model is handed the told order (p = 0.125).</p>
+          <aside class="caveat"><p class="caveat-title">What to be careful about</p><p data-k="summary.rows.3.careful">Two scoring cases inflate the early rate (8.3% without them). Retrospective coherence gain is capped near 0.12 by the same floor.</p></aside>
+        </div>
+      </details>
+
+      <details class="finding">
+        <summary><span class="rq">RQ5</span><span class="rq-name">Evaluation validity</span><span class="rq-claim">The judge matches 71 readers on the one large effect, and readers overturn both of its ties (κ = −0.030 on layer removal).</span><span class="tag tag-headline revised-tag">revised by readers</span></summary>
+        <div class="finding-body">
+          <figure class="chart-figure">
+            <figcaption class="chart-title">Item-level agreement between the judge and readers (Cohen’s κ, 95% CI)</figcaption>
+            <div class="chart" data-chart="kappa"></div>
+            <details class="table-view"><summary>Table view (Table 13)</summary><table class="data-table compact">
+<thead>
+<tr><th scope="col" rowspan="2">Comparison</th><th scope="colgroup" colspan="2">judge</th><th scope="colgroup" colspan="2">readers</th><th scope="col" rowspan="2">Δ</th><th scope="colgroup" colspan="3">item-level concordance</th><th scope="col" rowspan="2">verdict</th></tr>
+<tr><th scope="col">split</th><th scope="col">rate</th><th scope="col">split</th><th scope="col">rate</th><th scope="col">n</th><th scope="col">κ</th><th scope="col">95% CI</th></tr>
+</thead>
+<tbody>
+<tr><th scope="row">instructed <em>vs.</em> left alone</th><td class="num"><span data-k="readers.judgeVsReaders.rows.0.judge.0" data-f="int">19</span>–<span data-k="readers.judgeVsReaders.rows.0.judge.1" data-f="int">68</span></td><td class="num" data-k="readers.judgeVsReaders.rows.0.judgeRate" data-f="d3">0.218</td><td class="num"><span data-k="readers.judgeVsReaders.rows.0.readers.0" data-f="int">64</span>–<span data-k="readers.judgeVsReaders.rows.0.readers.1" data-f="int">200</span></td><td class="num" data-k="readers.judgeVsReaders.rows.0.readerRate" data-f="d3">0.242</td><td class="num" data-k="readers.judgeVsReaders.rows.0.delta" data-f="s3">+0.024</td><td class="num" data-k="readers.judgeVsReaders.rows.0.n" data-f="int">67</td><td class="num" data-k="readers.judgeVsReaders.rows.0.kappa" data-f="s3">+0.278</td><td class="num">[<span data-k="readers.judgeVsReaders.rows.0.ci.0" data-f="s2">+0.01</span>, <span data-k="readers.judgeVsReaders.rows.0.ci.1" data-f="s2">+0.54</span>]</td><td><span class="tag tag-weak" data-k="readers.judgeVsReaders.rows.0.verdict" data-f="raw">weak</span></td></tr>
+<tr><th scope="row">full graph <em>vs.</em> told order</th><td class="num"><span data-k="readers.judgeVsReaders.rows.1.judge.0" data-f="int">23</span>–<span data-k="readers.judgeVsReaders.rows.1.judge.1" data-f="int">22</span></td><td class="num" data-k="readers.judgeVsReaders.rows.1.judgeRate" data-f="d3">0.511</td><td class="num"><span data-k="readers.judgeVsReaders.rows.1.readers.0" data-f="int">181</span>–<span data-k="readers.judgeVsReaders.rows.1.readers.1" data-f="int">70</span></td><td class="num" data-k="readers.judgeVsReaders.rows.1.readerRate" data-f="d3">0.721</td><td class="num" data-k="readers.judgeVsReaders.rows.1.delta" data-f="s3">+0.210</td><td class="num" data-k="readers.judgeVsReaders.rows.1.n" data-f="int">35</td><td class="num" data-k="readers.judgeVsReaders.rows.1.kappa" data-f="s3">+0.242</td><td class="num">[<span data-k="readers.judgeVsReaders.rows.1.ci.0" data-f="s2">−0.11</span>, <span data-k="readers.judgeVsReaders.rows.1.ci.1" data-f="s2">+0.56</span>]</td><td><span class="tag tag-weak" data-k="readers.judgeVsReaders.rows.1.verdict" data-f="raw">weak</span></td></tr>
+<tr><th scope="row">full graph <em>vs.</em> event list</th><td class="num"><span data-k="readers.judgeVsReaders.rows.2.judge.0" data-f="int">31</span>–<span data-k="readers.judgeVsReaders.rows.2.judge.1" data-f="int">14</span></td><td class="num" data-k="readers.judgeVsReaders.rows.2.judgeRate" data-f="d3">0.689</td><td class="num"><span data-k="readers.judgeVsReaders.rows.2.readers.0" data-f="int">154</span>–<span data-k="readers.judgeVsReaders.rows.2.readers.1" data-f="int">105</span></td><td class="num" data-k="readers.judgeVsReaders.rows.2.readerRate" data-f="d3">0.595</td><td class="num" data-k="readers.judgeVsReaders.rows.2.delta" data-f="s3">−0.094</td><td class="num" data-k="readers.judgeVsReaders.rows.2.n" data-f="int">31</td><td class="num" data-k="readers.judgeVsReaders.rows.2.kappa" data-f="s3">+0.625</td><td class="num">[<span data-k="readers.judgeVsReaders.rows.2.ci.0" data-f="s2">+0.28</span>, <span data-k="readers.judgeVsReaders.rows.2.ci.1" data-f="s2">+0.91</span>]</td><td><span class="tag tag-agrees" data-k="readers.judgeVsReaders.rows.2.verdict" data-f="raw">agrees</span></td></tr>
+<tr><th scope="row">full graph <em>vs.</em> one layer removed</th><td class="num"><span data-k="readers.judgeVsReaders.rows.3.judge.0" data-f="int">55</span>–<span data-k="readers.judgeVsReaders.rows.3.judge.1" data-f="int">50</span></td><td class="num" data-k="readers.judgeVsReaders.rows.3.judgeRate" data-f="d3">0.524</td><td class="num"><span data-k="readers.judgeVsReaders.rows.3.readers.0" data-f="int">79</span>–<span data-k="readers.judgeVsReaders.rows.3.readers.1" data-f="int">180</span></td><td class="num" data-k="readers.judgeVsReaders.rows.3.readerRate" data-f="d3">0.305</td><td class="num" data-k="readers.judgeVsReaders.rows.3.delta" data-f="s3">−0.219</td><td class="num" data-k="readers.judgeVsReaders.rows.3.n" data-f="int">77</td><td class="num" data-k="readers.judgeVsReaders.rows.3.kappa" data-f="s3">−0.030</td><td class="num">[<span data-k="readers.judgeVsReaders.rows.3.ci.0" data-f="s2">−0.23</span>, <span data-k="readers.judgeVsReaders.rows.3.ci.1" data-f="s2">+0.18</span>]</td><td><span class="tag tag-unrelated" data-k="readers.judgeVsReaders.rows.3.verdict" data-f="raw">unrelated</span></td></tr>
+</tbody></table></details>
+          </figure>
+          <p>Pooled over the four comparisons, the judge and the readers’ majority agree on <span data-k="readers.judgeVsReaders.pooledAgreement" data-f="p1">66.2%</span> of items where both are decisive, κ = <span data-k="readers.judgeVsReaders.pooledKappa" data-f="s3">+0.306</span>. Agreement is highest on graph against event list, the comparison with the smallest reader effect, where both may be answering the same length gap, so item-level agreement does not track effect size. The judge’s ties are not evidence of no difference: a reader tie means “about the same”, while a judge tie means its two position-swapped passes disagreed. On the depth scale, judge and reader ratings of the same <span data-k="readers.judgeVsReaders.pdsN" data-f="int">193</span> texts correlate at r = <span data-k="readers.judgeVsReaders.pdsCorrelation" data-f="d2">0.43</span>, but the judge rates <span data-k="readers.judgeVsReaders.pdsGap" data-f="s2">+0.28</span> higher.</p>
+          <aside class="caveat"><p class="caveat-title">What to be careful about</p><p data-k="summary.rows.4.careful">Item-level agreement does not track effect size; fourteen stories, two generators in the layer-removal study, no comparison against human-written prose.</p></aside>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- 8. Reader study -->
+  <section id="readers" class="section game-window" aria-labelledby="readers-title">
+    <div class="window-title"><h2 id="readers-title">What readers said</h2><span class="window-index">§5.5 · Table 2 · Fig. 3</span></div>
+    <div class="window-body">
+      <p class="lead">Readers saw the same kind of pair the judge sees: one model writing one story twice, under two conditions, with sides randomized and conditions hidden.</p>
+      <div class="stat-tiles">
+        <div class="stat-tile"><p class="stat-value" data-k="readers.nReaders" data-f="int">71</p><p class="stat-label">readers</p></div>
+        <div class="stat-tile"><p class="stat-value" data-k="readers.nResponses" data-f="int">3,528</p><p class="stat-label">blind responses</p></div>
+        <div class="stat-tile"><p class="stat-value" data-k="readers.nSittings" data-f="int">294</p><p class="stat-label">sittings, each with four comparisons and one close reading</p></div>
+        <div class="stat-tile"><p class="stat-value" data-k="readers.nStories" data-f="int">14</p><p class="stat-label">stories, two per shape</p></div>
+      </div>
+      <ol class="question-list">
+        <li><span class="q-key">better story</span> <q data-k="readers.questions.0">Which is the better story overall: more engaging, better told, more satisfying to read?</q> <span class="small">(the judge’s question too)</span></li>
+        <li><span class="q-key">harder to follow</span> <q data-k="readers.questions.1">Which was harder to follow?</q></li>
+        <li><span class="q-key">better ending</span> <q data-k="readers.questions.2">Whose ending tied things together better?</q></li>
+      </ol>
+
+      <figure class="chart-figure">
+        <figcaption class="chart-title">Reader verdicts: wins, ties and losses for the first-named condition</figcaption>
+        <div class="chart" data-chart="verdicts"></div>
+        <p class="chart-note">Rates count decisive verdicts only. <strong>adj.</strong> is the better-story rate net of word count. Every better-story result clears the Bonferroni threshold of 0.0042.</p>
+        <details class="table-view"><summary>Table view (Table 2)</summary><table class="data-table compact">
+<thead>
+<tr><th scope="col" rowspan="2">Comparison</th><th scope="colgroup" colspan="3">better story</th><th scope="colgroup" colspan="3">harder to follow</th><th scope="colgroup" colspan="3">better ending</th><th scope="col">adj.</th></tr>
+<tr><th scope="col">split</th><th scope="col">rate</th><th scope="col">p</th><th scope="col">split</th><th scope="col">rate</th><th scope="col">p</th><th scope="col">split</th><th scope="col">rate</th><th scope="col">p</th><th scope="col">rate</th></tr>
+</thead>
+<tbody>
+<tr><th scope="row">instructed <em>vs.</em> left alone</th><td class="num"><span data-k="readers.verdicts.comparisons.0.better.w" data-f="int">64</span>–<span data-k="readers.verdicts.comparisons.0.better.l" data-f="int">200</span>–<span data-k="readers.verdicts.comparisons.0.better.t" data-f="int">30</span></td><td class="num"><span data-k="readers.verdicts.comparisons.0.better.rate" data-f="d3">0.242</span> <span class="tag tag-against">against hypothesis</span></td><td class="num"><span data-k="readers.verdicts.comparisons.0.better.p" data-f="raw">&lt;0.0001</span></td><td class="num"><span data-k="readers.verdicts.comparisons.0.harder.w" data-f="int">197</span>–<span data-k="readers.verdicts.comparisons.0.harder.l" data-f="int">47</span>–<span data-k="readers.verdicts.comparisons.0.harder.t" data-f="int">50</span></td><td class="num"><span data-k="readers.verdicts.comparisons.0.harder.rate" data-f="d3">0.807</span> <span class="tag tag-against">against hypothesis</span></td><td class="num"><span data-k="readers.verdicts.comparisons.0.harder.p" data-f="raw">&lt;0.0001</span></td><td class="num"><span data-k="readers.verdicts.comparisons.0.ending.w" data-f="int">114</span>–<span data-k="readers.verdicts.comparisons.0.ending.l" data-f="int">134</span>–<span data-k="readers.verdicts.comparisons.0.ending.t" data-f="int">46</span></td><td class="num"><span data-k="readers.verdicts.comparisons.0.ending.rate" data-f="d3">0.460</span></td><td class="num"><span data-k="readers.verdicts.comparisons.0.ending.p" data-f="raw">0.23</span></td><td class="num"><span data-k="readers.verdicts.comparisons.0.adjRate" data-f="d3">0.246</span> <span class="tag tag-survives">survives every check</span></td></tr>
+<tr><th scope="row">full graph <em>vs.</em> told order</th><td class="num"><span data-k="readers.verdicts.comparisons.1.better.w" data-f="int">181</span>–<span data-k="readers.verdicts.comparisons.1.better.l" data-f="int">70</span>–<span data-k="readers.verdicts.comparisons.1.better.t" data-f="int">43</span></td><td class="num"><span data-k="readers.verdicts.comparisons.1.better.rate" data-f="d3">0.721</span> <span class="tag tag-headline">headline</span></td><td class="num"><span data-k="readers.verdicts.comparisons.1.better.p" data-f="raw">&lt;0.0001</span></td><td class="num"><span data-k="readers.verdicts.comparisons.1.harder.w" data-f="int">115</span>–<span data-k="readers.verdicts.comparisons.1.harder.l" data-f="int">108</span>–<span data-k="readers.verdicts.comparisons.1.harder.t" data-f="int">71</span></td><td class="num"><span data-k="readers.verdicts.comparisons.1.harder.rate" data-f="d3">0.516</span></td><td class="num"><span data-k="readers.verdicts.comparisons.1.harder.p" data-f="raw">0.69</span></td><td class="num"><span data-k="readers.verdicts.comparisons.1.ending.w" data-f="int">141</span>–<span data-k="readers.verdicts.comparisons.1.ending.l" data-f="int">106</span>–<span data-k="readers.verdicts.comparisons.1.ending.t" data-f="int">47</span></td><td class="num"><span data-k="readers.verdicts.comparisons.1.ending.rate" data-f="d3">0.571</span></td><td class="num"><span data-k="readers.verdicts.comparisons.1.ending.p" data-f="raw">0.0303</span></td><td class="num"><span data-k="readers.verdicts.comparisons.1.adjRate" data-f="d3">0.707</span> <span class="tag tag-survives">survives every check</span></td></tr>
+<tr><th scope="row">full graph <em>vs.</em> event list</th><td class="num"><span data-k="readers.verdicts.comparisons.2.better.w" data-f="int">154</span>–<span data-k="readers.verdicts.comparisons.2.better.l" data-f="int">105</span>–<span data-k="readers.verdicts.comparisons.2.better.t" data-f="int">35</span></td><td class="num"><span data-k="readers.verdicts.comparisons.2.better.rate" data-f="d3">0.595</span> <span class="tag tag-survives">survives every check</span></td><td class="num"><span data-k="readers.verdicts.comparisons.2.better.p" data-f="raw">0.0028</span></td><td class="num"><span data-k="readers.verdicts.comparisons.2.harder.w" data-f="int">123</span>–<span data-k="readers.verdicts.comparisons.2.harder.l" data-f="int">102</span>–<span data-k="readers.verdicts.comparisons.2.harder.t" data-f="int">69</span></td><td class="num"><span data-k="readers.verdicts.comparisons.2.harder.rate" data-f="d3">0.547</span></td><td class="num"><span data-k="readers.verdicts.comparisons.2.harder.p" data-f="raw">0.18</span></td><td class="num"><span data-k="readers.verdicts.comparisons.2.ending.w" data-f="int">133</span>–<span data-k="readers.verdicts.comparisons.2.ending.l" data-f="int">103</span>–<span data-k="readers.verdicts.comparisons.2.ending.t" data-f="int">58</span></td><td class="num"><span data-k="readers.verdicts.comparisons.2.ending.rate" data-f="d3">0.564</span></td><td class="num"><span data-k="readers.verdicts.comparisons.2.ending.p" data-f="raw">0.0588</span></td><td class="num"><span data-k="readers.verdicts.comparisons.2.adjRate" data-f="d3">0.518</span> <span class="tag tag-length">fails length adjustment</span></td></tr>
+<tr><th scope="row">full graph <em>vs.</em> one layer removed</th><td class="num"><span data-k="readers.verdicts.comparisons.3.better.w" data-f="int">79</span>–<span data-k="readers.verdicts.comparisons.3.better.l" data-f="int">180</span>–<span data-k="readers.verdicts.comparisons.3.better.t" data-f="int">35</span></td><td class="num"><span data-k="readers.verdicts.comparisons.3.better.rate" data-f="d3">0.305</span> <span class="tag tag-against">against hypothesis</span></td><td class="num"><span data-k="readers.verdicts.comparisons.3.better.p" data-f="raw">&lt;0.0001</span></td><td class="num"><span data-k="readers.verdicts.comparisons.3.harder.w" data-f="int">140</span>–<span data-k="readers.verdicts.comparisons.3.harder.l" data-f="int">86</span>–<span data-k="readers.verdicts.comparisons.3.harder.t" data-f="int">68</span></td><td class="num"><span data-k="readers.verdicts.comparisons.3.harder.rate" data-f="d3">0.619</span> <span class="tag tag-against">against hypothesis</span></td><td class="num"><span data-k="readers.verdicts.comparisons.3.harder.p" data-f="raw">0.0004</span></td><td class="num"><span data-k="readers.verdicts.comparisons.3.ending.w" data-f="int">110</span>–<span data-k="readers.verdicts.comparisons.3.ending.l" data-f="int">119</span>–<span data-k="readers.verdicts.comparisons.3.ending.t" data-f="int">65</span></td><td class="num"><span data-k="readers.verdicts.comparisons.3.ending.rate" data-f="d3">0.480</span></td><td class="num"><span data-k="readers.verdicts.comparisons.3.ending.p" data-f="raw">0.60</span></td><td class="num"><span data-k="readers.verdicts.comparisons.3.adjRate" data-f="d3">0.304</span> <span class="tag tag-against">against hypothesis</span></td></tr>
+</tbody></table></details>
+      </figure>
+
+      <figure class="chart-figure">
+        <figcaption class="chart-title">Unadjusted preference rates: readers and the automated judge on the same texts</figcaption>
+        <div class="chart" data-chart="preference"></div>
+        <p class="chart-note" data-k="readers.preference.caption">Unadjusted preference rates. Human readers favor graph-guided stories over those given a telling order or an event list; the automatic judge’s ties on two comparisons fail to capture clear reader preferences. “Layer removed” pools comparisons in which one group of graph annotations is omitted.</p>
+        <details class="table-view"><summary>Table view (Figure 3)</summary><table class="data-table compact">
+<thead><tr><th scope="col">Comparison</th><th scope="col">readers</th><th scope="col">95% interval</th><th scope="col">judge</th><th scope="col">95% interval</th></tr></thead>
+<tbody>
+<tr><th scope="row">instructed <em>vs.</em> left alone</th><td class="num" data-k="readers.preference.rows.0.reader.0" data-f="p0">24%</td><td class="num"><span data-k="readers.preference.rows.0.reader.1" data-f="p0">19%</span>–<span data-k="readers.preference.rows.0.reader.2" data-f="p0">30%</span></td><td class="num" data-k="readers.preference.rows.0.judge.0" data-f="p0">22%</td><td class="num"><span data-k="readers.preference.rows.0.judge.1" data-f="p0">14%</span>–<span data-k="readers.preference.rows.0.judge.2" data-f="p0">31%</span></td></tr>
+<tr><th scope="row">graph <em>vs.</em> told order</th><td class="num" data-k="readers.preference.rows.1.reader.0" data-f="p0">72%</td><td class="num"><span data-k="readers.preference.rows.1.reader.1" data-f="p0">67%</span>–<span data-k="readers.preference.rows.1.reader.2" data-f="p0">77%</span></td><td class="num" data-k="readers.preference.rows.1.judge.0" data-f="p0">51%</td><td class="num"><span data-k="readers.preference.rows.1.judge.1" data-f="p0">37%</span>–<span data-k="readers.preference.rows.1.judge.2" data-f="p0">65%</span></td></tr>
+<tr><th scope="row">graph <em>vs.</em> event list</th><td class="num" data-k="readers.preference.rows.2.reader.0" data-f="p0">59%</td><td class="num"><span data-k="readers.preference.rows.2.reader.1" data-f="p0">54%</span>–<span data-k="readers.preference.rows.2.reader.2" data-f="p0">65%</span></td><td class="num" data-k="readers.preference.rows.2.judge.0" data-f="p0">69%</td><td class="num"><span data-k="readers.preference.rows.2.judge.1" data-f="p0">55%</span>–<span data-k="readers.preference.rows.2.judge.2" data-f="p0">81%</span></td></tr>
+<tr><th scope="row">graph <em>vs.</em> layer removed</th><td class="num" data-k="readers.preference.rows.3.reader.0" data-f="p0">31%</td><td class="num"><span data-k="readers.preference.rows.3.reader.1" data-f="p0">25%</span>–<span data-k="readers.preference.rows.3.reader.2" data-f="p0">37%</span></td><td class="num" data-k="readers.preference.rows.3.judge.0" data-f="p0">52%</td><td class="num"><span data-k="readers.preference.rows.3.judge.1" data-f="p0">43%</span>–<span data-k="readers.preference.rows.3.judge.2" data-f="p0">62%</span></td></tr>
+</tbody></table></details>
+      </figure>
+
+      <div class="two-col">
+        <div>
+          <h3 class="sub-heading">Do readers agree with each other?</h3>
+          <p>On the better-story question, yes: Krippendorff’s α = <span data-k="readers.alpha.better" data-f="d3">0.415</span>. On the other two, barely (α = <span data-k="readers.alpha.harder" data-f="d3">0.112</span> for harder to follow, <span data-k="readers.alpha.ending" data-f="d3">0.073</span> for endings), so the endings results should be read as suggestive. One comparison per sitting silently repeated an earlier pair with sides swapped, and readers repeated their own decisive verdict <span data-k="readers.repeatDecisive" data-f="p0">93%</span> of the time.</p>
+        </div>
+        <div>
+          <h3 class="sub-heading">Our metrics against readers</h3>
+          <p><strong>τ predicts what readers find hard.</strong> Across <span data-k="readers.metrics.harderTauN" data-f="int">918</span> decisive judgments, the text called harder to follow is the less chronological one by Δτ = <span data-k="readers.metrics.harderTauDelta" data-f="d3">−0.171</span>.</p>
+          <p><strong>Band hit does not predict what readers prefer.</strong> When exactly one text of a pair falls inside the human band, readers chose it <span data-k="readers.metrics.bandSplitRate" data-f="p0">34%</span> of the time (<span data-k="readers.metrics.bandSplitN" data-f="int">381</span> decisive judgments). Both results partly restate the condition effect, since the in-band text is almost always the instructed one.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. Limitations -->
+  <section id="limitations" class="section game-window" aria-labelledby="limitations-title">
+    <div class="window-title"><h2 id="limitations-title">What to be careful about</h2><span class="window-index">Table 3 · Limitations</span></div>
+    <div class="window-body">
+      <ol class="limit-list">
+      <li><span class="rq">RQ1</span><p data-k="summary.rows.0.careful">The reference works were chosen for nonlinearity, both free tasks list events chronologically, and no prompt marks scenes. Band hit is negatively associated with reader preference, partly through condition.</p></li>
+      <li><span class="rq">RQ2</span><p data-k="summary.rows.1.careful">96.1% of that τ is reachable with the story deleted (by entailment or prior knowledge of the work), and readers reach only 0.537: report the floor, prefer exact match.</p></li>
+      <li><span class="rq">RQ3</span><p data-k="summary.rows.2.careful">The judge saw no effect, and the two prompts differ in more than the graph. The edge over an event list is a length effect, and readers prefer every one-layer ablation to the full graph.</p></li>
+      <li><span class="rq">RQ4</span><p data-k="summary.rows.3.careful">Two scoring cases inflate the early rate (8.3% without them). Retrospective coherence gain is capped near 0.12 by the same floor.</p></li>
+      <li><span class="rq">RQ5</span><p data-k="summary.rows.4.careful">Item-level agreement does not track effect size; fourteen stories, two generators in the layer-removal study, no comparison against human-written prose.</p></li>
+      </ol>
+      <p class="small">The paper’s Limitations section also covers: one judge still does all the prose-to-event alignment; the length confound is diagnosed, not removed; the reader cohort is not a probability sample; input order is a confound for the free tasks; band hit measures resemblance, not quality; the layer-removal result rests on two generators that disagree; and anonymization reduces contamination without eliminating it.</p>
+    </div>
+  </section>
+
+  <!-- 10. Citation -->
+  <section id="cite" class="section game-window" aria-labelledby="cite-title">
+    <div class="window-title"><h2 id="cite-title">Cite</h2><span class="window-index">BibTeX</span></div>
+    <div class="window-body">
+      <div class="bibtex">
+        <pre id="bibtex-text">@article{anonymous2026outoforder,
+  title   = {Can {LLMs} Tell Stories Out of Order? A Corpus and Benchmark for Nonlinear Narrative Generation},
+  author  = {Anonymous},
+  journal = {arXiv preprint},
+  year    = {2026},
+  url     = {https://anonymous.4open.science/r/LLM-nonlinear-storytelling-2931}
+}</pre>
+        <button class="btn" type="button" data-copy="bibtex-text" hidden><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy</span></button>
+      </div>
+      <p class="copy-status" data-copy-status aria-live="polite"></p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer site-shell game-window">
+  <p>arXiv Preprint.</p>
+  <div>
+    <a href="https://anonymous.4open.science/r/LLM-nonlinear-storytelling-2931" rel="noopener">Code &amp; data</a>
+    <a href="#top"><svg class="icon" aria-hidden="true"><use href="#i-up"/></svg>Back to top</a>
+  </div>
+</footer>
+<div class="tooltip" data-tooltip role="tooltip" hidden></div>
+</body>
+</html>

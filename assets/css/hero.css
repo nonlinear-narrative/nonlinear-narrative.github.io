@@ -1,0 +1,110 @@
+/* Hero animation: Figures 2 and 1 as one SVG stage with controls. */
+
+.hero{margin:0;padding:14px 16px 16px}
+.hero-stage{position:relative;width:100%;aspect-ratio:960/560;background:var(--plot);border:2px solid var(--frame-mid);overflow:hidden}
+.hero-stage.is-narrow{aspect-ratio:360/700;max-width:460px;margin:0 auto}
+.hero-stage>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hero-static{padding:24px;font-size:15px;color:var(--muted)}
+.js .hero-static{display:none}
+.hero-narration{min-height:3.3em;margin:10px 2px 0;font-size:15px;line-height:1.6}
+.hero-narration strong{font-family:var(--pixel);font-size:19px;font-weight:700;margin-right:6px}
+
+.hero-controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:10px;padding-top:12px;border-top:1px solid var(--rule)}
+.control-group{display:flex;gap:8px;flex-wrap:wrap}
+.hero-controls .btn{font-size:20px;min-height:42px;padding:5px 10px}
+[data-hero-speed]{min-width:56px}
+.scene-buttons{display:flex;gap:6px;flex-wrap:wrap}
+.scene-btn{gap:6px}
+.scene-btn .scene-num{display:inline-grid;place-items:center;width:22px;height:22px;background:var(--title-bg);color:var(--title-ink);border:1px solid var(--frame-mid);font-size:16px}
+.scene-btn[aria-current=true] .scene-num{background:var(--button-bg);color:var(--button-ink);border-color:var(--button-bg)}
+.scrubber{flex:1 1 220px;display:flex;align-items:center;min-height:44px}
+.scrubber input{width:100%;accent-color:var(--accent);margin:0}
+.keys-hint{flex:1 1 100%;margin:0;font-size:13px;color:var(--muted)}
+.reduced .keys-hint{display:none}
+
+
+.hero figcaption{margin-top:12px;font-size:14px;line-height:1.65;color:var(--muted)}
+.hero figcaption strong{color:var(--ink);font-weight:500}
+.hero-orders{margin-top:4px}
+.orders-lists{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;font-size:13px}
+.orders-title{font-family:var(--pixel);font-size:17px;margin:0 0 4px}
+.order-list{margin:0;padding-left:2.4em;columns:2;column-gap:1.4em}
+
+/* ---- SVG ---- */
+.h-svg{font-family:var(--font);user-select:none;-webkit-user-select:none}
+.h-svg text{fill:var(--ink)}
+.h-pixel{font-family:var(--pixel)}
+.h-muted{fill:var(--muted)!important}
+.h-italic{font-style:italic}
+.r-consequence{color:var(--role-consequence);--role-text:var(--role-consequence-text)}
+.r-explanation{color:var(--role-explanation);--role-text:var(--role-explanation-text)}
+.r-clue{color:var(--role-clue);--role-text:var(--role-clue-text)}
+.r-other{color:var(--role-other);--role-text:var(--role-other-text)}
+/* Marks use the role hue; text uses its higher-contrast text variant. */
+.h-role-text{fill:var(--role-text,currentColor)!important}
+.h-sprite{fill:currentColor;shape-rendering:crispEdges}
+.h-line{stroke:var(--frame);stroke-width:2;shape-rendering:crispEdges}
+.h-rule{stroke:var(--rule);stroke-width:1;shape-rendering:crispEdges}
+.h-curve{fill:none;stroke:currentColor;stroke-width:1.5;stroke-opacity:.28}
+.h-curve.is-key{stroke-width:2.5;stroke-opacity:.9}
+.h-curve.is-clue{stroke-opacity:.55}
+.h-dot{fill:currentColor;stroke:var(--plot);stroke-width:2}
+.h-label-bg{fill:var(--plot)}
+.h-elabel{font-size:12px;fill:var(--role-text,currentColor)!important}
+.h-hit{fill:transparent;cursor:pointer}
+.h-hit:focus{outline:none}
+.h-ev:focus-visible .h-hit{stroke:var(--accent-strong);stroke-width:2}
+.h-stage-svg.has-hl .h-ev:not(.is-hl){opacity:.22}
+.h-stage-svg.has-hl .h-ev.is-hl .h-curve{stroke-opacity:1;stroke-width:3}
+
+.h-window{fill:var(--card);stroke:var(--frame);stroke-width:2;shape-rendering:crispEdges}
+.h-window-inner{fill:none;stroke:var(--frame-light);stroke-width:2;shape-rendering:crispEdges}
+.h-strip{fill:var(--title-bg);shape-rendering:crispEdges}
+.h-strip-rule{stroke:var(--frame);stroke-width:2;shape-rendering:crispEdges}
+.h-strip-role{shape-rendering:crispEdges;fill:currentColor}
+.h-card-title{font-size:14px;font-weight:500}
+.h-card-sub{font-size:11.5px;fill:var(--muted)!important}
+.h-gap{font-family:var(--pixel);font-size:15px;fill:var(--muted)!important}
+.h-open-bar{fill:currentColor;opacity:.22;shape-rendering:crispEdges}
+.h-open-head{fill:currentColor;shape-rendering:crispEdges}
+.h-tick{fill:currentColor;shape-rendering:crispEdges}
+.h-bracket{fill:none;stroke:var(--muted);stroke-width:1.5;shape-rendering:crispEdges}
+.h-arrow{fill:none;stroke:currentColor;stroke-width:2;shape-rendering:crispEdges}
+.h-arrow-head{fill:currentColor;shape-rendering:crispEdges}
+.h-leader{fill:none;stroke:var(--muted);stroke-width:1;stroke-opacity:.8}
+.h-dialog{fill:var(--card);stroke:var(--frame);stroke-width:2;shape-rendering:crispEdges}
+.h-dialog-text{font-size:14px}
+.h-caret{fill:var(--accent)}
+
+.h-grid{stroke:var(--grid);stroke-width:1;shape-rendering:crispEdges}
+.h-diagonal{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:2 4;fill:none}
+.h-path{fill:none;stroke:var(--role-consequence);stroke-width:2;stroke-linejoin:round}
+.h-lis-ring{fill:none;stroke:var(--role-clue);stroke-width:2.5}
+.h-current-point{fill:none;stroke:var(--ink);stroke-width:2.5;pointer-events:none}
+.reduced .h-current-point{display:none}
+.h-hop{fill:var(--series-b);shape-rendering:crispEdges}
+.h-guide{stroke:var(--accent);stroke-width:1.5;stroke-dasharray:3 3}
+.h-panel-value{font-family:var(--pixel);font-weight:700}
+.h-panel-label{font-family:var(--pixel);font-size:17px}
+.h-meter-track{fill:var(--grid);shape-rendering:crispEdges}
+.h-meter-fill{fill:currentColor;shape-rendering:crispEdges}
+.h-meter-mark{fill:var(--ink);shape-rendering:crispEdges}
+
+.h-plane{stroke:currentColor;stroke-width:1.5;stroke-opacity:.5;fill:currentColor;fill-opacity:.09}
+.h-plane-grid{stroke:currentColor;stroke-opacity:.18;stroke-width:1}
+.h-trajectory{fill:none;stroke:currentColor;stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.h-trajectory.is-dashed{stroke-dasharray:7 4}
+.h-marker{fill:currentColor;shape-rendering:crispEdges}
+.h-callout{fill:var(--accent-soft);stroke:currentColor;stroke-width:1.5}
+.h-tell-label{font-family:var(--pixel);font-weight:700}
+.h-tell-tau{font-family:var(--pixel)}
+.u-uncued{color:var(--role-clue);--role-text:var(--role-clue-text)}
+.u-backward{color:var(--role-explanation);--role-text:var(--role-explanation-text)}
+.u-published{color:var(--role-consequence);--role-text:var(--role-consequence-text)}
+
+@media (max-width:600px){
+  .hero{padding:10px 8px 12px}
+  .hero-controls .btn{font-size:17px;padding:4px 8px}
+  .scene-btn .scene-label{display:none}
+  .hero-narration{font-size:14px}
+}
