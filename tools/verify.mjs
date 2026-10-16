@@ -35,7 +35,6 @@ async function open(width, theme, motion, { clock = false } = {}) {
   const problems = [];
   page.on('console', m => {
     if (m.type() !== 'error') return;
-    if (/404/.test(m.text())) return; // the optional paper.pdf probe
     problems.push(m.text());
   });
   page.on('pageerror', e => problems.push(e.message));

@@ -82,17 +82,6 @@ document.querySelectorAll('[data-copy]').forEach(btn => {
   });
 });
 
-// ---- Paper button: only live when a PDF sits beside the page ----------------
-const paperLink = document.querySelector('[data-paper-link]');
-function paperPending() {
-  paperLink.removeAttribute('href');
-  paperLink.setAttribute('aria-disabled', 'true');
-  paperLink.setAttribute('title', 'The PDF is not posted yet');
-  paperLink.querySelector('span').textContent = 'Paper (PDF soon)';
-}
-if (location.protocol === 'file:') paperPending();
-else fetch('paper.pdf', { method: 'HEAD' }).then(r => { if (!r.ok) paperPending(); }).catch(paperPending);
-
 // ---- Data-driven parts -------------------------------------------------------
 if (location.protocol === 'file:') {
   document.querySelector('[data-file-warning]').hidden = false;

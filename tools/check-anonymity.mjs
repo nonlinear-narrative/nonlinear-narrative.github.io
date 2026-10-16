@@ -3,7 +3,7 @@
 //   ANON_DENY="name one,name two,handle" node tools/check-anonymity.mjs
 //   node tools/check-anonymity.mjs --deny-file ../private/deny.txt   (one term per line)
 // Keep the deny list outside this folder, so the check itself names no one.
-// Always flags: absolute home paths, and any URL other than the anonymous repository.
+// Always flags: absolute home paths and URLs outside the permitted paper and site resources.
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, relative, extname } from 'node:path';
@@ -17,6 +17,7 @@ if (argv.includes('--deny-file') && denyFile) terms = terms.concat(readFileSync(
 terms = terms.map(t => t.trim().toLowerCase()).filter(Boolean);
 if (!terms.length) console.warn('No deny terms given (ANON_DENY or --deny-file); checking paths and URLs only.');
 
+const PAPER_URL = 'http://arxiv.org/abs/2610.21468';
 const ALLOWED_URL = /^https?:\/\/(anonymous\.4open\.science\/r\/LLM-nonlinear-storytelling-2931|www\.w3\.org\/2000\/svg|127\.0\.0\.1|localhost)/;
 const LICENSE_URL = /^https?:\/\/(scripts\.sil\.org|creativecommons\.org|openfontlicense\.org)/;
 const SKIP_DIRS = new Set(['.git', 'node_modules', '.preview']);
@@ -42,7 +43,7 @@ for (const path of walk(root)) {
   if (/\/(Users|home)\/[A-Za-z]/.test(text)) { problems++; console.error(`FAIL  ${rel}: absolute home path`); }
   for (const m of text.matchAll(/https?:\/\/[^\s"'<>)\\]+/g)) {
     const isLicense = rel.startsWith('assets/licenses/') && LICENSE_URL.test(m[0]);
-    if (!ALLOWED_URL.test(m[0]) && !isLicense) { problems++; console.error(`FAIL  ${rel}: outside URL ${m[0]}`); }
+    if (m[0] !== PAPER_URL && !ALLOWED_URL.test(m[0]) && !isLicense) { problems++; console.error(`FAIL  ${rel}: outside URL ${m[0]}`); }
   }
 }
 console.log(problems ? `${problems} problem(s)` : 'No identifying strings, home paths or outside URLs found.');

@@ -68,8 +68,7 @@ valid-output count.
 
 ## Before publishing
 
-- **Paper button.** It links to `paper.pdf` beside `index.html` and shows "PDF soon"
-  until that file exists.
+- **Paper button.** It links to the [arXiv paper](http://arxiv.org/abs/2610.21468).
 - **Hosting.** A site under a personal GitHub account names the authors. Publish from an
   account not tied to them, or after review. Run `make anonymity` with the authors'
   names first.
