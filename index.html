@@ -12,6 +12,8 @@
   (function () {
     var root = document.documentElement;
     root.classList.add('js');
+    // Modules cannot load from file://, so the cameos keep their still frames there.
+    if (location.protocol === 'file:') root.classList.add('from-file');
     try {
       var saved = localStorage.getItem('nonlinear-theme');
       if (saved === 'dark' || saved === 'light') root.dataset.theme = saved;
@@ -39,6 +41,15 @@
   <symbol id="i-out" viewBox="0 0 24 24"><path d="M13 3h8v8h-2V7h-2v2h-2v2h-2v2h-2v2H9v-2h2v-2h2V9h2V7h2V5h-4zM3 5h8v2H5v12h12v-6h2v8H3z"/></symbol>
   <symbol id="i-up" viewBox="0 0 24 24"><path d="M11 4h2v2h2v2h2v2h-4v10h-2V10H7V8h2V6h2z"/></symbol>
   <symbol id="i-sun" viewBox="0 0 24 24"><path d="M10 1h4v3h-4zM10 20h4v3h-4zM1 10h3v4H1zM20 10h3v4h-3zM4 4h3v3H4zM17 4h3v3h-3zM4 17h3v3H4zM17 17h3v3h-3zM8 6h8v2H8zM6 8h2v8H6zM16 8h2v8h-2zM8 16h8v2H8z"/></symbol>
+  <symbol id="i-orders" viewBox="0 0 24 24"><path d="M16 2h2v2H16zM16 4h4v2H16zM2 6h20v2H2zM16 8h4v2H16zM16 10h2v2H16zM6 12h2v2H6zM4 14h4v2H4zM2 16h20v2H2zM4 18h4v2H4zM6 20h2v2H6z"/></symbol>
+  <symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M2 0h20v2H2zM2 2h20v2H2zM4 4h2v2H4zM18 4h2v2H18zM4 6h4v2H4zM16 6h4v2H16zM6 8h4v2H6zM14 8h4v2H14zM8 10h8v2H8zM8 12h8v2H8zM6 14h2v2H6zM10 14h4v2H10zM16 14h2v2H16zM4 16h2v2H4zM10 16h4v2H10zM18 16h2v2H18zM4 18h2v2H4zM8 18h8v2H8zM18 18h2v2H18zM2 20h20v2H2zM2 22h20v2H2z"/></symbol>
+  <symbol id="i-branch" viewBox="0 0 24 24"><path d="M0 0h4v2H0zM20 0h4v2H20zM0 2h4v2H0zM20 2h4v2H20zM2 4h4v2H2zM18 4h4v2H18zM4 6h4v2H4zM16 6h4v2H16zM6 8h4v2H6zM14 8h4v2H14zM8 10h8v2H8zM10 12h4v2H10zM10 14h4v2H10zM10 16h4v2H10zM10 18h4v2H10zM8 20h8v2H8zM8 22h8v2H8z"/></symbol>
+  <symbol id="i-books" viewBox="0 0 24 24"><path d="M4 2h16v2H4zM4 4h2v2H4zM16 4h4v2H16zM4 6h16v2H4zM2 8h20v2H2zM2 10h2v2H2zM16 10h6v2H16zM2 12h20v2H2zM6 14h16v2H6zM6 16h2v2H6zM16 16h6v2H16zM6 18h16v2H6zM2 20h20v2H2z"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><path d="M1 0h6v2H1zM9 0h6v2H9zM17 0h6v2H17zM1 2h6v2H1zM9 2h6v2H9zM17 2h6v2H17zM1 4h6v2H1zM9 4h6v2H9zM17 4h6v2H17zM1 8h6v2H1zM9 8h6v2H9zM17 8h6v2H17zM1 10h6v2H1zM9 10h6v2H9zM17 10h6v2H17zM1 12h6v2H1zM9 12h6v2H9zM17 12h6v2H17zM1 16h6v2H1zM9 16h6v2H9zM17 16h6v2H17zM1 18h6v2H1zM9 18h6v2H9zM17 18h6v2H17zM1 20h6v2H1zM9 20h6v2H9zM17 20h6v2H17z"/></symbol>
+  <symbol id="i-lens" viewBox="0 0 24 24"><path d="M6 0h8v2H6zM2 2h4v2H2zM14 2h4v2H14zM2 4h2v2H2zM16 4h2v2H16zM0 6h2v2H0zM18 6h2v2H18zM0 8h2v2H0zM18 8h2v2H18zM0 10h2v2H0zM18 10h2v2H18zM2 12h2v2H2zM16 12h2v2H16zM2 14h4v2H2zM14 14h4v2H14zM6 16h8v2H6zM16 16h4v2H16zM16 18h6v2H16zM18 20h6v2H18zM20 22h4v2H20z"/></symbol>
+  <symbol id="i-readers" viewBox="0 0 24 24"><path d="M4 0h4v2H4zM16 0h4v2H16zM2 2h8v2H2zM14 2h8v2H14zM2 4h8v2H2zM14 4h8v2H14zM4 6h4v2H4zM16 6h4v2H16zM4 10h4v2H4zM16 10h4v2H16zM2 12h8v2H2zM14 12h8v2H14zM0 14h12v2H0zM14 14h10v2H14zM0 16h12v2H0zM14 16h10v2H14zM0 18h12v2H0zM14 18h10v2H14z"/></symbol>
+  <symbol id="i-caution" viewBox="0 0 24 24"><path d="M10 0h4v2H10zM10 2h4v2H10zM8 4h8v2H8zM8 6h2v2H8zM14 6h2v2H14zM6 8h4v2H6zM14 8h4v2H14zM6 10h2v2H6zM10 10h4v2H10zM16 10h2v2H16zM4 12h4v2H4zM10 12h4v2H10zM16 12h4v2H16zM4 14h2v2H4zM10 14h4v2H10zM18 14h2v2H18zM2 16h4v2H2zM18 16h4v2H18zM2 18h2v2H2zM10 18h4v2H10zM20 18h2v2H20zM0 20h24v2H0zM0 22h24v2H0z"/></symbol>
+  <symbol id="i-quote" viewBox="0 0 24 24"><path d="M3 4h6v2H3zM15 4h6v2H15zM3 6h6v2H3zM15 6h6v2H15zM3 8h6v2H3zM15 8h6v2H15zM5 10h4v2H5zM17 10h4v2H17zM5 12h2v2H5zM15 12h4v2H15zM3 14h4v2H3zM15 14h2v2H15zM3 16h2v2H3zM13 16h4v2H13z"/></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24"><path d="M8 2h6v2H8zM6 4h4v2H6zM4 6h4v2H4zM2 8h4v8H2zM4 16h4v2H4zM6 18h12v2H6zM8 20h8v2H8zM10 4h2v6h-2zM12 10h2v2h-2zM14 12h6v2h-6zM18 14h4v2h-4zM16 16h4v2h-4z"/></symbol>
 </svg>
 
@@ -48,6 +59,7 @@
   <div class="header-title-strip">
     <span class="header-title">Can LLMs Tell Stories Out of Order?</span>
     <span class="header-status">arXiv Preprint</span>
+    <span class="read-progress" aria-hidden="true"><span data-read-progress></span></span>
   </div>
   <div class="header-inner">
     <a class="brand" href="#top">nonlinear narrative</a>
@@ -59,40 +71,44 @@
       <a href="#readers"><svg class="cursor" aria-hidden="true"><use href="#i-cursor"/></svg><span>Readers</span></a>
       <a href="#cite"><svg class="cursor" aria-hidden="true"><use href="#i-cursor"/></svg><span>Cite</span></a>
     </nav>
-    <button class="theme-toggle" type="button" data-theme-toggle hidden><svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg><span>Night</span></button>
+    <div class="header-tools">
+      <button class="theme-toggle motion-toggle" type="button" data-motion-toggle hidden aria-label="Hold all motion" aria-pressed="false" title="Hold all motion"><svg class="icon" aria-hidden="true"><use href="#i-pause"/></svg></button>
+      <button class="theme-toggle" type="button" data-theme-toggle hidden><svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg><span>Night</span></button>
+    </div>
   </div>
 </header>
 
-<main id="main" class="site-shell">
-  <p class="file-warning" data-file-warning hidden>This page is open from a file, so its charts and animation cannot load their data. Run <code>python3 -m http.server 8000</code> in this folder and open <code>http://localhost:8000</code>.</p>
+<main id="main">
+  <p class="file-warning site-shell" data-file-warning hidden>This page is open from a file, so its charts and animation cannot load their data. Run <code>python3 -m http.server 8000</code> in this folder and open <code>http://localhost:8000</code>.</p>
 
-  <!-- 1. Title block -->
-  <section id="top" class="title-block game-window" aria-labelledby="page-title">
-    <div class="window-title"><span>Corpus &amp; benchmark</span><span class="window-index">83 works · 19 models · 71 readers</span></div>
-    <div class="title-body">
-      <div class="title-art title-art--arrival" aria-hidden="true">
-        <img src="assets/img/title-arrival.png" width="160" height="160" alt="" decoding="async" draggable="false">
-      </div>
-      <div class="title-copy">
-        <h1 id="page-title">Can LLMs Tell Stories Out of Order?</h1>
-        <p class="subtitle">A Corpus and Benchmark for Nonlinear Narrative Generation</p>
-        <p class="byline">arXiv Preprint</p>
-        <div class="link-row">
-          <a class="btn btn-primary" href="http://arxiv.org/abs/2610.21468" data-paper-link><svg class="icon" aria-hidden="true"><use href="#i-paper"/></svg><span>Paper</span></a>
-          <a class="btn" href="https://github.com/Starscream-11813/LLM-nonlinear-storytelling" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-code"/></svg><span>Code &amp; Data</span><svg class="icon icon-trail" aria-hidden="true"><use href="#i-out"/></svg></a>
-          <a class="btn" href="#cite"><svg class="icon" aria-hidden="true"><use href="#i-brace"/></svg><span>BibTeX</span></a>
-        </div>
-      </div>
-      <div class="title-art title-art--black-hole" aria-hidden="true">
-        <img src="assets/img/title-interstellar.png" width="160" height="160" alt="" decoding="async" draggable="false">
+  <!-- 1. Title: the paper over two atmospheric backdrops from films told out of order.
+       Left, the heptapod logogram for "Time" (Arrival); right, Gargantua with
+       the Endurance (Interstellar). Both are pixel art drawn on canvases by
+       assets/js/eggs/; the images inside are the still frames for pages
+       without scripts. -->
+  <section id="top" class="title-block" aria-labelledby="page-title">
+    <div class="title-backdrop" aria-hidden="true">
+      <div class="egg egg--logogram" data-egg="logogram"><picture class="egg-still"><source srcset="assets/img/egg-logogram-night.png" media="(prefers-color-scheme: dark)"><img src="assets/img/egg-logogram.png" alt="" width="160" height="160" decoding="async" draggable="false"></picture></div>
+      <div class="egg egg--gargantua" data-egg="gargantua"><picture class="egg-still"><img src="assets/img/egg-gargantua.png" alt="" width="320" height="180" decoding="async" draggable="false"></picture></div>
+    </div>
+    <div class="title-copy">
+      <p class="title-kicker"><span>Corpus &amp; benchmark</span> <span class="title-kicker-stats">83 works · 19 models · 71 readers</span></p>
+      <h1 id="page-title">Can LLMs Tell Stories Out of Order?</h1>
+      <p class="subtitle">A Corpus and Benchmark for Nonlinear Narrative Generation</p>
+      <p class="byline">arXiv Preprint</p>
+      <div class="link-row">
+        <a class="btn btn-primary" href="http://arxiv.org/abs/2610.21468" data-paper-link><svg class="icon" aria-hidden="true"><use href="#i-paper"/></svg><span>Paper</span></a>
+        <a class="btn" href="https://github.com/Starscream-11813/LLM-nonlinear-storytelling" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-code"/></svg><span>Code &amp; Data</span><svg class="icon icon-trail" aria-hidden="true"><use href="#i-out"/></svg></a>
+        <a class="btn" href="#cite"><svg class="icon" aria-hidden="true"><use href="#i-brace"/></svg><span>BibTeX</span></a>
       </div>
     </div>
   </section>
 
+  <div class="site-shell">
   <!-- 2. Hero animation: Figure 2, then Figure 1 -->
   <section id="overview" class="section" aria-labelledby="overview-title">
     <div class="game-window hero-window">
-      <div class="window-title"><h2 id="overview-title">One story, two orders</h2><span class="window-index" data-hero-index>Figures 1 &amp; 2</span></div>
+      <div class="window-title"><h2 id="overview-title"><svg class="h2-icon" aria-hidden="true"><use href="#i-orders"/></svg>One story, two orders</h2><span class="window-index" data-hero-index>Figures 1 &amp; 2</span></div>
       <figure class="hero" data-hero aria-labelledby="hero-caption-title">
         <div class="hero-stage" data-hero-stage>
           <p class="hero-static">The animation needs JavaScript. The caption and the two lists below give the same orders and scores.</p>
@@ -140,7 +156,7 @@
 
   <!-- 3. TL;DR -->
   <section class="section tldr game-window" aria-labelledby="tldr-title">
-    <div class="window-title"><h2 id="tldr-title">TL;DR</h2><span class="window-index">Abstract</span></div>
+    <div class="window-title"><h2 id="tldr-title"><svg class="h2-icon" aria-hidden="true"><use href="#i-hourglass"/></svg>TL;DR</h2><span class="window-index">Abstract</span></div>
     <div class="window-body">
       <p class="lead"><strong>Every story has two orders: the order in which things happened and the order in which it is told. A story is nonlinear when these two orders differ.</strong> For each of 83 published works, the authors annotate one list of events in both orders, with a story graph of what causes, plants and explains what, then ask 19 language models to tell, read and write those stories out of order.</p>
       <div class="stat-tiles stat-tiles-3">
@@ -166,7 +182,7 @@
 
   <!-- 4. Seven shapes -->
   <section id="shapes" class="section game-window" aria-labelledby="shapes-title">
-    <div class="window-title"><h2 id="shapes-title">Seven shapes</h2><span class="window-index">§3 · Fig. 4 · Table 5</span></div>
+    <div class="window-title"><h2 id="shapes-title"><svg class="h2-icon" aria-hidden="true"><use href="#i-branch"/></svg>Seven shapes</h2><span class="window-index">§3 · Fig. 4 · Table 5</span></div>
     <div class="window-body">
       <p class="lead">Every work carries one of seven structural labels, which describe the order of its scenes. Each panel draws one corpus work as a story curve: told position runs across and chronological position up, so a chronological telling is the dotted diagonal. The work shown is the one nearest its category’s median in (τ, LIS), the selection Figure 4 uses.</p>
       <div class="shape-browser" data-shapes>
@@ -310,7 +326,7 @@
 
   <!-- 5. Corpus -->
   <section id="corpus" class="section game-window" aria-labelledby="corpus-title">
-    <div class="window-title"><h2 id="corpus-title">The corpus</h2><span class="window-index">§3 · Table 4</span></div>
+    <div class="window-title"><h2 id="corpus-title"><svg class="h2-icon" aria-hidden="true"><use href="#i-books"/></svg>The corpus</h2><span class="window-index">§3 · Table 4</span></div>
     <div class="window-body">
       <p class="lead">Each work is reduced to 12–20 key events, written as one self-contained sentence each, so the same sentences can be read in chronological order or in the work’s telling order. A telling is then a permutation of those events, and every score is arithmetic on that permutation rather than text matching.</p>
       <div class="stat-tiles">
@@ -374,7 +390,7 @@
 
   <!-- 6. Benchmark -->
   <section id="benchmark" class="section game-window" aria-labelledby="benchmark-title">
-    <div class="window-title"><h2 id="benchmark-title">Five tasks, nineteen models</h2><span class="window-index">§4 · Table 1</span></div>
+    <div class="window-title"><h2 id="benchmark-title"><svg class="h2-icon" aria-hidden="true"><use href="#i-grid"/></svg>Five tasks, nineteen models</h2><span class="window-index">§4 · Table 1</span></div>
     <div class="window-body">
       <p class="lead">Two tasks ask a model to produce a telling, two ask it to read one, and the fifth asks for prose. Tables label the cued and free conditions <em>instructed</em> and <em>left alone</em>.</p>
       <div class="task-table-wrap">
@@ -454,7 +470,7 @@
 
   <!-- 7. Findings -->
   <section id="findings" class="section game-window" aria-labelledby="findings-title">
-    <div class="window-title"><h2 id="findings-title">Findings</h2><span class="window-index">RQ1–RQ5 · Table 3</span></div>
+    <div class="window-title"><h2 id="findings-title"><svg class="h2-icon" aria-hidden="true"><use href="#i-lens"/></svg>Findings</h2><span class="window-index">RQ1–RQ5 · Table 3</span></div>
     <div class="window-body findings">
       <p class="lead">Five research questions. Each entry gives the paper’s one-line answer, a redrawn chart and the caveat the paper attaches to it. The reader study revised RQ3 and RQ5.</p>
 
@@ -600,7 +616,7 @@
 
   <!-- 8. Reader study -->
   <section id="readers" class="section game-window" aria-labelledby="readers-title">
-    <div class="window-title"><h2 id="readers-title">What readers said</h2><span class="window-index">§5.5 · Table 2 · Fig. 3</span></div>
+    <div class="window-title"><h2 id="readers-title"><svg class="h2-icon" aria-hidden="true"><use href="#i-readers"/></svg>What readers said</h2><span class="window-index">§5.5 · Table 2 · Fig. 3</span></div>
     <div class="window-body">
       <p class="lead">Readers saw the same kind of pair the judge sees: one model writing one story twice, under two conditions, with sides randomized and conditions hidden.</p>
       <div class="stat-tiles">
@@ -662,7 +678,7 @@
 
   <!-- 9. Limitations -->
   <section id="limitations" class="section game-window" aria-labelledby="limitations-title">
-    <div class="window-title"><h2 id="limitations-title">What to be careful about</h2><span class="window-index">Table 3 · Limitations</span></div>
+    <div class="window-title"><h2 id="limitations-title"><svg class="h2-icon" aria-hidden="true"><use href="#i-caution"/></svg>What to be careful about</h2><span class="window-index">Table 3 · Limitations</span></div>
     <div class="window-body">
       <ol class="limit-list">
       <li><span class="rq">RQ1</span><p data-k="summary.rows.0.careful">The reference works were chosen for nonlinearity, both free tasks list events chronologically, and no prompt marks scenes. Band hit is negatively associated with reader preference, partly through condition.</p></li>
@@ -677,7 +693,7 @@
 
   <!-- 10. Citation -->
   <section id="cite" class="section game-window" aria-labelledby="cite-title">
-    <div class="window-title"><h2 id="cite-title">Cite</h2><span class="window-index">BibTeX</span></div>
+    <div class="window-title"><h2 id="cite-title"><svg class="h2-icon" aria-hidden="true"><use href="#i-quote"/></svg>Cite</h2><span class="window-index">BibTeX</span></div>
     <div class="window-body">
       <div class="bibtex">
         <pre id="bibtex-text">@misc{raiyan2026nonlinearnarrative,
@@ -694,7 +710,23 @@
       <p class="copy-status" data-copy-status aria-live="polite"></p>
     </div>
   </section>
+  </div>
+
+  <!-- Epigraph: the last words, above the closing shot. Louise Banks learns the
+       heptapods' language and with it their sense of time: she lives a story whose
+       order she already knows. Above it, the heptapod logogram for "There is no
+       linear time", written by the reader's scroll. -->
+  <figure class="epigraph">
+    <div class="egg egg--epigraph" data-egg="epigraph" data-egg-scroll aria-hidden="true"><picture class="egg-still"><source srcset="assets/img/egg-epigraph-night.png" media="(prefers-color-scheme: dark)"><img src="assets/img/egg-epigraph.png" alt="" width="120" height="120" decoding="async" loading="lazy" draggable="false"></picture></div>
+    <blockquote class="epigraph-quote"><p><span class="epigraph-mark" aria-hidden="true">“</span>Despite knowing the journey and where it leads, I&nbsp;embrace it. And I&nbsp;welcome every moment of&nbsp;it.<span class="epigraph-mark" aria-hidden="true">”</span></p></blockquote>
+    <figcaption class="epigraph-source">— Dr. Louise Banks, <cite>Arrival</cite></figcaption>
+  </figure>
 </main>
+
+<!-- Closing shot: the shell over its fog-filled valley (Arrival), drawn by assets/js/eggs/. -->
+<div class="egg-band" aria-hidden="true">
+  <div class="egg egg--shell" data-egg="shell"><picture class="egg-still"><source srcset="assets/img/egg-shell-night.png" media="(prefers-color-scheme: dark)"><img src="assets/img/egg-shell.png" alt="" width="640" height="140" decoding="async" loading="lazy" draggable="false"></picture></div>
+</div>
 
 <footer class="site-footer site-shell game-window">
   <p>arXiv Preprint.</p>

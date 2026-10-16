@@ -6,7 +6,7 @@
 .hero-stage>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
 .hero-static{padding:24px;font-size:15px;color:var(--muted)}
 .js .hero-static{display:none}
-.hero-narration{min-height:3.3em;margin:10px 2px 0;font-size:15px;line-height:1.6}
+.hero-narration{min-height:3.3em;max-width:84ch;margin:12px 2px 0;font-size:15px;line-height:1.6}
 .hero-narration strong{font-family:var(--pixel);font-size:19px;font-weight:700;margin-right:6px}
 
 .hero-controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:10px;padding-top:12px;border-top:1px solid var(--rule)}
@@ -23,7 +23,7 @@
 .reduced .keys-hint{display:none}
 
 
-.hero figcaption{margin-top:12px;font-size:14px;line-height:1.65;color:var(--muted)}
+.hero figcaption{max-width:88ch;margin-top:14px;font-size:14px;line-height:1.7;color:var(--muted)}
 .hero figcaption strong{color:var(--ink);font-weight:500}
 .hero-orders{margin-top:4px}
 .orders-lists{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;font-size:13px}
@@ -71,6 +71,7 @@
 .h-bracket{fill:none;stroke:var(--muted);stroke-width:1.5;shape-rendering:crispEdges}
 .h-arrow{fill:none;stroke:currentColor;stroke-width:2;shape-rendering:crispEdges}
 .h-arrow-head{fill:currentColor;shape-rendering:crispEdges}
+.h-reveal-route{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;shape-rendering:geometricPrecision}
 .h-leader{fill:none;stroke:var(--muted);stroke-width:1;stroke-opacity:.8}
 .h-dialog{fill:var(--card);stroke:var(--frame);stroke-width:2;shape-rendering:crispEdges}
 .h-dialog-text{font-size:14px}

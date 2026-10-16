@@ -2,14 +2,16 @@
 
 .site-shell{width:min(var(--shell),calc(100% - 48px));margin:0 auto}
 main{padding:20px 0 8px}
-.section{margin-top:24px;scroll-margin-top:calc(var(--header-h) + 12px)}
+.section{margin-top:clamp(32px,4.4vw,60px);scroll-margin-top:calc(var(--header-h) + 12px)}
+/* The overview follows the title band's own bottom padding. */
+#overview{margin-top:clamp(4px,1vw,14px)}
 .skip-link{position:absolute;left:16px;top:-100px;z-index:100;padding:12px;background:var(--card);border:3px solid var(--frame);color:var(--ink)}
 .skip-link:focus{top:12px}
 .file-warning{margin:0 0 16px;padding:12px 16px;background:var(--gold-bg);border:2px solid var(--gold-rule);color:var(--ink);font-size:var(--t-small)}
 
 /* ---- Header ---- */
 .site-header{position:sticky;top:0;z-index:50;width:min(var(--shell),calc(100% - 48px));margin:16px auto 0;border:2px solid var(--frame);border-radius:4px;background:var(--card);box-shadow:inset 0 0 0 2px var(--frame-light),0 2px 0 var(--frame)}
-.header-title-strip{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--strip-bg);color:var(--strip-ink);padding:2px 16px;border-bottom:2px solid var(--frame);font-family:var(--pixel);font-size:18px;line-height:24px}
+.header-title-strip{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--strip-bg);color:var(--strip-ink);padding:2px 16px;border-bottom:2px solid var(--frame);font-family:var(--pixel);font-size:18px;line-height:24px}
 .header-title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .header-status{flex:0 0 auto;opacity:.9;white-space:nowrap}
 .header-inner{min-height:60px;padding:6px 12px;display:flex;align-items:center;gap:12px}
@@ -22,27 +24,74 @@ main{padding:20px 0 8px}
 .site-header nav a[aria-current=location] .cursor,.site-header nav a:hover .cursor,.site-header nav a:focus-visible .cursor{visibility:visible}
 .theme-toggle{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:44px;padding:5px 10px;background:var(--title-bg);color:var(--title-ink);border:2px solid var(--frame);border-radius:2px;font-family:var(--pixel);font-size:20px;line-height:1;cursor:pointer;flex:0 0 auto}
 .theme-toggle .icon{width:18px;height:18px}
+.header-tools{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.motion-toggle{min-width:44px;padding:5px 9px}
+.motion-toggle[aria-pressed=true]{background:var(--accent-soft)}
+/* Reading progress: a loading bar along the strip's lower edge, in two-pixel steps. */
+.read-progress{position:absolute;left:0;right:0;bottom:-2px;height:2px;pointer-events:none;overflow:hidden}
+.read-progress span{display:block;height:100%;background:var(--accent);transform-origin:0 50%;transform:scaleX(0)}
 
-/* ---- Title block ---- */
-.title-block{margin-top:0}
-.title-body{display:grid;grid-template-columns:minmax(120px,clamp(120px,14vw,170px)) minmax(0,1fr) minmax(120px,clamp(120px,14vw,170px));grid-template-areas:'arrival copy black-hole';align-items:stretch;gap:clamp(14px,2vw,28px);padding:28px 24px 26px;text-align:center}
-.title-copy{grid-area:copy;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.title-art{display:grid;place-items:center;min-width:0;min-height:150px;overflow:hidden}
-.title-art--arrival{grid-area:arrival}
-.title-art--black-hole{grid-area:black-hole}
-.title-art img{display:block;width:100%;height:100%;max-height:220px;object-fit:contain;image-rendering:pixelated}
-.title-block h1{font-size:clamp(2rem,1.2rem + 3.4vw,3.4rem);line-height:1.05;margin:0 auto 10px;max-width:22ch}
+/* ---- Title: two films about time dissolve into the page behind the paper ---- */
+.title-block{position:relative;isolation:isolate;overflow:clip;display:grid;place-items:center;min-height:clamp(620px,36vw,680px);padding:180px 24px 56px;text-align:center}
+.title-copy{position:relative;z-index:1;width:min(100%,620px);min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+/* A soft pool of the page color keeps the type legible as the scenes move. */
+.title-copy::before{content:'';position:absolute;z-index:-1;inset:-48px -64px;pointer-events:none;background:radial-gradient(ellipse closest-side,var(--bg) 48%,color-mix(in srgb,var(--bg) 98%,transparent) 75%,transparent 100%)}
+.title-backdrop{position:absolute;inset:0;overflow:hidden;pointer-events:none;user-select:none;-webkit-mask-image:linear-gradient(transparent,#000 8%,#000 85%,transparent);mask-image:linear-gradient(transparent,#000 8%,#000 85%,transparent)}
+.title-kicker{display:inline-flex;flex-wrap:wrap;justify-content:center;gap:0 10px;margin:0 0 16px;padding:3px 12px;border:2px solid var(--frame-mid);background:var(--card);box-shadow:0 2px 0 var(--frame-mid);font-family:var(--pixel);font-size:18px;line-height:1.25;color:var(--ink)}
+.title-kicker-stats{color:var(--muted)}
+.title-block h1{font-size:clamp(2rem,1.2rem + 3.4vw,3rem);line-height:1.05;margin:0 auto 10px;max-width:22ch}
 .subtitle{font-family:var(--pixel);font-size:clamp(1.25rem,1rem + 1.2vw,1.75rem);line-height:1.2;margin:0 auto 14px;max-width:34ch;color:var(--ink)}
 .byline{font-size:var(--t-small);color:var(--muted);margin:0 0 18px}
 .link-row{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
 .icon-trail{width:14px;height:14px}
 
+/* ---- Pixel-art cameos (assets/js/eggs/) ---- */
+.egg{--egg-px:2;position:relative;display:grid;place-items:center;min-width:0;pointer-events:none;user-select:none;-webkit-user-select:none}
+.title-backdrop .egg{position:absolute;top:50%;transform:translateY(-50%)}
+.title-backdrop .egg--logogram{top:50%}
+/* Fit the full ink silhouette into the space left of the centered title. The
+   circular window includes the long splatter tips before its outer fade. */
+.egg--logogram{width:clamp(280px,calc(50vw - 220px),760px);aspect-ratio:1;left:0;opacity:.78;-webkit-mask-image:radial-gradient(circle closest-side at 50% 50%,#000 105%,transparent 135%);mask-image:radial-gradient(circle closest-side at 50% 50%,#000 105%,transparent 135%)}
+/* Preserve the film's proportions; broad feathering removes every edge of its frame.
+   Art resolution stays modest even when the atmospheric layer spans a wide screen. */
+.title-backdrop .egg--gargantua{top:-16px;transform:none}
+.egg--gargantua{--egg-px:2.5;width:min(48vw,1000px);aspect-ratio:16/9;right:12px;opacity:var(--gargantua-opacity);
+  /* Keep the horizon inside the viewport. Separate edge fades preserve its
+     upper and lower arcs while the radial vignette softens the dark corners. */
+  --space-mask:radial-gradient(ellipse 65% 70% at 60% 50%,#000 20%,rgba(0,0,0,.95) 60%,transparent 100%),linear-gradient(to right,transparent,#000 15%,#000 94%,transparent),linear-gradient(transparent,#000 20%,#000 80%,transparent);
+  -webkit-mask-image:var(--space-mask);mask-image:var(--space-mask);-webkit-mask-composite:source-in;mask-composite:intersect}
+/* Daylight needs deeper shadows and warmer filaments. Grade the live pixels and
+   their fallback alike; night keeps the original palette and translucency. */
+.egg--gargantua .egg-canvas,.egg--gargantua .egg-still img{filter:var(--gargantua-filter)}
+.egg-canvas{grid-area:1/1;display:block;max-width:100%;height:auto;image-rendering:pixelated}
+.egg-still{grid-area:1/1}
+.egg-still,.egg-still img{display:block;width:100%;height:auto;image-rendering:pixelated}
+/* Keep a still visible until its first live frame, including if a scene fails to load. */
+.egg.is-live .egg-still{display:none}
+/* Closing shot above the footer: the full width of the page, the footer card sits in the fog. */
+.egg-band{position:relative;margin:clamp(2px,1vw,12px) 0 calc(-1 * clamp(20px,2.2vw,34px))}
+.egg--shell{width:100%;height:clamp(160px,23vw,340px)}
+.egg--shell .egg-still{height:100%}
+.egg--shell .egg-still img{height:100%;object-fit:cover}
+.egg-band+.site-footer{position:relative;z-index:1}
+
+/* ---- Epigraph: the last words, spoken over the closing shot ---- */
+.epigraph{max-width:860px;margin:clamp(56px,7vw,96px) auto 0;padding:0 16px;text-align:center}
+.egg--epigraph{width:min(240px,66vw);aspect-ratio:1;margin:0 auto 18px}
+.epigraph-quote{margin:0}
+.epigraph-quote p{max-width:50ch;margin:0 auto;font-family:var(--pixel);font-size:clamp(1.3rem,.95rem + 1.4vw,2.05rem);line-height:1.4;color:var(--ink);text-wrap:balance}
+.epigraph-mark{color:var(--accent)}
+.epigraph-source{margin:18px 0 0;font-family:var(--pixel);font-size:clamp(16px,.85rem + .35vw,20px);line-height:1.3;color:var(--muted)}
+.epigraph-source cite{font-style:normal;color:var(--accent)}
+
 /* ---- Common text ---- */
-.window-body .lead{font-size:var(--t-body);max-width:78ch;margin-bottom:18px}
-.small,.table-note,.chart-note{font-size:var(--t-small);color:var(--muted);line-height:1.6}
+/* Prose stays at a readable measure inside the wide windows. */
+.window-body p{max-width:78ch}
+.window-body .lead{font-size:var(--t-body);max-width:68ch;margin-bottom:20px}
+.small,.table-note,.chart-note{font-size:var(--t-small);color:var(--muted);line-height:1.6;max-width:92ch}
 .table-note{margin:4px 0 10px}
 .chart-note{margin:8px 0 0}
-.sub-heading{font-size:24px;margin:26px 0 10px}
+.sub-heading{font-size:24px;margin:38px 0 12px}
 .edge-word{font-family:var(--pixel);font-size:1.05em;letter-spacing:.02em;color:var(--role-explanation-text)}
 .two-col{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-top:8px}
 .two-col p{font-size:15px}
@@ -56,10 +105,10 @@ main{padding:20px 0 8px}
 .stat-label{font-size:13.5px;line-height:1.55;color:var(--muted);margin:0}
 
 /* ---- TL;DR ---- */
-.tldr .lead{max-width:none}
+.tldr .lead{max-width:72ch}
 .abstract{margin-top:14px;border-top:1px solid var(--rule)}
 .abstract>summary,.table-view>summary,.hero-orders summary{font-family:var(--pixel);font-size:20px;line-height:1.2;color:var(--accent);padding:10px 0;min-height:44px;cursor:pointer}
-.abstract p{font-size:15px;line-height:1.75;max-width:80ch}
+.abstract p{font-size:15px;line-height:1.75;max-width:70ch}
 
 /* ---- Shapes ---- */
 .shape-nav{display:flex;align-items:center;gap:8px;margin:4px 0 14px;flex-wrap:wrap}
@@ -150,6 +199,28 @@ main{padding:20px 0 8px}
 .open-tag{display:inline-block;margin-left:6px;padding:0 5px;border:1px solid var(--frame-mid);font-family:var(--pixel);font-size:14px;line-height:1.35;color:var(--muted);font-style:normal;vertical-align:1px}
 .reference-rows tr:first-child th,.reference-rows tr:first-child td{border-top:2px solid var(--frame)}
 .reference-rows th em{color:var(--muted)}
+/* Benchmark grid: task groups ruled apart, a striped body, the sorted column
+   tinted; the header (and, when it scrolls sideways, the model names) stays in
+   view. page.js marks the box .is-overflowing when the table is wider than it. */
+.leaderboard{border-collapse:separate;border-spacing:0}
+.leaderboard th,.leaderboard td{padding:8px 12px}
+.leaderboard thead{position:sticky;top:calc(var(--header-h) + 6px);z-index:2}
+.leaderboard thead th{box-shadow:0 1px 0 var(--frame-mid)}
+.table-scroll:not(.is-overflowing){overflow:visible}
+.table-scroll.is-overflowing{max-height:min(78vh,760px);overflow:auto;overscroll-behavior:auto}
+.table-scroll.is-overflowing .leaderboard thead{top:0}
+.leaderboard th[scope=row]{background:var(--card)}
+.leaderboard [data-lb-body] tr:nth-child(even),.leaderboard [data-lb-body] tr:nth-child(even) th[scope=row]{background:color-mix(in srgb,var(--fill) 55%,var(--card))}
+.leaderboard tbody tr:hover,.leaderboard tbody tr:hover th[scope=row]{background:var(--fill-hover)}
+.table-scroll.is-overflowing .leaderboard th[scope=row],.table-scroll.is-overflowing .leaderboard thead .col-model{position:sticky;left:0;z-index:1}
+.table-scroll.is-overflowing .leaderboard thead .col-model{z-index:3}
+.leaderboard .group-row th:not(.col-model),
+.leaderboard thead tr:last-child th:is(:nth-child(1),:nth-child(3),:nth-child(5),:nth-child(6)),
+.leaderboard td:is(:nth-child(2),:nth-child(4),:nth-child(6),:nth-child(7)){border-left:2px solid var(--frame-mid)}
+.leaderboard[data-sorted-col="2"] td:nth-child(2),.leaderboard[data-sorted-col="3"] td:nth-child(3),
+.leaderboard[data-sorted-col="4"] td:nth-child(4),.leaderboard[data-sorted-col="5"] td:nth-child(5),
+.leaderboard[data-sorted-col="6"] td:nth-child(6),.leaderboard[data-sorted-col="7"] td:nth-child(7){background:color-mix(in srgb,var(--accent-soft) 38%,transparent)}
+.leaderboard[data-sorted-col="1"] tbody th[scope=row] .model-name{color:var(--accent-strong)}
 .sort-btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:4px;font:inherit;color:inherit;min-height:28px}
 .sort-btn:focus-visible{outline:3px solid var(--accent-strong);outline-offset:2px}
 .sort-btn::after{content:'';width:10px;height:10px;opacity:.35;background:currentColor;clip-path:polygon(0 40%,50% 0,100% 40%,100% 60%,50% 100%,0 60%)}
@@ -171,7 +242,7 @@ main{padding:20px 0 8px}
 .finding[open]>summary::after{content:'− close'}
 .revised-tag{grid-column:1/-1;justify-self:start}
 .finding-body{padding:16px 16px 18px}
-.finding-body>p{font-size:15px;max-width:88ch}
+.finding-body>p{font-size:15px;max-width:72ch}
 .mini-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 14px}
 .mini-stats p{margin:0;background:var(--fill);border:1px solid var(--frame-mid);padding:8px 10px}
 .mini-value{display:block;font-family:var(--pixel);font-size:30px;font-weight:700;line-height:1.05}
@@ -276,17 +347,32 @@ main{padding:20px 0 8px}
 .verdict-adj strong{color:var(--ink);font-family:var(--pixel);font-size:17px}
 
 /* ---- Responsive ---- */
+@media (min-width:1101px){
+  /* Preserve the backdrop in the unused left margin without shifting the copy. */
+  .title-copy::before{-webkit-mask-image:linear-gradient(to right,transparent 15%,#000 27%);mask-image:linear-gradient(to right,transparent 15%,#000 27%)}
+}
+@media (min-width:1400px){
+  .title-block{padding-top:200px}
+  .title-backdrop .egg--gargantua{top:-28px;width:min(44vw,1000px)}
+}
 @media (max-width:1000px){
+  .title-block{min-height:440px}
+  .egg--logogram{width:min(44vw,400px);opacity:.48}
   .edge-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
   .stat-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
   .site-header nav a{font-size:20px;padding-right:6px}
   .brand{font-size:22px}
 }
+/* On tablets the artwork crowns the centered title, clear of its text wash. */
+@media (min-width:601px) and (max-width:1100px){
+  .title-block{min-height:660px;padding:208px 24px 56px}
+  .title-backdrop .egg--gargantua{top:-20px;width:min(76vw,800px);opacity:var(--gargantua-tablet-opacity)}
+}
 /* Brand, six links and the theme button need about 1100px on one line;
    below that the links take their own row under the brand. */
 @media (max-width:1120px){
   .header-inner{flex-wrap:wrap;gap:0 10px;padding:6px 8px}
-  .theme-toggle{margin-left:auto}
+  .header-tools{margin-left:auto}
   .site-header nav{order:3;flex:1 1 100%;margin:0;justify-content:space-between;gap:0;overflow-x:auto;scrollbar-width:none}
   .site-header nav::-webkit-scrollbar{display:none}
   .site-header nav a{flex:0 0 auto;padding:6px 6px 6px 0;font-size:20px}
@@ -311,13 +397,11 @@ main{padding:20px 0 8px}
   .verdicts{grid-template-columns:minmax(0,1fr)}
 }
 @media (max-width:760px){
-  .title-body{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:'copy copy' 'arrival black-hole';gap:14px;padding-left:16px;padding-right:16px}
-  .title-art{height:120px;min-height:96px}
-  .title-art img{max-height:120px}
+  .egg{--egg-px:1.5}
+  .egg--gargantua{--egg-px:2}
 }
 @media (max-width:600px){
   :root{--header-h:132px}
-  body{background-size:960px 427px}
   .site-shell,.site-header{width:calc(100% - 20px)}
   .site-header{margin-top:10px}
   .header-title-strip{padding:1px 10px;font-size:15px;line-height:20px}
@@ -330,7 +414,13 @@ main{padding:20px 0 8px}
   .window-title{flex-wrap:wrap;row-gap:2px}
   .window-title .window-index{font-size:15px;white-space:normal;min-width:0}
   .window-body{padding:14px 12px 16px}
-  .title-body{padding:20px 12px}
+  .title-block{min-height:430px;padding:56px 16px 64px}
+  .title-copy::before{inset:-38px -12px;background:radial-gradient(ellipse closest-side,var(--bg) 38%,color-mix(in srgb,var(--bg) 90%,transparent) 68%,transparent 100%)}
+  .title-backdrop .egg--logogram{top:22%;width:min(58vw,260px);left:0;opacity:.35}
+  .title-backdrop .egg--gargantua{top:86%;transform:translateY(-50%);width:100%;right:0;opacity:var(--gargantua-mobile-opacity)}
+  .title-kicker{font-size:16px;padding:2px 8px;margin-bottom:12px}
+  .leaderboard th[scope=row]{white-space:normal;min-width:7.5em;max-width:9.5em;line-height:1.3}
+  .leaderboard .open-tag{margin-left:0;font-size:12px}
   .btn{font-size:20px;padding:6px 10px}
   .stat-tiles{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
   .stat-value{font-size:30px}
@@ -350,11 +440,6 @@ main{padding:20px 0 8px}
   .site-footer{flex-direction:column;align-items:flex-start}
   .site-footer>div{justify-content:flex-start}
 }
-@media (max-width:480px){
-  .title-body{grid-template-columns:minmax(0,1fr);grid-template-areas:'copy' 'arrival' 'black-hole';gap:10px}
-  .title-art{height:108px;min-height:88px}
-  .title-art img{max-height:108px}
-}
 @media (max-width:380px){
   .stat-tiles,.edge-cards,.mini-stats{grid-template-columns:minmax(0,1fr)}
   .site-header nav a{font-size:15px}
@@ -362,5 +447,5 @@ main{padding:20px 0 8px}
 @media print{
   :root{color-scheme:light}
   body{background:#fff}
-  .site-header,.hero-controls,.theme-toggle,.btn{display:none!important}
+  .site-header,.hero-controls,.theme-toggle,.btn,.egg,.egg-band{display:none!important}
 }

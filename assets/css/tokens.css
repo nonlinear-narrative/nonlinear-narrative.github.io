@@ -15,13 +15,14 @@
   --font:'IBM Plex Mono',Menlo,Consolas,'DejaVu Sans Mono',ui-monospace,monospace;
   --pixel:'Pixel Operator Mono',Menlo,Consolas,'DejaVu Sans Mono',ui-monospace,monospace;
   --bg:#f2e9d8;--card:#fff7e8;--ink:#1e2a32;--muted:#59666b;
+  --gargantua-opacity:1;--gargantua-tablet-opacity:1;--gargantua-mobile-opacity:.8;
+  --gargantua-filter:brightness(.98) contrast(1.16) saturate(1.1);
   --frame:#29434a;--frame-mid:#9cb4ac;--frame-light:#fffdf4;
   --rule:#d6d0be;--fill:#e9efe8;--fill-hover:#dbe6de;
   --accent:#a64a35;--accent-strong:#843526;--accent-soft:#f6d2b8;
   --button-bg:#a64a35;--button-hover:#843526;--button-ink:#fff7e8;
   --title-bg:#bdd3c7;--title-ink:#1e2a32;--strip-bg:#203d43;--strip-ink:#fff7e8;
   --gold:#795a26;--gold-bg:#f3e5aa;--gold-rule:#a88745;
-  --sky:url('../img/sky-day.svg');
 
   /* Figure roles (Figure 2 legend), validated against --card for 3:1 and CVD. */
   --role-consequence:#1d7a71;--role-explanation:#d45a3a;--role-clue:#a86c1e;--role-other:#6a6b66;
@@ -41,13 +42,14 @@
 html[data-theme=dark]{
   color-scheme:dark;
   --bg:#13252b;--card:#1d343a;--ink:#f6eddb;--muted:#b4c3bc;
+  --gargantua-opacity:.9;--gargantua-tablet-opacity:.78;--gargantua-mobile-opacity:.46;
+  --gargantua-filter:none;
   --frame:#9bbab0;--frame-mid:#4b6568;--frame-light:#2a464b;
   --rule:#3b595c;--fill:#28444a;--fill-hover:#33545a;
   --accent:#f08a68;--accent-strong:#ffad8a;--accent-soft:#5a3940;
   --button-bg:#f08a68;--button-hover:#ffad8a;--button-ink:#1d343a;
   --title-bg:#34565a;--title-ink:#f6eddb;--strip-bg:#10232a;--strip-ink:#fff7e8;
   --gold:#e7c56b;--gold-bg:#4b4331;--gold-rule:#b89a4b;
-  --sky:url('../img/sky-night.svg');
   --role-consequence:#4cc0b1;--role-explanation:#f08a68;--role-clue:#e3b85e;--role-other:#9aa8a1;
   --role-consequence-text:#75d6c7;--role-explanation-text:#f9b39a;--role-clue-text:#f4cf84;--role-other-text:#b4c3bc;
   --series-a:#4cc0b1;--series-b:#f08a68;--series-tie:#5d7776;--seg-ink-a:#13252b;--seg-ink-b:#1d343a;
@@ -58,13 +60,14 @@ html[data-theme=dark]{
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]){
   color-scheme:dark;
   --bg:#13252b;--card:#1d343a;--ink:#f6eddb;--muted:#b4c3bc;
+  --gargantua-opacity:.9;--gargantua-tablet-opacity:.78;--gargantua-mobile-opacity:.46;
+  --gargantua-filter:none;
   --frame:#9bbab0;--frame-mid:#4b6568;--frame-light:#2a464b;
   --rule:#3b595c;--fill:#28444a;--fill-hover:#33545a;
   --accent:#f08a68;--accent-strong:#ffad8a;--accent-soft:#5a3940;
   --button-bg:#f08a68;--button-hover:#ffad8a;--button-ink:#1d343a;
   --title-bg:#34565a;--title-ink:#f6eddb;--strip-bg:#10232a;--strip-ink:#fff7e8;
   --gold:#e7c56b;--gold-bg:#4b4331;--gold-rule:#b89a4b;
-  --sky:url('../img/sky-night.svg');
   --role-consequence:#4cc0b1;--role-explanation:#f08a68;--role-clue:#e3b85e;--role-other:#9aa8a1;
   --role-consequence-text:#75d6c7;--role-explanation-text:#f9b39a;--role-clue-text:#f4cf84;--role-other-text:#b4c3bc;
   --series-a:#4cc0b1;--series-b:#f08a68;--series-tie:#5d7776;--seg-ink-a:#13252b;--seg-ink-b:#1d343a;
@@ -75,11 +78,11 @@ html[data-theme=dark]{
 
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:calc(var(--header-h) + 16px);-webkit-text-size-adjust:100%}
-body{margin:0;color:var(--ink);background-color:var(--bg);background-image:var(--sky);background-position:center top;background-size:1440px 640px;background-repeat:no-repeat;font-family:var(--font);font-size:var(--t-body);line-height:1.65;overflow-x:hidden}
+body{margin:0;color:var(--ink);background-color:var(--bg);font-family:var(--font);font-size:var(--t-body);line-height:1.65;overflow-x:hidden}
 ::selection{background:var(--accent-soft);color:var(--ink)}
 h1,h2,h3,h4,p,figure,blockquote{margin:0}
 h1,h2,h3{font-family:var(--pixel);font-weight:700;line-height:1.1;letter-spacing:0}
-p{margin:0 0 12px}
+p{margin:0 0 14px;text-wrap:pretty}
 strong{font-weight:500}
 em,i{font-style:italic}
 a{color:var(--accent);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
@@ -97,9 +100,11 @@ code{font-family:var(--font);font-size:.92em;background:var(--fill);padding:0 4p
 /* Window frame: double inset border with a 2px drop. */
 .game-window{border:2px solid var(--frame);border-radius:3px;background:var(--card);box-shadow:inset 0 0 0 2px var(--frame-light),inset 0 0 0 3px var(--frame-mid),0 2px 0 var(--frame-mid)}
 .window-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:3px 3px 0;background:var(--title-bg);color:var(--title-ink);border-bottom:2px solid var(--frame);font-family:var(--pixel);padding:7px 16px;font-size:26px;line-height:1.1}
-.window-title h2{font-size:28px;margin:0}
+.window-title h2{display:flex;align-items:center;gap:12px;font-size:28px;margin:0}
+/* Section icons, in the 24-unit pixel grid of the other icons. */
+.h2-icon{width:24px;height:24px;flex:0 0 auto;fill:var(--accent)}
 .window-title .window-index{font-size:20px;font-weight:400;color:var(--title-ink);white-space:nowrap}
-.window-body{padding:20px 22px 22px}
+.window-body{padding:clamp(20px,2.2vw,30px) clamp(18px,2.6vw,34px) clamp(22px,2.4vw,32px)}
 
 /* Pixel ▶ cursor, shown on hover and focus. */
 .cursor{width:14px;height:14px;flex:0 0 auto;visibility:hidden}
@@ -120,6 +125,23 @@ code{font-family:var(--font);font-size:.92em;background:var(--fill);padding:0 4p
 .tag-survives,.tag-agrees{background:var(--tag-survives-bg)}
 .tag-against,.tag-unrelated{background:var(--tag-against-bg)}
 .tag-length,.tag-weak{background:var(--tag-length-bg)}
+
+/* Day and night: the new palette dissolves in through a 4×4 Bayer dither, two
+   CSS pixels per mask pixel, in eight steps (View Transitions; page.js skips
+   it, and the switch is instant, without them or when motion is held). */
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+::view-transition-new(root){animation:theme-dither .44s linear both;-webkit-mask-size:8px 8px;mask-size:8px 8px;-webkit-mask-repeat:repeat;mask-repeat:repeat}
+@keyframes theme-dither{
+  0%{-webkit-mask-image:linear-gradient(transparent,transparent);mask-image:linear-gradient(transparent,transparent)}
+  12.5%{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM2 2h1v1H2z'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM2 2h1v1H2z'/%3E%3C/svg%3E")}
+  25.0%{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM2 0h1v1H2zM0 2h1v1H0zM2 2h1v1H2z'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM2 0h1v1H2zM0 2h1v1H0zM2 2h1v1H2z'/%3E%3C/svg%3E")}
+  37.5%{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM2 0h1v1H2zM1 1h1v1H1zM0 2h1v1H0zM2 2h1v1H2zM3 3h1v1H3z'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM2 0h1v1H2zM1 1h1v1H1zM0 2h1v1H0zM2 2h1v1H2zM3 3h1v1H3z'/%3E%3C/svg%3E")}
+  50.0%{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM2 0h1v1H2zM1 1h1v1H1zM3 1h1v1H3zM0 2h1v1H0zM2 2h1v1H2zM1 3h1v1H1zM3 3h1v1H3z'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM2 0h1v1H2zM1 1h1v1H1zM3 1h1v1H3zM0 2h1v1H0zM2 2h1v1H2zM1 3h1v1H1zM3 3h1v1H3z'/%3E%3C/svg%3E")}
+  62.5%{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM1 0h1v1H1zM2 0h1v1H2zM1 1h1v1H1zM3 1h1v1H3zM0 2h1v1H0zM2 2h1v1H2zM3 2h1v1H3zM1 3h1v1H1zM3 3h1v1H3z'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM1 0h1v1H1zM2 0h1v1H2zM1 1h1v1H1zM3 1h1v1H3zM0 2h1v1H0zM2 2h1v1H2zM3 2h1v1H3zM1 3h1v1H1zM3 3h1v1H3z'/%3E%3C/svg%3E")}
+  75.0%{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM1 0h1v1H1zM2 0h1v1H2zM3 0h1v1H3zM1 1h1v1H1zM3 1h1v1H3zM0 2h1v1H0zM1 2h1v1H1zM2 2h1v1H2zM3 2h1v1H3zM1 3h1v1H1zM3 3h1v1H3z'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM1 0h1v1H1zM2 0h1v1H2zM3 0h1v1H3zM1 1h1v1H1zM3 1h1v1H3zM0 2h1v1H0zM1 2h1v1H1zM2 2h1v1H2zM3 2h1v1H3zM1 3h1v1H1zM3 3h1v1H3z'/%3E%3C/svg%3E")}
+  87.5%{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM1 0h1v1H1zM2 0h1v1H2zM3 0h1v1H3zM0 1h1v1H0zM1 1h1v1H1zM3 1h1v1H3zM0 2h1v1H0zM1 2h1v1H1zM2 2h1v1H2zM3 2h1v1H3zM1 3h1v1H1zM2 3h1v1H2zM3 3h1v1H3z'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM1 0h1v1H1zM2 0h1v1H2zM3 0h1v1H3zM0 1h1v1H0zM1 1h1v1H1zM3 1h1v1H3zM0 2h1v1H0zM1 2h1v1H1zM2 2h1v1H2zM3 2h1v1H3zM1 3h1v1H1zM2 3h1v1H2zM3 3h1v1H3z'/%3E%3C/svg%3E")}
+  100%{-webkit-mask-image:none;mask-image:none}
+}
 
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}

@@ -7,7 +7,10 @@
 // Checks, at 360, 768 and 1280 px, in day and night, with and without reduced motion:
 //   no sideways page scroll; no console errors; no request leaves the site's origin.
 // Then: controls, point-by-point playback/lifecycle checks with a virtual clock,
-// and screenshots of every hero scene and representative shape loop frames.
+// the pixel-art cameos' playback (on screen only, still under reduced motion),
+// the header's motion toggle, the benchmark grid's sticky header and the reading
+// progress bar,
+// and screenshots of every hero scene, representative shape loop frames and the cameos.
 
 import { mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -61,6 +64,30 @@ async function open(width, theme, motion, { clock = false } = {}) {
   return { context, page, problems };
 }
 
+// ---- pixel-art cameos (assets/js/eggs/) -----------------------------------------
+// The cameos share one animation loop while any of them plays; checks on the
+// other components' loops discount it.
+const componentRafs = page => page.evaluate(() => window.__verificationRafCount()
+  - (document.querySelector('[data-egg][data-playback="playing"]') ? 1 : 0));
+async function eggState(page) {
+  return page.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-egg]')].map(node => {
+    const canvas = node.querySelector('canvas');
+    let painted = 0, sum = 0;
+    if (canvas && canvas.width) {
+      const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+      for (let i = 0; i < data.length; i += 4) {
+        if (data[i + 3]) painted++;
+        sum = (sum * 31 + data[i] + data[i + 1] * 3 + data[i + 2] * 7 + data[i + 3]) >>> 0;
+      }
+      painted /= data.length / 4;
+    }
+    return [node.dataset.egg, {
+      playback: node.dataset.playback, time: +node.dataset.time, painted: +painted.toFixed(3), sum, live: node.classList.contains('is-live'),
+      scrolled: node.hasAttribute('data-egg-scroll'), progress: +(node.dataset.progress || 0),
+    }];
+  })));
+}
+
 // ---- matrix -------------------------------------------------------------------
 if (!motionOptInOnly) {
 for (const width of [360, 768, 1280]) {
@@ -75,9 +102,16 @@ for (const width of [360, 768, 1280]) {
       // Charts must have drawn.
       const charts = await page.evaluate(() => [...document.querySelectorAll('[data-chart]')].map(n => [n.dataset.chart, n.childElementCount]));
       for (const [name, count] of charts) if (!count) fail(`${tag}: chart ${name} is empty`);
-      // Anything wider than its section is clipped or overflows.
+      // Cameos: drawn (the scroll-written logogram may still be blank at the top), and still under reduced motion.
+      for (const [name, egg] of Object.entries(await eggState(page))) {
+        const blank = egg.scrolled ? motion === 'reduce' && egg.painted < 0.05 : egg.painted < 0.2;
+        if (!egg.live || blank) fail(`${tag}: cameo ${name} is not drawn (${JSON.stringify(egg)})`);
+        if (motion === 'reduce' && egg.playback !== 'static') fail(`${tag}: cameo ${name} moves under reduced motion (${egg.playback})`);
+      }
+      // The title backdrop intentionally crops its masked artwork at the viewport.
+      // Other content must fit; the scrollWidth check above also covers the backdrop.
       const overflow = await page.evaluate(() => [...document.querySelectorAll('main *')].filter(n => {
-        if (n.closest('.table-scroll,.table-view,.shape-tabs,svg')) return false;
+        if (n.closest('.title-backdrop,.table-scroll,.table-view,.shape-tabs,svg')) return false;
         const r = n.getBoundingClientRect();
         return r.width && r.right > document.documentElement.clientWidth + 1;
       }).slice(0, 5).map(n => `${n.tagName.toLowerCase()}.${[...n.classList].join('.')}`));
@@ -127,6 +161,23 @@ for (const width of [360, 768, 1280]) {
   const top = await page.locator('[data-lb-body] tr:first-child .model-name').textContent();
   if (top !== 'Gemini 3.6 Flash') fail(`sorting by τ free put ${top} first`);
   if (await page.locator('[data-sort="t2TauFree"]').evaluate(b => b.closest('th').getAttribute('aria-sort')) !== 'descending') fail('aria-sort not set');
+  if (await page.locator('[data-leaderboard]').getAttribute('data-sorted-col') !== '7') fail('the sorted grid column is not marked');
+  // The grid's header stays in view below the page header while its rows scroll.
+  const stuck = await page.evaluate(() => {
+    const table = document.querySelector('[data-leaderboard]');
+    window.scrollTo({ top: table.getBoundingClientRect().top + window.scrollY + 300, behavior: 'instant' });
+    const headerH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h'));
+    return { head: table.tHead.getBoundingClientRect().top, want: headerH + 6, overflowing: table.closest('.table-scroll').classList.contains('is-overflowing') };
+  });
+  if (stuck.overflowing || Math.abs(stuck.head - stuck.want) > 2) fail(`benchmark grid header did not stick (${JSON.stringify(stuck)})`);
+  // Every section title carries its pixel icon.
+  if (await page.locator('.window-title .h2-icon').count() !== 9) fail('section titles lost their icons');
+  // Reading progress fills the header strip's bar at the end of the page.
+  await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+  await page.waitForTimeout(150);
+  const filled = await page.locator('[data-read-progress]').evaluate(n => getComputedStyle(n).transform);
+  if (filled !== 'matrix(1, 0, 0, 1, 0, 0)' && filled !== 'none') fail(`reading progress did not fill (${filled})`);
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
   // Shape browser: arrow key moves to the next shape and draws its curve.
   await page.locator('#tab-chronicle').focus();
   await page.keyboard.press('ArrowRight');
@@ -156,6 +207,15 @@ for (const width of [360, 768, 1280]) {
 // runFor preserves every frame; fastForward would skip intermediate events.
 const advance = (page, ms) => page.clock.runFor(ms);
 const clickWithoutScroll = (page, selector) => page.locator(selector).dispatchEvent('click');
+// With motion allowed the theme dissolves through a view transition, whose update
+// runs on the next rendered frame: wait for the new palette (real time, so it
+// also works under the virtual clock).
+async function toggleTheme(page) {
+  const theme = () => page.evaluate(() => document.documentElement.dataset.theme || '');
+  const before = await theme();
+  await clickWithoutScroll(page, '[data-theme-toggle]');
+  for (let k = 0; k < 80 && await theme() === before; k++) await page.waitForTimeout(25);
+}
 async function motionPreference(page, value) {
   await page.emulateMedia({ reducedMotion: value });
   await page.waitForTimeout(100); // MatchMedia change arrives from the browser compositor.
@@ -276,7 +336,7 @@ if (!motionOptInOnly) for (const theme of ['light', 'dark']) {
       await motionPreference(page, 'no-preference');
       check((await shapeState(page, 'chronicle')).playback === 'paused', 'shapes: motion preference change lost explicit Pause');
 
-      await clickWithoutScroll(page, '[data-theme-toggle]');
+      await toggleTheme(page);
       await page.setViewportSize({ width: 768, height: 900 });
       await advance(page, 350);
       await page.setViewportSize({ width: 1280, height: 900 });
@@ -284,12 +344,12 @@ if (!motionOptInOnly) for (const theme of ['light', 'dark']) {
       await center(page, '#shape-chronicle [data-curve]');
       for (const shape of paper.shapes.items) check(await page.locator(`#shape-${shape.key} .shape-curve-svg`).count() === 1, `shapes: ${shape.key} duplicated its SVG on resize/theme changes`);
       check(await page.locator('.shape-curve-svg').count() === 7, 'shapes: revisiting tabs accumulated controllers/SVGs');
-      check(await page.evaluate(() => window.__verificationRafCount()) === 0, 'shapes: paused charts retained scheduled animation frames');
+      check(await componentRafs(page) === 0, 'shapes: paused charts retained scheduled animation frames');
       await clickWithoutScroll(page, '[data-shape-play]');
       await center(page, '#shape-chronicle [data-curve]');
       for (const shape of paper.shapes.items) await clickWithoutScroll(page, `#tab-${shape.key}`);
       await center(page, '#shape-achrony [data-curve]');
-      check(await page.evaluate(() => window.__verificationRafCount()) === 1, 'shapes: switching tabs accumulated animation frame loops');
+      check(await componentRafs(page) === 1, 'shapes: switching tabs accumulated animation frame loops');
     }
     for (const problem of problems) fail(`shape animation ${theme}: ${problem}`);
   } catch (error) { fail(`shape animation ${theme}: ${error.stack || error.message}`); }
@@ -399,9 +459,111 @@ if (!motionOptInOnly) {
     await motionPreference(page, 'reduce');
     await motionPreference(page, 'no-preference');
     check((await heroState(page)).playback === 'paused', 'overview: motion preference change lost explicit Pause');
-    check(await page.evaluate(() => window.__verificationRafCount()) === 0, 'overview: suspended/paused components retained animation loops');
+    check(await componentRafs(page) === 0, 'overview: suspended/paused components retained animation loops');
     for (const problem of problems) fail(`overview animation: ${problem}`);
   } catch (error) { fail(`overview animation: ${error.stack || error.message}`); }
+  finally { await context.close(); }
+}
+
+// ---- cameos: play on screen, freeze off screen, hidden and under reduced motion --
+if (!motionOptInOnly) for (const theme of ['light', 'dark']) {
+  const { context, page, problems } = await open(1280, theme, 'no-preference', { clock: true });
+  const label = `cameos ${theme}`;
+  try {
+    await page.addStyleTag({ content: '.site-header{position:static!important}' });
+    await advance(page, 64);
+    await page.waitForTimeout(50);
+    await advance(page, 64);
+    const start = await eggState(page);
+    check(start.logogram.playback === 'playing' && start.gargantua.playback === 'playing', `${label}: title cameos are not playing at the top (${JSON.stringify(start)})`);
+    check(start.shell.playback === 'suspended', `${label}: the closing shot plays while off-screen (${start.shell.playback})`);
+    await advance(page, 6000);
+    const title = await eggState(page);
+    check(Math.abs(title.logogram.time - start.logogram.time - 6) < 0.2, `${label}: logogram clock did not follow playback (${start.logogram.time} → ${title.logogram.time})`);
+    check(title.logogram.sum !== start.logogram.sum && title.gargantua.sum !== start.gargantua.sum, `${label}: title cameos did not redraw while playing`);
+    check(title.shell.time === start.shell.time, `${label}: off-screen closing shot advanced`);
+    await page.locator('#top').screenshot({ path: join(out, `cameos-title-${theme}.png`) });
+
+    await center(page, '[data-egg="shell"]');
+    const bottom = await eggState(page);
+    check(bottom.shell.playback === 'playing', `${label}: closing shot did not start on screen (${bottom.shell.playback})`);
+    check(bottom.logogram.playback === 'suspended' && bottom.gargantua.playback === 'suspended', `${label}: title cameos kept playing off-screen`);
+    await advance(page, 3000);
+    const later = await eggState(page);
+    check(later.logogram.time === bottom.logogram.time && later.logogram.sum === bottom.logogram.sum, `${label}: off-screen logogram kept changing`);
+    check(later.shell.time - bottom.shell.time > 2.8 && later.shell.sum !== bottom.shell.sum, `${label}: closing shot did not advance`);
+    await page.locator('.egg-band').screenshot({ path: join(out, `cameos-shell-${theme}.png`) });
+
+    // The epigraph's logogram is written by the scroll: partly while it comes into view, whole once it is in.
+    await page.evaluate(() => {
+      const node = document.querySelector('[data-egg="epigraph"]');
+      window.scrollTo({ top: node.getBoundingClientRect().top + window.scrollY - window.innerHeight + node.offsetHeight * 0.55, behavior: 'instant' });
+    });
+    await advance(page, 64);
+    await page.waitForTimeout(50);
+    await advance(page, 64);
+    const partly = (await eggState(page)).epigraph;
+    check(partly.playback === 'playing' && partly.progress > 0.1 && partly.progress < 0.9, `${label}: epigraph logogram is not partly written mid-scroll (${JSON.stringify(partly)})`);
+    await center(page, '.epigraph');
+    const whole = (await eggState(page)).epigraph;
+    check(whole.progress === 1 && whole.painted > partly.painted, `${label}: epigraph logogram is not whole once in view (${JSON.stringify(whole)})`);
+    await page.locator('.epigraph').screenshot({ path: join(out, `cameos-epigraph-${theme}.png`) });
+    await center(page, '[data-egg="shell"]');
+
+    await hidden(page, true);
+    const away = await eggState(page);
+    await advance(page, 2000);
+    check(away.shell.playback === 'suspended' && JSON.stringify(await eggState(page)) === JSON.stringify(away), `${label}: background tab kept the closing shot moving`);
+    check(await page.evaluate(() => window.__verificationRafCount()) === 0, `${label}: hidden page retained animation frames`);
+    await hidden(page, false);
+    await advance(page, 500);
+    check((await eggState(page)).shell.playback === 'playing', `${label}: closing shot did not resume`);
+
+    // Theme: cameos repaint with the other palette, playing or not.
+    const before = await eggState(page);
+    await toggleTheme(page);
+    const after = await eggState(page);
+    for (const name of ['logogram', 'shell']) check(after[name].sum !== before[name].sum, `${label}: ${name} did not repaint on theme change`);
+    await toggleTheme(page);
+
+    await motionPreference(page, 'reduce');
+    const still = await eggState(page);
+    for (const [name, egg] of Object.entries(still)) check(egg.playback === 'static', `${label}: ${name} is not still under reduced motion (${egg.playback})`);
+    await advance(page, 2000);
+    check(JSON.stringify(await eggState(page)) === JSON.stringify(still), `${label}: still cameos changed under reduced motion`);
+    check(await page.evaluate(() => window.__verificationRafCount()) === 0, `${label}: reduced motion retained animation frames`);
+    await motionPreference(page, 'no-preference');
+    check((await eggState(page)).shell.playback === 'playing', `${label}: closing shot did not resume with motion allowed`);
+    for (const problem of problems) fail(`${label}: ${problem}`);
+  } catch (error) { fail(`${label}: ${error.stack || error.message}`); }
+  finally { await context.close(); }
+}
+
+// ---- header motion toggle: holds every animation, remembered, plays again ----
+if (!motionOptInOnly) {
+  const { context, page, problems } = await open(1280, 'light', 'no-preference', { clock: true });
+  const label = 'motion toggle';
+  const settle = async () => { await advance(page, 64); await page.waitForTimeout(50); await advance(page, 64); };
+  try {
+    await settle();
+    const button = page.locator('[data-motion-toggle]');
+    check(await button.isVisible() && await button.getAttribute('aria-pressed') === 'false', `${label}: motion does not start playing`);
+    await button.dispatchEvent('click');
+    await settle();
+    const held = await eggState(page);
+    check(await button.getAttribute('aria-pressed') === 'true' && Object.values(held).every(egg => egg.playback === 'static'), `${label}: Hold did not still the cameos (${JSON.stringify(held)})`);
+    check(await page.locator('[data-hero]').getAttribute('data-playback') === 'static' && await page.locator('[data-shape-play]').isHidden(), `${label}: Hold did not still the overview and the shapes`);
+    check(await page.evaluate(() => window.__verificationRafCount()) === 0, `${label}: a held page retained animation frames`);
+    await page.reload({ waitUntil: 'networkidle' });
+    await settle();
+    check(await button.getAttribute('aria-pressed') === 'true' && (await eggState(page)).logogram.playback === 'static', `${label}: Hold was not remembered on reload`);
+    await button.dispatchEvent('click');
+    await settle();
+    const played = await eggState(page);
+    check(await button.getAttribute('aria-pressed') === 'false' && played.logogram.playback === 'playing', `${label}: Play did not resume (${JSON.stringify(played)})`);
+    check(await page.evaluate(() => localStorage.getItem('nonlinear-motion')) === null, `${label}: Play did not forget the hold`);
+    for (const problem of problems) fail(`${label}: ${problem}`);
+  } catch (error) { fail(`${label}: ${error.stack || error.message}`); }
   finally { await context.close(); }
 }
 
@@ -417,6 +579,7 @@ async function checkReducedDefaults(page, label) {
   check(await page.locator('#overview [data-hero-stage]').evaluate(stage => stage.nextElementSibling?.matches('[data-hero-controls]')), `${label}: overview controls should immediately follow the diagram`);
   check(await page.locator('[data-hero-replay]').isHidden() && await page.locator('[data-hero-speed]').isHidden() && await page.locator('[data-hero-scrub]').isHidden() && await page.locator('[data-step-controls]').isVisible(), `${label}: static overview controls are incorrect`);
   for (const telling of hero.figure1.tellings) check((await curveState(page, `[data-telling="${telling.id}"]`)).count === telling.order.length, `${label}: ${telling.id} is not complete`);
+  for (const [name, egg] of Object.entries(await eggState(page))) check(egg.playback === 'static', `${label}: cameo ${name} is not still (${egg.playback})`);
 }
 
 for (const theme of ['light', 'dark']) {
@@ -440,6 +603,7 @@ for (const theme of ['light', 'dark']) {
     check((await shapeState(page, 'chronicle')).playback === 'suspended', `${label}: opt-in did not enable the offscreen shape`);
     check(await page.locator('[data-shape-play]').isVisible() && await page.locator('[data-shape-play]').textContent() === 'Pause', `${label}: ordinary shape Pause was not restored`);
     check(await page.locator('[data-hero-replay]').isVisible() && await page.locator('[data-hero-speed]').isVisible() && await page.locator('[data-hero-scrub]').isVisible(), `${label}: full overview controls were not restored`);
+    check(Object.values(await eggState(page)).every(egg => egg.playback !== 'static'), `${label}: overview opt-in did not release the cameos`);
 
     await center(page, '#shape-chronicle [data-curve]');
     await advance(page, 950);

@@ -15,8 +15,8 @@ function cardGeometry(layout) {
       counter: [480, 278, 'middle'],
       gapLabel: j => [xs[j] + 198 + 20, 386],
       note: (c, j) => [c.x + c.w / 2, 476, 'middle'],
-      arrow: { y: 490 },
-      label: [480, 514], detail: [[480, 534]],
+      arrow: { y: 500, endY: 482, radius: 12 },
+      label: [480, 520], detail: [[480, 540]],
       // Leaders meet cards 2 and 3 near their outer corners, clear of the dialog.
       leaderX: (c, j) => (j === 1 ? c.x + 38 : j === 2 ? c.x + c.w - 38 : c.x + c.w / 2),
     };
@@ -29,7 +29,7 @@ function cardGeometry(layout) {
     counter: [322, 90, 'end'],
     gapLabel: j => [167, ys[j] + 104 + 19],
     note: (c, j) => [c.x + c.w - 10, c.y + 97, 'end'],
-    arrow: { x: 8 },
+    arrow: { x: 4, radius: 12 },
     label: [180, 638], detail: [[180, 658], [180, 674]],
   };
 }
@@ -154,24 +154,21 @@ export function createRevealScene() {
       // REVEALS arrow from the explanation's card to the consequence's card.
       const a = el(top, 'g', { class: 'r-explanation' });
       const c1 = C.cards[0], c4 = C.cards[3];
+      let route;
       if (narrow) {
-        nodes.arrowGeom = { from: c4.y + c4.h / 2, to: c1.y + c1.h / 2, x: C.arrow.x };
-        nodes.arrowLine = el(a, 'line', { class: 'h-arrow', x1: C.arrow.x, x2: C.arrow.x, y1: nodes.arrowGeom.from, y2: nodes.arrowGeom.from });
-        nodes.arrowTicks = [
-          el(a, 'line', { class: 'h-arrow', x1: C.arrow.x, x2: c1.x, y1: nodes.arrowGeom.to, y2: nodes.arrowGeom.to, visibility: 'hidden' }),
-          el(a, 'line', { class: 'h-arrow', x1: C.arrow.x, x2: c4.x, y1: nodes.arrowGeom.from, y2: nodes.arrowGeom.from, visibility: 'hidden' }),
-        ];
-        nodes.arrowHead = arrowHead(a, C.arrow.x, nodes.arrowGeom.to, 'up', 7);
+        const from = c4.y + c4.h / 2, to = c1.y + c1.h / 2;
+        const x = C.arrow.x, r = C.arrow.radius;
+        route = `M${c4.x} ${from} H${x + r} Q${x} ${from} ${x} ${from - r} V${to + r} Q${x} ${to} ${x + r} ${to} H${c1.x}`;
+        nodes.arrowHead = arrowHead(a, c1.x, to, 'right', 7);
       } else {
-        const y = C.arrow.y;
-        nodes.arrowGeom = { from: c4.x + c4.w / 2, to: c1.x + c1.w / 2, y };
-        nodes.arrowLine = el(a, 'line', { class: 'h-arrow', x1: nodes.arrowGeom.from, x2: nodes.arrowGeom.from, y1: y, y2: y });
-        nodes.arrowTicks = [
-          el(a, 'line', { class: 'h-arrow', x1: nodes.arrowGeom.to, x2: nodes.arrowGeom.to, y1: y - 8, y2: y, visibility: 'hidden' }),
-          el(a, 'line', { class: 'h-arrow', x1: nodes.arrowGeom.from, x2: nodes.arrowGeom.from, y1: y - 8, y2: y, visibility: 'hidden' }),
-        ];
-        nodes.arrowHead = arrowHead(a, nodes.arrowGeom.to, y, 'left', 8);
+        const from = c4.x + c4.w / 2, to = c1.x + c1.w / 2;
+        const { y, endY, radius: r } = C.arrow;
+        route = `M${from} ${endY} V${y - r} Q${from} ${y} ${from - r} ${y} H${to + r} Q${to} ${y} ${to} ${y - r} V${endY}`;
+        nodes.arrowHead = arrowHead(a, to, endY, 'up', 8);
       }
+      // One continuous route gives both elbows real curvature. Normalized
+      // dashes reveal it from explanation to consequence without moving joins.
+      nodes.arrowLine = el(a, 'path', { class: 'h-reveal-route', d: route, pathLength: 1, 'stroke-dasharray': 1, 'stroke-dashoffset': 1, visibility: 'hidden' });
       nodes.label = el(a, 'g', { visibility: 'hidden' });
       richText(nodes.label, ['REVEALS: ', { base: 'e', sub: '12' }, ' explains ', { base: 'e', sub: '18' }], C.label[0], C.label[1], { class: 'h-role-text h-pixel', 'font-size': 17, 'text-anchor': 'middle' }, 17);
       const detail = narrow ? ['Earlier in chronology (12 < 18);', 'later in the telling (18 > 1).'] : [f2.reveals.detail];
@@ -265,11 +262,8 @@ export function createRevealScene() {
 
       // REVEALS: explanation → consequence.
       const pa = ease(prog(t, 10.6, 1.0));
-      const A = nodes.arrowGeom;
-      if (narrow) set(nodes.arrowLine, { y2: snap(lerp(A.from, A.to, pa)) });
-      else set(nodes.arrowLine, { x2: snap(lerp(A.from, A.to, pa)) });
+      nodes.arrowLine.setAttribute('stroke-dashoffset', 1 - pa);
       nodes.arrowLine.setAttribute('visibility', pa > 0 ? 'visible' : 'hidden');
-      nodes.arrowTicks.forEach(tk => tk.setAttribute('visibility', pa > 0 ? 'visible' : 'hidden'));
       nodes.arrowHead.setAttribute('visibility', pa >= 1 ? 'visible' : 'hidden');
       nodes.label.setAttribute('visibility', t >= 11.7 ? 'visible' : 'hidden');
       nodes.detail.setAttribute('visibility', t >= 12.1 ? 'visible' : 'hidden');

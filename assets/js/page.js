@@ -1,10 +1,13 @@
-// Page behavior: theme, section highlighting, shape browser, sortable
-// leaderboard, charts, BibTeX copy. Content is in index.html; this module only
-// enhances it, so the page reads the same without JavaScript.
+// Page behavior: theme (with a dithered day/night dissolve), the header's
+// motion toggle and reading progress, section highlighting, pixel-art cameos,
+// shape browser, sortable leaderboard, charts, BibTeX copy. Content is in
+// index.html; this module only enhances it, so the page reads the same without
+// JavaScript.
 
 import { initTooltip } from './tooltip.js';
 import { initHero } from './hero/timeline.js';
 import { motionPreference } from './motion.js';
+import { initEggs } from './eggs/index.js';
 import * as charts from './charts.js';
 
 const root = document.documentElement;
@@ -24,12 +27,35 @@ function themeLabel() {
 themeBtn.hidden = false;
 themeLabel();
 themeBtn.addEventListener('click', () => {
-  root.dataset.theme = isDark() ? 'light' : 'dark';
-  try { localStorage.setItem('nonlinear-theme', root.dataset.theme); } catch (_) { /* storage unavailable */ }
-  themeLabel();
-  charts.redrawAll();
+  const next = isDark() ? 'light' : 'dark';
+  const swap = () => {
+    root.dataset.theme = next;
+    try { localStorage.setItem('nonlinear-theme', next); } catch (_) { /* storage unavailable */ }
+    themeLabel();
+    charts.redrawAll();
+  };
+  // The new palette dissolves in through a pixel dither (tokens.css); the
+  // cameos repaint inside the update, so they dissolve with everything else.
+  if (document.startViewTransition && !motionPreference.reduced) document.startViewTransition(swap);
+  else swap();
 });
 darkScheme.addEventListener('change', () => { if (!root.dataset.theme) { themeLabel(); charts.redrawAll(); } });
+
+// ---- motion: one header switch holds every animation, or plays them again ----
+const motionBtn = document.querySelector('[data-motion-toggle]');
+function motionLabel() {
+  const held = motionPreference.reduced;
+  motionBtn.setAttribute('aria-pressed', held ? 'true' : 'false');
+  motionBtn.querySelector('use').setAttribute('href', held ? '#i-play' : '#i-pause');
+  motionBtn.title = held ? 'Play all motion' : 'Hold all motion';
+}
+motionBtn.hidden = false;
+motionLabel();
+motionBtn.addEventListener('click', () => {
+  if (motionPreference.reduced) motionPreference.enable();
+  else motionPreference.hold();
+});
+motionPreference.subscribe(motionLabel);
 
 // ---- header height and current section -------------------------------------
 const header = document.querySelector('.site-header');
@@ -40,9 +66,15 @@ const sectionMap = [
   ['top', 'overview'], ['overview', 'overview'], ['shapes', 'shapes'], ['corpus', 'shapes'],
   ['benchmark', 'benchmark'], ['findings', 'findings'], ['readers', 'readers'], ['limitations', 'readers'], ['cite', 'cite'],
 ].map(([id, nav]) => [document.getElementById(id), nav]).filter(([node]) => node);
+const progress = document.querySelector('[data-read-progress]');
 let ticking = false;
 function updateCurrent() {
   ticking = false;
+  // Reading progress, stepped to whole two-pixel increments of the bar.
+  const room = document.documentElement.scrollHeight - window.innerHeight;
+  const steps = Math.max(1, Math.floor(header.offsetWidth / 2));
+  const done = room > 0 ? Math.round((window.scrollY / room) * steps) / steps : 1;
+  progress.style.transform = `scaleX(${Math.min(1, Math.max(0, done))})`;
   const line = header.offsetHeight + 80;
   let current = null;
   for (const [node, nav] of sectionMap) if (node.getBoundingClientRect().top <= line) current = nav;
@@ -59,6 +91,9 @@ function updateCurrent() {
 }
 window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(updateCurrent); } }, { passive: true });
 updateCurrent();
+
+// ---- Pixel-art cameos (title band and closing shot) ----------------------------
+initEggs();
 
 // ---- BibTeX copy -------------------------------------------------------------
 document.querySelectorAll('[data-copy]').forEach(btn => {
@@ -187,6 +222,18 @@ function initLeaderboard(paper) {
     td.appendChild(wrap);
   });
 
+  // When the grid is wider than its box it scrolls inside it, and the model
+  // column sticks to the left edge; otherwise its header sticks under the page header.
+  const box = table.closest('.table-scroll');
+  const fit = () => box.classList.toggle('is-overflowing', table.offsetWidth > box.clientWidth + 1);
+  const ro = new ResizeObserver(fit);
+  ro.observe(box);
+  ro.observe(table);
+  fit();
+
+  // The sorted column is tinted; data-sorted-col is its position in a row.
+  const COLUMN = { model: 1, t1Band: 2, t1Tau: 3, t3TauRec: 4, t3Exact: 5, t4Acc: 6, t2TauFree: 7 };
+  table.dataset.sortedCol = String(COLUMN.t1Band);
   const headers = [...table.querySelectorAll('[data-sort]')];
   let state = { key: 't1Band', dir: -1 };
   const value = (tr, key) => (key === 'model'
@@ -201,6 +248,7 @@ function initLeaderboard(paper) {
       return cmp * state.dir || (+a.dataset.index - +b.dataset.index);
     });
     body.append(...rows);
+    table.dataset.sortedCol = String(COLUMN[key]);
     headers.forEach(btn => {
       const th = btn.closest('th');
       if (btn.dataset.sort === key) th.setAttribute('aria-sort', state.dir === 1 ? 'ascending' : 'descending');
