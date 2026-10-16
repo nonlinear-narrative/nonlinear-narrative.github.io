@@ -115,9 +115,9 @@ function initShapes(paper) {
   let index = 0, paused = false;
 
   function updatePlay() {
-    play.hidden = false;
-    play.textContent = motionPreference.reduced ? 'Play animation' : paused ? 'Play' : 'Pause';
-    play.setAttribute('aria-label', motionPreference.reduced || paused ? 'Play story curve animation' : 'Pause story curve animation');
+    play.hidden = motionPreference.reduced;
+    play.textContent = paused ? 'Play' : 'Pause';
+    play.setAttribute('aria-label', paused ? 'Play story curve animation' : 'Pause story curve animation');
   }
 
   function select(i, focus = false) {
@@ -148,10 +148,8 @@ function initShapes(paper) {
   box.querySelector('[data-shape-prev]').addEventListener('click', () => select(index - 1));
   box.querySelector('[data-shape-next]').addEventListener('click', () => select(index + 1));
   play.addEventListener('click', () => {
-    const enableMotion = motionPreference.reduced;
-    paused = enableMotion ? false : !paused;
+    paused = !paused;
     controllers.forEach(controller => controller.setPaused(paused));
-    if (enableMotion) motionPreference.enable();
     updatePlay();
   });
   motionPreference.subscribe(() => {

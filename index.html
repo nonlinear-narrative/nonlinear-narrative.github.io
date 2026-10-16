@@ -94,10 +94,6 @@
     <div class="game-window hero-window">
       <div class="window-title"><h2 id="overview-title">One story, two orders</h2><span class="window-index" data-hero-index>Figures 1 &amp; 2</span></div>
       <figure class="hero" data-hero aria-labelledby="hero-caption-title">
-        <div class="hero-stage" data-hero-stage>
-          <p class="hero-static">The animation needs JavaScript. The caption and the two lists below give the same orders and scores.</p>
-        </div>
-        <p class="hero-narration" data-hero-narration aria-live="polite"></p>
         <div class="hero-controls" data-hero-controls hidden>
           <div class="control-group" data-motion-controls>
             <button class="btn" type="button" data-hero-play aria-label="Pause"><svg class="icon" aria-hidden="true"><use href="#i-pause"/></svg><span>Pause</span></button>
@@ -116,6 +112,10 @@
           <label class="scrubber"><span class="visually-hidden">Animation position</span><input type="range" min="0" max="1000" step="1" value="0" data-hero-scrub></label>
           <p class="keys-hint">Keys: Space plays or pauses, ← → change scene.</p>
         </div>
+        <div class="hero-stage" data-hero-stage>
+          <p class="hero-static">The animation needs JavaScript. The caption and the two lists below give the same orders and scores.</p>
+        </div>
+        <p class="hero-narration" data-hero-narration aria-live="polite"></p>
         <figcaption>
           <p id="hero-caption-title"><strong>Redrawn from Figures 1 and 2 of the paper.</strong>
           <strong>Figure 1:</strong> Without a cue, the model stays near chronology (τ = +0.97); a backward cue yields exact reversal (τ = −1.00), while the published telling preserves forward scene runs (τ = −0.88). Kendall’s τ measures agreement with chronology: +1 denotes chronological order and −1 exact reversal.
@@ -182,7 +182,7 @@
             <button class="shape-tab" type="button" role="tab" id="tab-achrony" aria-controls="shape-achrony" aria-selected="false" tabindex="-1">Achrony</button>
           </div>
           <button class="btn step-btn" type="button" data-shape-next aria-label="Next shape"><svg class="icon" aria-hidden="true"><use href="#i-next"/></svg></button>
-          <button class="btn shape-play" type="button" data-shape-play aria-label="Pause story curve animation">Pause</button>
+          <button class="btn shape-play" type="button" data-shape-play aria-label="Pause story curve animation" hidden>Pause</button>
           <span class="shape-status" data-shape-status aria-hidden="true">1 / 7</span>
         </div>
         <article class="shape-panel" id="shape-chronicle" role="tabpanel" aria-labelledby="tab-chronicle" data-shape="chronicle">

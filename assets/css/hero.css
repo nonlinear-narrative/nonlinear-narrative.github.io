@@ -9,7 +9,7 @@
 .hero-narration{min-height:3.3em;margin:10px 2px 0;font-size:15px;line-height:1.6}
 .hero-narration strong{font-family:var(--pixel);font-size:19px;font-weight:700;margin-right:6px}
 
-.hero-controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:10px;padding-top:12px;border-top:1px solid var(--rule)}
+.hero-controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--rule)}
 .control-group{display:flex;gap:8px;flex-wrap:wrap}
 .hero-controls .btn{font-size:20px;min-height:42px;padding:5px 10px}
 [data-hero-speed]{min-width:56px}

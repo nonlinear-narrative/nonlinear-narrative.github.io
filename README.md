@@ -20,10 +20,11 @@ their completed curve for 1.4 seconds before repeating; the overview plays all
 three scenes and loops. Use the shape browser's Pause/Play button or the overview's
 existing playback controls to stop or resume motion. Playback pauses when the plot
 is off-screen or the browser tab is hidden. Reduced-motion preferences show the
-complete static diagrams by default. Choose Play animation to enable motion for
-the current page visit; this does not change the system setting. Changing that
-setting while browsing restores the system preference, and reloading clears the
-page's motion opt-in.
+complete static diagrams by default. Choose Play animation above the diagram in
+“One story, two orders” to enable motion for the current page visit; this does not
+change the system setting. Shape Pause/Play controls appear once motion is enabled.
+Changing that setting while browsing restores the system preference, and reloading
+clears the page's motion opt-in.
 
 ## What is where
 

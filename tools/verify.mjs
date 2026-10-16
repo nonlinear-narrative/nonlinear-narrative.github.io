@@ -266,7 +266,7 @@ if (!motionOptInOnly) for (const theme of ['light', 'dark']) {
       await motionPreference(page, 'reduce');
       const reduced = await shapeState(page, 'chronicle');
       checkShape(reduced, paper.shapes.items[0], reduced.total, 'shapes: live reduced motion');
-      check(reduced.playback === 'reduced' && !reduced.ringVisible && await page.locator('[data-shape-play]').isVisible() && await page.locator('[data-shape-play]').textContent() === 'Play animation', 'shapes: reduced motion did not offer explicit Play with a complete static curve');
+      check(reduced.playback === 'reduced' && !reduced.ringVisible && await page.locator('[data-shape-play]').isHidden(), 'shapes: reduced motion did not hide playback with a complete static curve');
       await advance(page, 3000);
       check(JSON.stringify(await shapeState(page, 'chronicle')) === JSON.stringify(reduced), 'shapes: reduced-motion curve still advances');
       await motionPreference(page, 'no-preference');
@@ -405,27 +405,24 @@ if (!motionOptInOnly) {
   finally { await context.close(); }
 }
 
-// ---- reduced motion: explicit, shared Play opt-in for this page visit ---------
+// ---- reduced motion: overview Play enables animation for this page visit -----
 async function checkReducedDefaults(page, label) {
   const shape = await shapeState(page, 'chronicle');
   checkShape(shape, paper.shapes.items[0], shape.total, `${label}: complete shape`);
   check(shape.playback === 'reduced' && !shape.ringVisible, `${label}: shape autoplay is not disabled`);
-  check(await page.locator('[data-shape-play]').isVisible() && await page.locator('[data-shape-play]').textContent() === 'Play animation', `${label}: shape Play animation is unavailable`);
+  check(await page.locator('[data-shape-play]').isHidden(), `${label}: shape playback should stay hidden before overview opt-in`);
   check((await heroState(page)).playback === 'static', `${label}: overview autoplay is not disabled`);
   check(await page.locator('[data-hero-play]').isVisible() && await page.locator('[data-hero-play]').getAttribute('aria-label') === 'Play animation', `${label}: overview Play animation is unavailable`);
+  check(await page.getByRole('button', { name: 'Play animation', exact: true }).count() === 1 && await page.locator('#overview').getByRole('button', { name: 'Play animation', exact: true }).count() === 1, `${label}: Play animation is not unique to One story, two orders`);
+  check(await page.locator('[data-hero-play]').evaluate(button => Boolean(button.compareDocumentPosition(document.querySelector('[data-hero-stage]')) & Node.DOCUMENT_POSITION_FOLLOWING)), `${label}: overview Play should precede the diagram`);
   check(await page.locator('[data-hero-replay]').isHidden() && await page.locator('[data-hero-speed]').isHidden() && await page.locator('[data-hero-scrub]').isHidden() && await page.locator('[data-step-controls]').isVisible(), `${label}: static overview controls are incorrect`);
   for (const telling of hero.figure1.tellings) check((await curveState(page, `[data-telling="${telling.id}"]`)).count === telling.order.length, `${label}: ${telling.id} is not complete`);
 }
 
-for (const [source, theme] of [['shape', 'light'], ['hero', 'dark']]) {
+for (const theme of ['light', 'dark']) {
   const { context, page, problems } = await open(1280, theme, 'reduce', { clock: true });
-  const label = `reduced motion, ${source} Play`;
-  const other = source === 'shape' ? 'hero' : 'shape';
-  const stage = component => component === 'shape' ? '#shape-chronicle [data-curve]' : '[data-hero-stage]';
-  const button = component => `[data-${component}-play]`;
-  const state = component => component === 'shape' ? shapeState(page, 'chronicle') : heroState(page);
-  const isPlaying = (component, value) => value.playback === (component === 'shape' ? 'running' : 'playing');
-  const progressed = (component, value) => component === 'shape' ? value.count >= 3 && value.count < value.total : value.time >= 0.9 && value.time < 2;
+  const label = `reduced motion, overview Play, ${theme}`;
+  const heroProgressed = value => value.playback === 'playing' && value.time >= 0.9 && value.time < 2;
   try {
     await page.addStyleTag({ content: '.site-header{position:static!important}' });
     await checkReducedDefaults(page, label);
@@ -434,39 +431,41 @@ for (const [source, theme] of [['shape', 'light'], ['hero', 'dark']]) {
     check(JSON.stringify(await shapeState(page, 'chronicle')) === JSON.stringify(staticShape) && JSON.stringify(await heroState(page)) === JSON.stringify(staticHero), `${label}: reduced defaults advanced without consent`);
 
     // Enter activates the native Play button, including for keyboard users.
-    await center(page, stage(source));
-    await page.locator(button(source)).focus();
+    await center(page, '[data-hero-stage]');
+    await page.locator('[data-hero-play]').focus();
     await page.keyboard.press('Enter');
     await advance(page, 950);
-    const started = await state(source);
-    check(isPlaying(source, started) && progressed(source, started), `${label}: explicit Play did not advance (${JSON.stringify(started)})`);
-    check((await state(other)).playback === 'suspended', `${label}: opt-in did not enable the offscreen component`);
+    const started = await heroState(page);
+    check(heroProgressed(started), `${label}: explicit Play did not advance (${JSON.stringify(started)})`);
+    check((await shapeState(page, 'chronicle')).playback === 'suspended', `${label}: opt-in did not enable the offscreen shape`);
+    check(await page.locator('[data-shape-play]').isVisible() && await page.locator('[data-shape-play]').textContent() === 'Pause', `${label}: ordinary shape Pause was not restored`);
     check(await page.locator('[data-hero-replay]').isVisible() && await page.locator('[data-hero-speed]').isVisible() && await page.locator('[data-hero-scrub]').isVisible(), `${label}: full overview controls were not restored`);
 
-    await center(page, stage(other));
+    await center(page, '#shape-chronicle [data-curve]');
     await advance(page, 950);
-    const shared = await state(other);
-    check(isPlaying(other, shared) && progressed(other, shared), `${label}: the other component did not animate after shared opt-in (${JSON.stringify(shared)})`);
-    await clickWithoutScroll(page, button(other));
-    const paused = await state(other);
+    const shared = await shapeState(page, 'chronicle');
+    check(shared.playback === 'running' && shared.count >= 3 && shared.count < shared.total, `${label}: shapes did not animate after overview opt-in (${JSON.stringify(shared)})`);
+    check((await heroState(page)).playback === 'suspended', `${label}: offscreen overview did not suspend`);
+    await clickWithoutScroll(page, '[data-shape-play]');
+    const paused = await shapeState(page, 'chronicle');
     await advance(page, 1200);
-    check(paused.playback === 'paused' && JSON.stringify(await state(other)) === JSON.stringify(paused), `${label}: ordinary Pause no longer freezes playback`);
+    check(paused.playback === 'paused' && JSON.stringify(await shapeState(page, 'chronicle')) === JSON.stringify(paused), `${label}: ordinary Pause no longer freezes playback`);
 
     // Changing the OS preference cancels the page override. A subsequent Play
-    // in the other component must retain the user's independent Pause choice.
+    // in the overview must retain the user's independent shape Pause choice.
     await motionPreference(page, 'no-preference');
     await motionPreference(page, 'reduce');
     await checkReducedDefaults(page, `${label}: changed OS preference`);
-    await center(page, stage(source));
-    await clickWithoutScroll(page, button(source));
+    await center(page, '[data-hero-stage]');
+    await clickWithoutScroll(page, '[data-hero-play]');
     await advance(page, 950);
-    check(isPlaying(source, await state(source)) && progressed(source, await state(source)), `${label}: Play did not restart after an OS preference change`);
-    check((await state(other)).playback === 'paused', `${label}: shared opt-in discarded the other component's explicit Pause`);
+    check(heroProgressed(await heroState(page)), `${label}: Play did not restart after an OS preference change`);
+    check((await shapeState(page, 'chronicle')).playback === 'paused', `${label}: overview opt-in discarded the shape's explicit Pause`);
     await motionPreference(page, 'no-preference');
-    check((await state(other)).playback === 'paused', `${label}: returning to normal motion discarded explicit Pause`);
+    check((await shapeState(page, 'chronicle')).playback === 'paused', `${label}: returning to normal motion discarded explicit Pause`);
     await motionPreference(page, 'reduce');
     await checkReducedDefaults(page, `${label}: second OS change`);
-    await clickWithoutScroll(page, button(source));
+    await clickWithoutScroll(page, '[data-hero-play]');
     await page.reload({ waitUntil: 'networkidle' });
     await checkReducedDefaults(page, `${label}: reload`);
     for (const problem of problems) fail(`${label}: ${problem}`);
