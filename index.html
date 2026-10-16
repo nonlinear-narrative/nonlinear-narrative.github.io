@@ -94,6 +94,9 @@
     <div class="game-window hero-window">
       <div class="window-title"><h2 id="overview-title">One story, two orders</h2><span class="window-index" data-hero-index>Figures 1 &amp; 2</span></div>
       <figure class="hero" data-hero aria-labelledby="hero-caption-title">
+        <div class="hero-stage" data-hero-stage>
+          <p class="hero-static">The animation needs JavaScript. The caption and the two lists below give the same orders and scores.</p>
+        </div>
         <div class="hero-controls" data-hero-controls hidden>
           <div class="control-group" data-motion-controls>
             <button class="btn" type="button" data-hero-play aria-label="Pause"><svg class="icon" aria-hidden="true"><use href="#i-pause"/></svg><span>Pause</span></button>
@@ -111,9 +114,6 @@
           </div>
           <label class="scrubber"><span class="visually-hidden">Animation position</span><input type="range" min="0" max="1000" step="1" value="0" data-hero-scrub></label>
           <p class="keys-hint">Keys: Space plays or pauses, ← → change scene.</p>
-        </div>
-        <div class="hero-stage" data-hero-stage>
-          <p class="hero-static">The animation needs JavaScript. The caption and the two lists below give the same orders and scores.</p>
         </div>
         <p class="hero-narration" data-hero-narration aria-live="polite"></p>
         <figcaption>

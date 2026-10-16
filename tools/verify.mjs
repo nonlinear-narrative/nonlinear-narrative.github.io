@@ -414,7 +414,7 @@ async function checkReducedDefaults(page, label) {
   check((await heroState(page)).playback === 'static', `${label}: overview autoplay is not disabled`);
   check(await page.locator('[data-hero-play]').isVisible() && await page.locator('[data-hero-play]').getAttribute('aria-label') === 'Play animation', `${label}: overview Play animation is unavailable`);
   check(await page.getByRole('button', { name: 'Play animation', exact: true }).count() === 1 && await page.locator('#overview').getByRole('button', { name: 'Play animation', exact: true }).count() === 1, `${label}: Play animation is not unique to One story, two orders`);
-  check(await page.locator('[data-hero-play]').evaluate(button => Boolean(button.compareDocumentPosition(document.querySelector('[data-hero-stage]')) & Node.DOCUMENT_POSITION_FOLLOWING)), `${label}: overview Play should precede the diagram`);
+  check(await page.locator('#overview [data-hero-stage]').evaluate(stage => stage.nextElementSibling?.matches('[data-hero-controls]')), `${label}: overview controls should immediately follow the diagram`);
   check(await page.locator('[data-hero-replay]').isHidden() && await page.locator('[data-hero-speed]').isHidden() && await page.locator('[data-hero-scrub]').isHidden() && await page.locator('[data-step-controls]').isVisible(), `${label}: static overview controls are incorrect`);
   for (const telling of hero.figure1.tellings) check((await curveState(page, `[data-telling="${telling.id}"]`)).count === telling.order.length, `${label}: ${telling.id} is not complete`);
 }
