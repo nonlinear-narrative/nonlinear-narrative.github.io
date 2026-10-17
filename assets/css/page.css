@@ -281,6 +281,7 @@ html[data-theme=light] .egg-still--night,html:not([data-theme=light]) .egg-still
 /* ---- Footer ---- */
 .site-footer{display:flex;justify-content:space-between;gap:16px;align-items:center;margin:24px auto;padding:16px 20px;font-size:14px}
 .site-footer p{margin:0}
+.site-footer .visual-credit{display:block;margin-top:4px;color:var(--muted)}
 .site-footer>div{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:6px 18px}
 .site-footer a{display:inline-flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;min-height:32px}
 .site-footer a:hover{text-decoration:underline;color:var(--ink)}
