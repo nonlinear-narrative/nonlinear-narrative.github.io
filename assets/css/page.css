@@ -32,13 +32,11 @@ main{padding:20px 0 8px}
 .read-progress span{display:block;height:100%;background:var(--accent);transform-origin:0 50%;transform:scaleX(0)}
 
 /* ---- Title: two films about time dissolve into the page behind the paper ---- */
-.title-block{position:relative;isolation:isolate;overflow:clip;display:grid;place-items:center;min-height:clamp(620px,36vw,680px);padding:180px 24px 56px;text-align:center}
+.title-block{position:relative;isolation:isolate;overflow:hidden;overflow:clip;display:grid;place-items:center;min-height:clamp(620px,36vw,680px);padding:180px 24px 56px;text-align:center}
 .title-copy{position:relative;z-index:1;width:min(100%,620px);min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
 /* A soft pool of the page color keeps the type legible as the scenes move. */
 .title-copy::before{content:'';position:absolute;z-index:-1;inset:-48px -64px;pointer-events:none;background:radial-gradient(ellipse closest-side,var(--bg) 48%,color-mix(in srgb,var(--bg) 98%,transparent) 75%,transparent 100%)}
 .title-backdrop{position:absolute;inset:0;overflow:hidden;pointer-events:none;user-select:none;-webkit-mask-image:linear-gradient(transparent,#000 8%,#000 85%,transparent);mask-image:linear-gradient(transparent,#000 8%,#000 85%,transparent)}
-.title-kicker{display:inline-flex;flex-wrap:wrap;justify-content:center;gap:0 10px;margin:0 0 16px;padding:3px 12px;border:2px solid var(--frame-mid);background:var(--card);box-shadow:0 2px 0 var(--frame-mid);font-family:var(--pixel);font-size:18px;line-height:1.25;color:var(--ink)}
-.title-kicker-stats{color:var(--muted)}
 .title-block h1{font-size:clamp(2rem,1.2rem + 3.4vw,3rem);line-height:1.05;margin:0 auto 10px;max-width:22ch}
 .subtitle{font-family:var(--pixel);font-size:clamp(1.25rem,1rem + 1.2vw,1.75rem);line-height:1.2;margin:0 auto 14px;max-width:34ch;color:var(--ink)}
 .byline{font-size:var(--t-small);color:var(--muted);margin:0 0 18px}
@@ -53,6 +51,9 @@ main{padding:20px 0 8px}
    circular window includes the long splatter tips before its outer fade. Clear
    of the title the ink is at full strength; behind it (below 1001px) it fades. */
 .egg--logogram{width:clamp(280px,calc(50vw - 220px),760px);aspect-ratio:1;left:0;-webkit-mask-image:radial-gradient(circle closest-side at 50% 50%,#000 105%,transparent 135%);mask-image:radial-gradient(circle closest-side at 50% 50%,#000 105%,transparent 135%)}
+/* On phones the title is written inside the ring of a second logogram (see Responsive). */
+.title-ring{display:contents}
+.egg--ring{display:none}
 /* Preserve the film's proportions; broad feathering removes every edge of its frame.
    Art resolution stays modest even when the atmospheric layer spans a wide screen. */
 .title-backdrop .egg--gargantua{top:-16px;transform:none}
@@ -417,11 +418,24 @@ html[data-theme=light] .egg-still--night,html:not([data-theme=light]) .egg-still
   .window-title{flex-wrap:wrap;row-gap:2px}
   .window-title .window-index{font-size:15px;white-space:normal;min-width:0}
   .window-body{padding:14px 12px 16px}
-  .title-block{min-height:430px;padding:56px 16px 64px}
+  .title-block{min-height:430px;padding:16px 16px 64px}
   .title-copy::before{inset:-38px -12px;background:radial-gradient(ellipse closest-side,var(--bg) 38%,color-mix(in srgb,var(--bg) 90%,transparent) 68%,transparent 100%)}
-  .title-backdrop .egg--logogram{top:22%;width:min(58vw,260px);left:0;opacity:.35}
-  .title-backdrop .egg--gargantua{top:86%;transform:translateY(-50%);width:100%;right:0;opacity:var(--gargantua-mobile-opacity)}
-  .title-kicker{font-size:16px;padding:2px 8px;margin-bottom:12px}
+  /* The title sits in the logogram's ring, clear of its ink (four lines of the
+     pixel face at .082 of the ring, raised .015); the subtitle, byline and links
+     follow, the subtitle sitting just below the title (from .70 of the ring)
+     with a page-colored wash behind the subtitle and byline where they cross
+     the ink. The canvas spans 125% of the ring, mostly empty glow, and paints
+     under the copy. */
+  .title-backdrop .egg--logogram{display:none}
+  .title-ring{--ring:min(90vw,440px);display:grid;width:var(--ring);aspect-ratio:1;margin:0 0 calc(var(--ring) * -.30)}
+  .title-ring+.subtitle{text-shadow:2px 0 var(--bg),-2px 0 var(--bg),0 2px var(--bg),0 -2px var(--bg),2px 2px var(--bg),-2px 2px var(--bg),2px -2px var(--bg),-2px -2px var(--bg)}
+  .title-ring~.subtitle,.title-ring~.byline{position:relative;isolation:isolate}
+  .title-ring~.subtitle::before,.title-ring~.byline::before{content:'';position:absolute;z-index:-1;inset:-4px;border-radius:10px;background:var(--bg);filter:blur(8px);opacity:.98;pointer-events:none}
+  .title-ring .egg{display:grid;grid-area:1/1;width:125%;margin:-12.5%;z-index:-1}
+  .title-ring h1{grid-area:1/1;place-self:center;margin:0;max-width:none;font-size:calc(var(--ring) * .082);translate:0 calc(var(--ring) * -.015)}
+  .title-ring h1 span{display:block;white-space:nowrap}
+  /* Gargantua stays just under the links: its center 66px above the band's foot. */
+  .title-backdrop .egg--gargantua{top:calc(100% - 66px);transform:translateY(-50%);width:100%;right:0;opacity:var(--gargantua-mobile-opacity)}
   .leaderboard th[scope=row]{white-space:normal;min-width:7.5em;max-width:9.5em;line-height:1.3}
   .leaderboard .open-tag{margin-left:0;font-size:12px}
   .btn{font-size:20px;padding:6px 10px}

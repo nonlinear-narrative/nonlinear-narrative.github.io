@@ -73,8 +73,10 @@ async function open(width, theme, motion, { clock = false } = {}) {
 // other components' loops discount it.
 const componentRafs = page => page.evaluate(() => window.__verificationRafCount()
   - (document.querySelector('[data-egg][data-playback="playing"]') ? 1 : 0));
+// One "Time" logogram is laid out at a time (the backdrop's, or on phones the
+// title ring's), so cameos are the laid-out [data-egg] nodes, keyed by scene.
 async function eggState(page) {
-  return page.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-egg]')].map(node => {
+  return page.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-egg]')].filter(node => node.getClientRects().length).map(node => {
     const canvas = node.querySelector('canvas');
     let painted = 0, sum = 0;
     if (canvas && canvas.width) {
@@ -115,7 +117,7 @@ for (const width of [360, 768, 1280]) {
       // The title backdrop intentionally crops its masked artwork at the viewport.
       // Other content must fit; the scrollWidth check above also covers the backdrop.
       const overflow = await page.evaluate(() => [...document.querySelectorAll('main *')].filter(n => {
-        if (n.closest('.title-backdrop,.table-scroll,.table-view,.shape-tabs,svg')) return false;
+        if (n.closest('.title-backdrop,.title-ring>.egg,.table-scroll,.table-view,.shape-tabs,svg')) return false;
         const r = n.getBoundingClientRect();
         return r.width && r.right > document.documentElement.clientWidth + 1;
       }).slice(0, 5).map(n => `${n.tagName.toLowerCase()}.${[...n.classList].join('.')}`));
@@ -161,7 +163,7 @@ for (const width of [360, 768, 1280]) {
   const shown = () => page.evaluate(() => {
     const live = [...document.querySelectorAll('.egg.is-live')];
     live.forEach(n => n.classList.remove('is-live'));
-    const stills = [...document.querySelectorAll('[data-egg]')].map(egg => [...egg.querySelectorAll('.egg-still')]
+    const stills = [...document.querySelectorAll('[data-egg]')].filter(egg => egg.getClientRects().length).map(egg => [...egg.querySelectorAll('.egg-still')]
       .filter(n => getComputedStyle(n).display !== 'none').map(n => n.querySelector('img').getAttribute('src').split('/').pop()));
     live.forEach(n => n.classList.add('is-live'));
     return { bg: getComputedStyle(document.body).backgroundColor, button: document.querySelector('[data-theme-toggle] span').textContent, stills };
@@ -173,6 +175,32 @@ for (const width of [360, 768, 1280]) {
   const day = await shown();
   if (day.bg !== 'rgb(242, 233, 216)' || day.button !== 'Night') fail(`theme toggle did not switch to day (${JSON.stringify(day)})`);
   if (!day.stills.every(s => s.length === 1 && !s[0].includes('-night'))) fail(`day shows other stills (${JSON.stringify(day.stills)})`);
+  await context.close();
+}
+
+// ---- phone title: inside the ring of the "Time" logogram ------------------------
+for (const width of [360, 600, 601]) {
+  const { context, page, problems } = await open(width, 'dark', 'reduce');
+  const t = await page.evaluate(() => {
+    const box = s => { const n = document.querySelector(s); const r = n.getBoundingClientRect(); return n.getClientRects().length ? { x: r.x, y: r.y, w: r.width, h: r.height, cx: r.x + r.width / 2, cy: r.y + r.height / 2 } : null; };
+    return { ring: box('.title-ring > .egg'), cell: box('.title-ring'), backdrop: box('.title-backdrop .egg--logogram'), h1: box('#page-title'), subtitle: box('.subtitle'),
+      lines: [...document.querySelectorAll('#page-title > span')].map(n => Math.round(n.getBoundingClientRect().top)) };
+  });
+  const label = `phone title ${width}`;
+  if (width > 600) {
+    check(!t.ring && t.backdrop, `${label}: the ring logogram shows outside phones, or the backdrop's is gone`);
+  } else {
+    check(t.ring && !t.backdrop, `${label}: phones should show the ring logogram instead of the backdrop's`);
+    if (t.ring) {
+      const S = t.cell.w;
+      check(Math.abs(t.ring.cx - t.cell.cx) < 1 && Math.abs(t.ring.cy - t.cell.cy) < 1 && Math.abs(t.ring.w - 1.25 * S) < 2, `${label}: logogram is not centred on its ring cell (${JSON.stringify(t)})`);
+      check(Math.abs(t.h1.cx - t.cell.cx) < 1 && Math.abs(t.h1.cy - (t.cell.cy - 0.015 * S)) < 1.5, `${label}: title is not centred in the ring (${JSON.stringify(t)})`);
+      check(new Set(t.lines).size === 4 && t.h1.w < 0.56 * S && t.h1.h < 0.38 * S, `${label}: title does not fit the ring in four lines (${JSON.stringify(t)})`);
+      const subtitleGap = t.subtitle.y - (t.h1.y + t.h1.h);
+      check(subtitleGap >= 8 && subtitleGap <= 24, `${label}: subtitle does not sit just below the title (${JSON.stringify(t)})`);
+    }
+  }
+  for (const problem of problems) fail(`${label}: ${problem}`);
   await context.close();
 }
 

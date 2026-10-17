@@ -58,8 +58,11 @@ Both title scenes sit behind the heading with soft radial fades into the page's
 background; a wash behind the heading keeps the text readable in either theme. The same fades
 apply to still images, which stay visible until their first canvas frame is ready.
 The title stays centered, with a large Arrival logogram at the left and Gargantua
-toward the upper right. The logogram's circular window includes its full ink
-silhouette; layered edge fades preserve Gargantua's curved horizon.
+toward the upper right. On phones, the title sits inside the logogram's ring;
+the subtitle sits just below the title, with a soft page-colored wash to
+keep the subtitle and byline readable across the lower ring. The buttons follow below,
+with Gargantua behind the buttons. The logogram's circular window includes its
+full ink silhouette; layered edge fades preserve Gargantua's curved horizon.
 Light mode uses deeper shadows, warmer colors and less translucency; dark mode keeps
 the original palette. Engine lights breathe gently and stars twinkle slowly around
 the moving disk.
