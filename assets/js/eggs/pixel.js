@@ -209,8 +209,5 @@ export function themeColors(names) {
   for (const [key, prop, fallback] of names) out[key] = hex(style.getPropertyValue(prop) || fallback);
   return out;
 }
-export function isDarkTheme() {
-  const root = document.documentElement;
-  return root.dataset.theme === 'dark'
-    || (!root.dataset.theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
-}
+// Night is the default; day is the theme button's stored choice.
+export const isDarkTheme = () => document.documentElement.dataset.theme !== 'light';

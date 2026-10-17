@@ -2,9 +2,10 @@
 // ring centred) and drawn as pixel ink. "Time" crowns the title: each cycle its
 // ink is sprayed round the circle in one sweep, lives with a slow curl-noise
 // drift that moves the splatter tips more than the ring, then thins into smoke
-// and is written again, on a glowing screen as in the film. "There is no linear
-// time" sits above the epigraph in plain ink: the page's scroll writes it, so
-// scrolling back unwrites it. Still frames show the traced shapes exactly.
+// and is written again, on a softly glowing screen as in the film: dark ink by
+// day, cream by night. "There is no linear time" sits above the epigraph in
+// plain ink: the page's scroll writes it, so scrolling back unwrites it. Still
+// frames show the traced shapes exactly.
 
 import { clamp01, smooth, bayer, mix, pack, noise3, sample, distance, blur, fogTexture, sampleTile, isDarkTheme, themeColors, loadPixels, resampleBox } from './pixel.js';
 
@@ -59,13 +60,12 @@ export function createLogogram(options = TIME) {
         ink: pack(t.ink), mid: pack(mix(t.ink, t.bg, 0.28)), smoke: pack(mix(t.ink, t.bg, 0.62)),
       };
     }
-    // Night: the screen glows in a dark chamber, as in the film.
+    // Night: cream ink, as in the closing logogram, on a faint glow of the screen.
     const screen = [218, 220, 209];
-    const inkDark = [15, 29, 34];
     return {
-      dark, gain: 6.1, lift: 0.2,
-      mist: [0.1, 0.22, 0.37, 0.53, 0.7, 0.86].map(k => pack(mix(t.bg, screen, k))),
-      ink: pack(inkDark), mid: pack(mix(inkDark, screen, 0.3)), smoke: pack(mix(inkDark, screen, 0.58)),
+      dark, gain: 2.7, lift: -0.1,
+      mist: [0.04, 0.07, 0.1].map(k => pack(mix(t.bg, screen, k))),
+      ink: pack(t.ink), mid: pack(mix(t.ink, t.bg, 0.3)), smoke: pack(mix(t.ink, t.bg, 0.62)),
     };
   }
 

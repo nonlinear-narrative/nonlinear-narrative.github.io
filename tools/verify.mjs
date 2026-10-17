@@ -34,6 +34,10 @@ const check = (ok, msg) => { if (!ok) fail(msg); };
 
 async function open(width, theme, motion, { clock = false } = {}) {
   const context = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: theme, reducedMotion: motion });
+  // Night is the default; day is the theme button's stored choice (kept across reloads).
+  if (theme === 'light') await context.addInitScript(() => {
+    try { if (!localStorage.getItem('nonlinear-theme')) localStorage.setItem('nonlinear-theme', 'light'); } catch (_) { /* no storage */ }
+  });
   const page = await context.newPage();
   const problems = [];
   page.on('console', m => {
@@ -145,6 +149,30 @@ for (const width of [360, 768, 1280]) {
   // Tab reaches the scene buttons.
   const tabbable = await page.evaluate(() => [...document.querySelectorAll('[data-hero-controls] button')].filter(b => !b.closest('[hidden]')).length);
   if (tabbable < 6) fail(`hero controls: only ${tabbable} visible buttons`);
+  await context.close();
+}
+
+// ---- default theme: night, whatever the system prefers -------------------------
+{
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, colorScheme: 'light', reducedMotion: 'reduce' });
+  const page = await context.newPage();
+  await page.goto(url, { waitUntil: 'networkidle' });
+  // The still each cameo shows before its first live frame, and the page's colors.
+  const shown = () => page.evaluate(() => {
+    const live = [...document.querySelectorAll('.egg.is-live')];
+    live.forEach(n => n.classList.remove('is-live'));
+    const stills = [...document.querySelectorAll('[data-egg]')].map(egg => [...egg.querySelectorAll('.egg-still')]
+      .filter(n => getComputedStyle(n).display !== 'none').map(n => n.querySelector('img').getAttribute('src').split('/').pop()));
+    live.forEach(n => n.classList.add('is-live'));
+    return { bg: getComputedStyle(document.body).backgroundColor, button: document.querySelector('[data-theme-toggle] span').textContent, stills };
+  });
+  const night = await shown();
+  if (night.bg !== 'rgb(19, 37, 43)' || night.button !== 'Day') fail(`a light system did not open at night (${JSON.stringify(night)})`);
+  if (!night.stills.every(s => s.length === 1 && /-night\.png$|^egg-gargantua\.png$/.test(s[0]))) fail(`night shows other stills (${JSON.stringify(night.stills)})`);
+  await page.locator('[data-theme-toggle]').click();
+  const day = await shown();
+  if (day.bg !== 'rgb(242, 233, 216)' || day.button !== 'Night') fail(`theme toggle did not switch to day (${JSON.stringify(day)})`);
+  if (!day.stills.every(s => s.length === 1 && !s[0].includes('-night'))) fail(`day shows other stills (${JSON.stringify(day.stills)})`);
   await context.close();
 }
 

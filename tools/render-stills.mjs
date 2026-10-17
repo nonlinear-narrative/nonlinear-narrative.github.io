@@ -75,6 +75,8 @@ function indexedPng(w, h, rgba) {
 for (const theme of ['light', 'dark']) {
   const page = await browser.newPage({ colorScheme: theme });
   await page.goto(url, { waitUntil: 'networkidle' });
+  // The page's theme, not the system's, sets the palette.
+  await page.evaluate(theme => { document.documentElement.dataset.theme = theme; }, theme);
   for (const { scene, w, h, night } of STILLS) {
     if (theme === 'dark' && !night) continue;
     const rgba = await page.evaluate(async ({ scene, w, h }) => {

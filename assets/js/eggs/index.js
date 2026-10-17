@@ -164,7 +164,6 @@ export function initEggs(root = document) {
     }
   };
   new MutationObserver(retheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', retheme);
   document.addEventListener('visibilitychange', sync);
   motionPreference.subscribe(sync);
   return items;

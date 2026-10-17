@@ -39,25 +39,9 @@
   --shell:1120px;--header-h:112px;
   --t-small:.875rem;--t-body:1rem;
 }
-html[data-theme=dark]{
-  color-scheme:dark;
-  --bg:#13252b;--card:#1d343a;--ink:#f6eddb;--muted:#b4c3bc;
-  --gargantua-opacity:.9;--gargantua-tablet-opacity:.78;--gargantua-mobile-opacity:.46;
-  --gargantua-filter:none;
-  --frame:#9bbab0;--frame-mid:#4b6568;--frame-light:#2a464b;
-  --rule:#3b595c;--fill:#28444a;--fill-hover:#33545a;
-  --accent:#f08a68;--accent-strong:#ffad8a;--accent-soft:#5a3940;
-  --button-bg:#f08a68;--button-hover:#ffad8a;--button-ink:#1d343a;
-  --title-bg:#34565a;--title-ink:#f6eddb;--strip-bg:#10232a;--strip-ink:#fff7e8;
-  --gold:#e7c56b;--gold-bg:#4b4331;--gold-rule:#b89a4b;
-  --role-consequence:#4cc0b1;--role-explanation:#f08a68;--role-clue:#e3b85e;--role-other:#9aa8a1;
-  --role-consequence-text:#75d6c7;--role-explanation-text:#f9b39a;--role-clue-text:#f4cf84;--role-other-text:#b4c3bc;
-  --series-a:#4cc0b1;--series-b:#f08a68;--series-tie:#5d7776;--seg-ink-a:#13252b;--seg-ink-b:#1d343a;
-  --heat-0:#21383d;--heat-1:#68d0c0;
-  --tag-headline-bg:#5a3940;--tag-survives-bg:#214d4d;--tag-against-bg:#5b3b3a;--tag-length-bg:#34565a;
-  --grid:#3a585a;--plot:#1a2c32;
-}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+/* Night is the default; the theme button stores day as data-theme=light.
+   Print keeps the day palette. */
+@media screen{:root:not([data-theme=light]){
   color-scheme:dark;
   --bg:#13252b;--card:#1d343a;--ink:#f6eddb;--muted:#b4c3bc;
   --gargantua-opacity:.9;--gargantua-tablet-opacity:.78;--gargantua-mobile-opacity:.46;

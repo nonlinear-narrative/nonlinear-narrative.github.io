@@ -50,8 +50,9 @@ main{padding:20px 0 8px}
 .title-backdrop .egg{position:absolute;top:50%;transform:translateY(-50%)}
 .title-backdrop .egg--logogram{top:50%}
 /* Fit the full ink silhouette into the space left of the centered title. The
-   circular window includes the long splatter tips before its outer fade. */
-.egg--logogram{width:clamp(280px,calc(50vw - 220px),760px);aspect-ratio:1;left:0;opacity:.78;-webkit-mask-image:radial-gradient(circle closest-side at 50% 50%,#000 105%,transparent 135%);mask-image:radial-gradient(circle closest-side at 50% 50%,#000 105%,transparent 135%)}
+   circular window includes the long splatter tips before its outer fade. Clear
+   of the title the ink is at full strength; behind it (below 1001px) it fades. */
+.egg--logogram{width:clamp(280px,calc(50vw - 220px),760px);aspect-ratio:1;left:0;-webkit-mask-image:radial-gradient(circle closest-side at 50% 50%,#000 105%,transparent 135%);mask-image:radial-gradient(circle closest-side at 50% 50%,#000 105%,transparent 135%)}
 /* Preserve the film's proportions; broad feathering removes every edge of its frame.
    Art resolution stays modest even when the atmospheric layer spans a wide screen. */
 .title-backdrop .egg--gargantua{top:-16px;transform:none}
@@ -68,6 +69,8 @@ main{padding:20px 0 8px}
 .egg-still,.egg-still img{display:block;width:100%;height:auto;image-rendering:pixelated}
 /* Keep a still visible until its first live frame, including if a scene fails to load. */
 .egg.is-live .egg-still{display:none}
+/* Each still shows in its own theme: night unless day is chosen. */
+html[data-theme=light] .egg-still--night,html:not([data-theme=light]) .egg-still--day{display:none}
 /* Closing shot above the footer: the full width of the page, the footer card sits in the fog. */
 .egg-band{position:relative;margin:clamp(2px,1vw,12px) 0 calc(-1 * clamp(20px,2.2vw,34px))}
 .egg--shell{width:100%;height:clamp(160px,23vw,340px)}

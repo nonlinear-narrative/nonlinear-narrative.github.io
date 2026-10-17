@@ -28,17 +28,19 @@ clears the page's motion opt-in.
 
 The pause button in the header holds every animation on the page (the overview, the
 shape curves and the cameos), and the page remembers the hold on later visits; press
-it again, or Play animation, to resume. Switching between day and night dissolves the
-new palette in through a pixel dither; with motion held or reduced, the switch is
-instant. A bar along the header's title strip fills as you read, and the benchmark
-grid keeps its column headings (and, when it scrolls sideways, the model names) in view.
+it again, or Play animation, to resume. The page opens at night whatever the system
+theme; the header's Day button switches it, and the page remembers the choice.
+Switching between day and night dissolves the new palette in through a pixel dither;
+with motion held or reduced, the switch is instant. A bar along the header's title
+strip fills as you read, and the benchmark grid keeps its column headings (and, when
+it scrolls sideways, the model names) in view.
 
 The title band, the epigraph and the closing shot hold pixel-art cameos from films
 told out of order, each drawn on a canvas by `assets/js/eggs/`:
 
 - The heptapod logogram for “Time” (*Arrival*) behind the title is written in one
   sweep, drifts like ink in water and dissolves, then is written again about every
-  45 seconds.
+  45 seconds. Like the closing logogram, its ink is cream by night and dark by day.
 - Gargantua and the *Endurance* (*Interstellar*) are traced from a still of the film
   and keep its proportions. The disk's filaments flow smoothly along their own streaks, and the
   *Endurance*, redrawn in 3D where the still has it, turns slowly with its engines
@@ -93,10 +95,11 @@ make stills         # redraw the cameos' still frames after changing a scene
   −1.00, −0.88), that the cards sit at told 01/03/16/18 with +1, +12, +1 between, that
   the shape curves reproduce Figure 4's τ, that table splits give their rates, and that
   every number printed in `index.html` with a `data-k` attribute matches `paper.json`.
-- `tools/verify.mjs` loads the page at 360, 768 and 1280 px, in day and night, with and
-  without reduced motion. It fails on sideways scrolling, console errors, empty charts
-  or any request to another origin, tests narrative playback, the cameos' playback and
-  the hero's keyboard controls, and writes screenshots of every scene to `.preview/`.
+- `tools/verify.mjs` loads the page at 360, 768 and 1280 px, in day and night, with
+  and without reduced motion. It fails on sideways scrolling, console errors, empty
+  charts or any request to another origin, checks that the page opens at night, tests
+  narrative playback, the cameos' playback and the hero's keyboard controls, and
+  writes screenshots of every scene to `.preview/`.
   Set `CHROME=/path/to/chromium` to use a browser that is already installed.
 
 ## Editing numbers

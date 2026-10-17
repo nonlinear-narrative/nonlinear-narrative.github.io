@@ -11,12 +11,11 @@ import { initEggs } from './eggs/index.js';
 import * as charts from './charts.js';
 
 const root = document.documentElement;
-const darkScheme = window.matchMedia('(prefers-color-scheme: dark)');
 initTooltip(document.querySelector('[data-tooltip]'));
 
-// ---- theme ----------------------------------------------------------------
+// ---- theme: night unless day is chosen, whatever the system prefers ------
 const themeBtn = document.querySelector('[data-theme-toggle]');
-const isDark = () => root.dataset.theme === 'dark' || (!root.dataset.theme && darkScheme.matches);
+const isDark = () => root.dataset.theme !== 'light';
 function themeLabel() {
   const dark = isDark();
   themeBtn.querySelector('use').setAttribute('href', dark ? '#i-sun' : '#i-moon');
@@ -39,7 +38,6 @@ themeBtn.addEventListener('click', () => {
   if (document.startViewTransition && !motionPreference.reduced) document.startViewTransition(swap);
   else swap();
 });
-darkScheme.addEventListener('change', () => { if (!root.dataset.theme) { themeLabel(); charts.redrawAll(); } });
 
 // ---- motion: one header switch holds every animation, or plays them again ----
 const motionBtn = document.querySelector('[data-motion-toggle]');

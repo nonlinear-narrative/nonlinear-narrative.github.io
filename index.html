@@ -6,7 +6,7 @@
 <title>Can LLMs Tell Stories Out of Order? · Nonlinear narrative generation</title>
 <meta name="description" content="A corpus of 83 published nonlinear works annotated in both chronological and telling order, a five-task benchmark for 19 language models, and a 71-reader study.">
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#f2e9d8">
+<meta name="theme-color" content="#13252b">
 <meta name="color-scheme" content="light dark">
 <script>
   (function () {
@@ -17,7 +17,7 @@
     try {
       var saved = localStorage.getItem('nonlinear-theme');
       if (saved === 'dark' || saved === 'light') root.dataset.theme = saved;
-    } catch (e) { /* storage unavailable: follow the system theme */ }
+    } catch (e) { /* storage unavailable: night, the default */ }
   })();
 </script>
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
@@ -88,7 +88,7 @@
        without scripts. -->
   <section id="top" class="title-block" aria-labelledby="page-title">
     <div class="title-backdrop" aria-hidden="true">
-      <div class="egg egg--logogram" data-egg="logogram"><picture class="egg-still"><source srcset="assets/img/egg-logogram-night.png" media="(prefers-color-scheme: dark)"><img src="assets/img/egg-logogram.png" alt="" width="160" height="160" decoding="async" draggable="false"></picture></div>
+      <div class="egg egg--logogram" data-egg="logogram"><picture class="egg-still egg-still--night"><img src="assets/img/egg-logogram-night.png" alt="" width="160" height="160" decoding="async" draggable="false"></picture><picture class="egg-still egg-still--day"><img src="assets/img/egg-logogram.png" alt="" width="160" height="160" decoding="async" draggable="false"></picture></div>
       <div class="egg egg--gargantua" data-egg="gargantua"><picture class="egg-still"><img src="assets/img/egg-gargantua.png" alt="" width="320" height="180" decoding="async" draggable="false"></picture></div>
     </div>
     <div class="title-copy">
@@ -717,7 +717,7 @@
        order she already knows. Above it, the heptapod logogram for "There is no
        linear time", written by the reader's scroll. -->
   <figure class="epigraph">
-    <div class="egg egg--epigraph" data-egg="epigraph" data-egg-scroll aria-hidden="true"><picture class="egg-still"><source srcset="assets/img/egg-epigraph-night.png" media="(prefers-color-scheme: dark)"><img src="assets/img/egg-epigraph.png" alt="" width="120" height="120" decoding="async" loading="lazy" draggable="false"></picture></div>
+    <div class="egg egg--epigraph" data-egg="epigraph" data-egg-scroll aria-hidden="true"><picture class="egg-still egg-still--night"><img src="assets/img/egg-epigraph-night.png" alt="" width="120" height="120" decoding="async" loading="lazy" draggable="false"></picture><picture class="egg-still egg-still--day"><img src="assets/img/egg-epigraph.png" alt="" width="120" height="120" decoding="async" loading="lazy" draggable="false"></picture></div>
     <blockquote class="epigraph-quote"><p><span class="epigraph-mark" aria-hidden="true">“</span>Despite knowing the journey and where it leads, I&nbsp;embrace it. And I&nbsp;welcome every moment of&nbsp;it.<span class="epigraph-mark" aria-hidden="true">”</span></p></blockquote>
     <figcaption class="epigraph-source">— Dr. Louise Banks, <cite>Arrival</cite></figcaption>
   </figure>
@@ -725,7 +725,7 @@
 
 <!-- Closing shot: the shell over its fog-filled valley (Arrival), drawn by assets/js/eggs/. -->
 <div class="egg-band" aria-hidden="true">
-  <div class="egg egg--shell" data-egg="shell"><picture class="egg-still"><source srcset="assets/img/egg-shell-night.png" media="(prefers-color-scheme: dark)"><img src="assets/img/egg-shell.png" alt="" width="640" height="140" decoding="async" loading="lazy" draggable="false"></picture></div>
+  <div class="egg egg--shell" data-egg="shell"><picture class="egg-still egg-still--night"><img src="assets/img/egg-shell-night.png" alt="" width="640" height="140" decoding="async" loading="lazy" draggable="false"></picture><picture class="egg-still egg-still--day"><img src="assets/img/egg-shell.png" alt="" width="640" height="140" decoding="async" loading="lazy" draggable="false"></picture></div>
 </div>
 
 <footer class="site-footer site-shell game-window">
