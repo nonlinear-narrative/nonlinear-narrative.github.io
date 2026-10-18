@@ -111,8 +111,35 @@ html[data-theme=light] .egg-still--night,html:not([data-theme=light]) .egg-still
 /* ---- TL;DR ---- */
 .tldr .lead{max-width:72ch}
 .abstract{margin-top:14px;border-top:1px solid var(--rule)}
-.abstract>summary,.table-view>summary,.hero-orders summary{font-family:var(--pixel);font-size:20px;line-height:1.2;color:var(--accent);padding:10px 0;min-height:44px;cursor:pointer}
+.abstract>summary,.table-view>summary,.hero-orders summary,.graph-lists>summary{font-family:var(--pixel);font-size:20px;line-height:1.2;color:var(--accent);padding:10px 0;min-height:44px;cursor:pointer}
 .abstract p{font-size:15px;line-height:1.75;max-width:70ch}
+
+/* ---- Story graph (Figure 6) ---- */
+/* The canvas is one of the pixel scenes (assets/js/eggs/): two CSS pixels per
+   art pixel at every width, so its digits stay legible on phones. The frame
+   carries the border, so the canvas fills whole art pixels inside it. */
+.graph-figure{margin:0}
+.graph-frame{background:var(--plot);border:2px solid var(--frame-mid)}
+.egg.egg--story-graph{--egg-px:2;width:100%;aspect-ratio:2/1;pointer-events:auto}
+.graph-legend{list-style:none;display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;margin:12px 0 0;padding:0;font-size:13px;color:var(--muted)}
+.graph-legend li{display:flex;align-items:center;gap:8px}
+.graph-key{display:block;flex:0 0 auto;width:40px;height:16px;shape-rendering:crispEdges}
+.graph-key--node{width:34px;height:48px}
+.gk-shadow{fill:var(--frame-mid)}
+.gk-fill{fill:var(--fill)}
+.gk-ring{fill:var(--frame)}
+.gk-ink{fill:var(--ink)}
+.gk-muted{fill:var(--muted)}
+.key-causes{fill:var(--series-a)}
+.key-foreshadows{fill:var(--role-clue)}
+.key-reveals{fill:var(--role-explanation)}
+.graph-type{font-family:var(--pixel);font-size:18px;letter-spacing:.02em;color:var(--ink)}
+.graph-figure .chart-note{margin:6px 0 0}
+.graph-figure figcaption{max-width:88ch;margin-top:10px;font-size:14px;line-height:1.7;color:var(--muted)}
+.graph-figure figcaption strong{color:var(--ink);font-weight:500}
+.graph-notes{margin-top:16px;border-top:1px solid var(--rule);padding-top:14px}
+.graph-notes p{font-size:15px}
+.edge-list{list-style:none;margin:0;padding:0;columns:2;column-gap:1.4em}
 
 /* ---- Shapes ---- */
 .shape-nav{display:flex;align-items:center;gap:8px;margin:4px 0 14px;flex-wrap:wrap}
@@ -385,6 +412,7 @@ html[data-theme=light] .egg-still--night,html:not([data-theme=light]) .egg-still
 @media (max-width:860px){
   .site-header nav a{font-size:19px}
   .header-status{display:none}
+  .egg.egg--story-graph{aspect-ratio:4/3}
   .shape-panel{grid-template-columns:minmax(0,1fr)}
   .shape-curve{max-width:360px;width:100%;justify-self:center}
   .mini-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -442,6 +470,8 @@ html[data-theme=light] .egg-still--night,html:not([data-theme=light]) .egg-still
   .btn{font-size:20px;padding:6px 10px}
   .stat-tiles{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
   .stat-value{font-size:30px}
+  .egg.egg--story-graph{aspect-ratio:4/5}
+  .graph-legend{gap:8px 16px}
   .edge-cards{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
   .shape-tab{font-size:17px;padding:2px 7px;min-height:36px}
   .shape-panel{padding:10px}
@@ -466,4 +496,8 @@ html[data-theme=light] .egg-still--night,html:not([data-theme=light]) .egg-still
   :root{color-scheme:light}
   body{background:#fff}
   .site-header,.hero-controls,.theme-toggle,.btn,.egg,.egg-band{display:none!important}
+  /* The story graph is a figure: it prints as its day still. */
+  .egg.egg--story-graph{display:grid!important;aspect-ratio:auto}
+  .egg--story-graph .egg-canvas,.egg--story-graph .egg-still--night{display:none!important}
+  .egg--story-graph .egg-still--day{display:block!important}
 }

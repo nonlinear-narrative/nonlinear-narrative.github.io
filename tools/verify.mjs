@@ -8,9 +8,11 @@
 //   no sideways page scroll; no console errors; no request leaves the site's origin.
 // Then: controls, point-by-point playback/lifecycle checks with a virtual clock,
 // the pixel-art cameos' playback (on screen only, still under reduced motion),
+// the story graph's drift (on its canvas, nodes never touching) and pointer,
 // the header's motion toggle, the benchmark grid's sticky header and the reading
 // progress bar,
-// and screenshots of every hero scene, representative shape loop frames and the cameos.
+// and screenshots of every hero scene, representative shape loop frames, the
+// story graph and the cameos.
 
 import { mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -227,7 +229,7 @@ for (const width of [360, 600, 601]) {
   });
   if (stuck.overflowing || Math.abs(stuck.head - stuck.want) > 2) fail(`benchmark grid header did not stick (${JSON.stringify(stuck)})`);
   // Every section title carries its pixel icon.
-  if (await page.locator('.window-title .h2-icon').count() !== 9) fail('section titles lost their icons');
+  if (await page.locator('.window-title .h2-icon').count() !== 10) fail('section titles lost their icons');
   // Reading progress fills the header strip's bar at the end of the page.
   await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
   await page.waitForTimeout(150);
@@ -579,7 +581,7 @@ if (!motionOptInOnly) for (const theme of ['light', 'dark']) {
     const before = await eggState(page);
     await toggleTheme(page);
     const after = await eggState(page);
-    for (const name of ['logogram', 'shell']) check(after[name].sum !== before[name].sum, `${label}: ${name} did not repaint on theme change`);
+    for (const name of ['logogram', 'shell', 'story-graph']) check(after[name].sum !== before[name].sum, `${label}: ${name} did not repaint on theme change`);
     await toggleTheme(page);
 
     await motionPreference(page, 'reduce');
@@ -593,6 +595,105 @@ if (!motionOptInOnly) for (const theme of ['light', 'dark']) {
     for (const problem of problems) fail(`${label}: ${problem}`);
   } catch (error) { fail(`${label}: ${error.stack || error.message}`); }
   finally { await context.close(); }
+}
+
+// ---- story graph (Figure 6): drifts on screen, never off its canvas or into a
+// neighbour, holds still otherwise, and lights a node's arrows when pointed at --
+// Node centres at time t in page coordinates, from a fresh scene the size of the live canvas.
+const graphNodes = (page, t) => page.evaluate(async t => {
+  const canvas = document.querySelector('[data-egg="story-graph"] canvas');
+  const { FACTORIES } = await import(new URL('assets/js/eggs/index.js', document.baseURI).href);
+  const scene = FACTORIES['story-graph']();
+  await scene.load();
+  scene.resize(canvas.width, canvas.height);
+  const r = canvas.getBoundingClientRect();
+  return scene.geometry(t).nodes.map(([x, y]) => [r.left + ((x + 0.5) / canvas.width) * r.width, r.top + ((y + 0.5) / canvas.height) * r.height]);
+}, t);
+
+if (!motionOptInOnly) {
+  const { context, page, problems } = await open(1280, 'dark', 'no-preference', { clock: true });
+  const label = 'story graph';
+  try {
+    // Five minutes of drift at every canvas size the page uses (wide, narrow
+    // desktop, tablet, phone): nodes stay on the canvas, rims at least 3 px apart.
+    const drift = await page.evaluate(async () => {
+      const { FACTORIES } = await import(new URL('assets/js/eggs/index.js', document.baseURI).href);
+      const found = [];
+      for (const [w, h] of [[522, 261], [457, 228], [336, 252], [154, 192]]) {
+        const scene = FACTORIES['story-graph']();
+        await scene.load();
+        scene.resize(w, h);
+        for (let t = 0; t <= 300; t += 0.1) {
+          const { r, nodes } = scene.geometry(t);
+          nodes.forEach(([x, y], i) => {
+            if (x - r < 1 || y - r < 1 || x + r > w - 2 || y + r > h - 2) found.push(`${w}×${h}, t = ${t.toFixed(1)} s: e${i + 1} leaves the canvas`);
+            for (let j = i + 1; j < nodes.length; j++) {
+              if (Math.hypot(x - nodes[j][0], y - nodes[j][1]) < 2 * r + 3) found.push(`${w}×${h}, t = ${t.toFixed(1)} s: e${i + 1} touches e${j + 1}`);
+            }
+          });
+        }
+      }
+      return found;
+    });
+    for (const problem of drift.slice(0, 5)) fail(`${label}: ${problem}`);
+
+    await page.addStyleTag({ content: '.site-header{position:static!important}' });
+    await advance(page, 64);
+    await page.waitForTimeout(50);
+    await advance(page, 64);
+    check((await eggState(page))['story-graph'].playback === 'suspended', `${label}: drifts while off screen`);
+    await center(page, '[data-egg="story-graph"]');
+    const start = (await eggState(page))['story-graph'];
+    check(start.playback === 'playing', `${label}: does not drift on screen (${start.playback})`);
+    await advance(page, 4000);
+    const later = (await eggState(page))['story-graph'];
+    check(Math.abs(later.time - start.time - 4) < 0.2 && later.sum !== start.sum, `${label}: the web did not move (${JSON.stringify([start, later])})`);
+    await page.locator('#story-graph .graph-figure').screenshot({ path: join(out, 'graph-1280-dark.png') });
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await advance(page, 64);
+    await page.waitForTimeout(50);
+    const away = (await eggState(page))['story-graph'];
+    await advance(page, 3000);
+    check(away.playback === 'suspended' && JSON.stringify((await eggState(page))['story-graph']) === JSON.stringify(away), `${label}: kept moving off screen`);
+    for (const problem of problems) fail(`${label}: ${problem}`);
+  } catch (error) { fail(`${label}: ${error.stack || error.message}`); }
+  finally { await context.close(); }
+
+  // Pointing at a node lights its arrows and lists them; leaving lets go. The
+  // web is at rest (reduced motion), so the scene redraws for the pointer alone.
+  for (const [width, theme] of [[1280, 'light'], [360, 'dark']]) {
+    const { context, page, problems } = await open(width, theme, 'reduce');
+    const where = `${label} ${width} ${theme}`;
+    try {
+      await page.addStyleTag({ content: '.site-header{position:static!important}' });
+      await page.locator('[data-egg="story-graph"]').evaluate(node => node.scrollIntoView({ block: 'center', behavior: 'instant' }));
+      await page.waitForTimeout(300);
+      const egg = page.locator('[data-egg="story-graph"]');
+      const before = (await eggState(page))['story-graph'];
+      check(before.playback === 'static', `${where}: moves under reduced motion (${before.playback})`);
+      const nodes = await graphNodes(page, 0);
+      await page.mouse.move(...nodes[8]);
+      await page.waitForTimeout(100);
+      const tip = await page.locator('[data-tooltip]').innerText();
+      check(await egg.getAttribute('data-hover') === '9', `${where}: pointing at e9 did not light it`);
+      check(/chronological rank 9 · told 5/.test(tip) && /REVEALS ← e4 \(q1\), e8 \(q2\) · → e11 \(q3\)/.test(tip) && /raises q1, q2 · resolves q3/.test(tip), `${where}: e9's tooltip reads "${tip}"`);
+      check((await eggState(page))['story-graph'].sum !== before.sum, `${where}: the still web did not redraw for the pointer`);
+      // The canvas alone fits the viewport, so the screenshot need not scroll it (and let go).
+      await page.locator('#story-graph .graph-frame').screenshot({ path: join(out, `graph-${width}-${theme}-e9.png`) });
+      check(await egg.getAttribute('data-hover') === '9', `${where}: e9 let go during the screenshot`);
+      // Find the nodes again, in case the page moved.
+      const [e14] = (await graphNodes(page, 0)).slice(13);
+      await page.mouse.move(...e14);
+      await page.waitForTimeout(100);
+      check(/chronological rank 14 · told 1/.test(await page.locator('[data-tooltip]').innerText()), `${where}: e14's tooltip is wrong`);
+      await page.mouse.move(2, 2);
+      await page.waitForTimeout(100);
+      check(await egg.getAttribute('data-hover') === null && await page.locator('[data-tooltip]').isHidden(), `${where}: leaving the web did not let go`);
+      check((await eggState(page))['story-graph'].sum === before.sum, `${where}: the web did not return to rest`);
+      for (const problem of problems) fail(`${where}: ${problem}`);
+    } catch (error) { fail(`${where}: ${error.stack || error.message}`); }
+    finally { await context.close(); }
+  }
 }
 
 // ---- header motion toggle: holds every animation, remembered, plays again ----

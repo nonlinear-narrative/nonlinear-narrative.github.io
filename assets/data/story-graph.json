@@ -1,0 +1,16 @@
+{
+  "figure6": {
+    "src": "Figure 6 (figures_tariq/story_graph.tex); the released annotation for work S60 has the same telling, arrows and questions",
+    "work": "S60",
+    "n": 14,
+    "telling": [14, 1, 11, 3, 9, 5, 6, 7, 8, 4, 10, 2, 12, 13],
+    "edges": {
+      "note": "Each arrow is [from, to] by chronological rank. A REVEALS arrow adds the number of its reader question: the consequence (to) raises it and the explanation (from) resolves it.",
+      "CAUSES": [[1, 2], [3, 8], [5, 6], [6, 7], [6, 8], [7, 9], [8, 9], [8, 10], [9, 11], [10, 12], [11, 12], [12, 13], [13, 14]],
+      "FORESHADOWS": [[4, 9], [5, 13], [6, 14]],
+      "REVEALS": [[4, 9, 1], [8, 9, 2], [9, 11, 3], [13, 14, 4]]
+    },
+    "expected": { "CAUSES": 13, "FORESHADOWS": 3, "REVEALS": 4, "questions": 4, "src": "Figure 6; §3: an annotated work with four reveals and four reader questions" },
+    "caption": "Story graph of an annotated work. Node numbers give chronological ranks; smaller numbers give telling positions. Arrows encode causes, foreshadowing, and reveals. A REVEALS arrow points from a later-told explanation to the earlier-told event it explains; q_i labels the associated reader question."
+  }
+}

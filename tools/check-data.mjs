@@ -5,6 +5,7 @@
 //   - every hero order is a permutation of 1..n and reproduces its caption scores;
 //   - Figure 2 card positions and gaps follow from the telling order;
 //   - shape curves reproduce the Figure 4 τ values;
+//   - Figure 6's arrows obey the corpus rules, and index.html lists them as the data does;
 //   - table internals (pooled row, splits → rates, edge totals) are consistent;
 //   - every number printed in index.html with data-k matches paper.json.
 
@@ -18,6 +19,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const read = p => readFileSync(join(root, p), 'utf8');
 const paper = JSON.parse(read('assets/data/paper.json'));
 const hero = JSON.parse(read('assets/data/hero.json'));
+const graph = JSON.parse(read('assets/data/story-graph.json'));
 
 let failures = 0, passes = 0;
 function check(ok, label, detail = '') {
@@ -73,6 +75,20 @@ for (const s of shapes) {
   const inBand = M.bandHit(M.kendallTau(o), M.lis(o), s.band);
   check(inBand, `${s.name} representative work lies inside its own band`);
 }
+
+// ---- Figure 6 ---------------------------------------------------------------
+const f6 = graph.figure6;
+check(f6.telling.length === f6.n && M.isPermutation(f6.telling), 'Figure 6 telling is a permutation of 1..14');
+const toldAt = k => f6.telling.indexOf(k) + 1;
+for (const type of ['CAUSES', 'FORESHADOWS', 'REVEALS']) {
+  check(f6.edges[type].length === f6.expected[type], `Figure 6 has ${f6.expected[type]} ${type} arrows`, `got ${f6.edges[type].length}`);
+  // §H: every arrow runs forward in chronology.
+  for (const [from, to] of f6.edges[type]) check(from >= 1 && from < to && to <= f6.n, `Figure 6 ${type} e${from} → e${to} runs forward in chronology`);
+}
+// §H: REVEALS also runs backward in the telling; each carries its own question.
+for (const [from, to] of f6.edges.REVEALS) check(toldAt(from) > toldAt(to), `Figure 6 REVEALS e${from} → e${to} runs backward in the telling`);
+const questions = f6.edges.REVEALS.map(e => e[2]).sort((a, b) => a - b);
+check(JSON.stringify(questions) === JSON.stringify(Array.from({ length: f6.expected.questions }, (_, i) => i + 1)), 'Figure 6 labels one reader question q1–q4 per REVEALS arrow');
 
 // ---- Table 1 ----------------------------------------------------------------
 const lb = paper.leaderboard;
@@ -149,6 +165,17 @@ for (const m of html.matchAll(tagRe)) {
   printed++;
 }
 check(printed > 50, 'index.html carries data-k values', `${printed} found`);
+
+// Figure 6 as lists: the telling and each arrow type, as the data gives them.
+const listed = attr => {
+  const m = new RegExp(`<(ol|ul)\\b[^>]*${attr}[^>]*>([\\s\\S]*?)</\\1>`).exec(html);
+  return m ? [...m[2].matchAll(/<li>([\s\S]*?)<\/li>/g)].map(li => decode(li[1].replace(/<[^>]+>/g, '')).trim()) : null;
+};
+check(JSON.stringify(listed('data-graph-telling')) === JSON.stringify(f6.telling.map(k => `e${k}`)), 'index.html lists Figure 6\'s telling');
+for (const type of ['CAUSES', 'FORESHADOWS', 'REVEALS']) {
+  const want = f6.edges[type].map(([from, to, q]) => `e${from} → e${to}${q ? `, q${q}` : ''}`);
+  check(JSON.stringify(listed(`data-graph-edges="${type}"`)) === JSON.stringify(want), `index.html lists Figure 6's ${type} arrows`);
+}
 
 console.log(`${passes} checks passed, ${failures} failed; ${printed} printed values compared.`);
 process.exit(failures ? 1 : 0);

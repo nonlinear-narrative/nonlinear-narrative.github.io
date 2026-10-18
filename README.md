@@ -27,13 +27,24 @@ Changing that setting while browsing restores the system preference, and reloadi
 clears the page's motion opt-in.
 
 The pause button in the header holds every animation on the page (the overview, the
-shape curves and the cameos), and the page remembers the hold on later visits; press
+shape curves, the story graph and the cameos), and the page remembers the hold on later visits; press
 it again, or Play animation, to resume. The page opens at night whatever the system
 theme; the header's Day button switches it, and the page remembers the choice.
 Switching between day and night dissolves the new palette in through a pixel dither;
 with motion held or reduced, the switch is instant. A bar along the header's title
 strip fills as you read, and the benchmark grid keeps its column headings (and, when
 it scrolls sideways, the model names) in view.
+
+Below the TL;DR, “One story, one graph” redraws Figure 6, the story graph of one
+annotated work, as a web of pixel nodes on a canvas (`assets/js/eggs/story-graph.js`).
+Each node shows its chronological rank, with its telling position in small type
+beside it; arrows keep the figure's types (CAUSES teal, FORESHADOWS dashed amber,
+REVEALS heavy coral with its question q1–q4). The paper lines the nodes up along
+chronology; here they rest in a crossing-free layout chosen for each canvas shape
+(2:1, 4:3 on tablets, 4:5 on phones), and since a node's place carries no data, each
+wanders slowly round it. Pointing at a node, or tapping it, lights its arrows and lists
+them in the tooltip. The figure's arrows and telling come from
+`assets/data/story-graph.json`, and a list under the figure gives every arrow as text.
 
 The title band, the epigraph and the closing shot hold pixel-art cameos from films
 told out of order, each drawn on a canvas by `assets/js/eggs/`:
@@ -51,9 +62,10 @@ told out of order, each drawn on a canvas by `assets/js/eggs/`:
   drifting fog while clouds stream down a long slope and a Chinook flies in toward it;
   lights by the camp sparkle on the valley floor.
 
-The cameos follow the plots' rules: they move only on screen in a visible tab, show a
-still frame under reduced motion, and move after Play animation. Without scripts, or
-opened from a file, the page shows the still frames in `assets/img/egg-*.png`.
+The cameos and the story graph follow the plots' rules: they move only on screen in a
+visible tab, show a still frame under reduced motion, and move after Play animation.
+Without scripts, or opened from a file, the page shows the still frames in
+`assets/img/egg-*.png`.
 Both title scenes sit behind the heading with soft radial fades into the page's
 background; a wash behind the heading keeps the text readable in either theme. The same fades
 apply to still images, which stay visible until their first canvas frame is ready.
@@ -74,12 +86,13 @@ the moving disk.
 | `index.html` | Every section's text and tables, readable without JavaScript |
 | `assets/data/paper.json` | Numbers from the paper's tables and figures; each block names its source |
 | `assets/data/hero.json` | Figure 2 telling order, roles and card text; Figure 1's three orders |
+| `assets/data/story-graph.json` | Figure 6's telling order and its arrows by type, with each REVEALS arrow's question |
 | `assets/js/metrics.js` | τ, LIS, hops, band hit (the formulas of the formal appendix) |
 | `assets/js/hero/` | The overview animation: engine (`timeline.js`), three scenes (Figure 1's three tellings, then Figure 2's reveal and its scores), pixel pictograms |
 | `assets/js/charts.js` | Redrawn charts (bars, dumbbells, heatmap, split bars, dot plot, κ plot) |
 | `assets/js/page.js` | Theme, section highlight, shape browser, sortable leaderboard, BibTeX copy |
-| `assets/js/eggs/` | Pixel-art cameos: one animation loop for all of them (`index.js`), the logogram, Gargantua and the *Endurance*, the shell, shared pixel helpers |
-| `assets/img/` | The logograms' ink traced from the film (`logogram-*.png`), the *Interstellar* still's light, warmth and streak directions (`gargantua-*.png`), the cameos' still frames (`egg-*.png`), the favicon |
+| `assets/js/eggs/` | Pixel-art canvases: one animation loop for all of them (`index.js`), the cameos (the logogram, Gargantua and the *Endurance*, the shell), Figure 6's story graph, shared pixel helpers |
+| `assets/img/` | The logograms' ink traced from the film (`logogram-*.png`), the *Interstellar* still's light, warmth and streak directions (`gargantua-*.png`), the still frames of the cameos and the story graph (`egg-*.png`), the favicon |
 | `assets/js/motion.js` | System motion preference and the page's explicit Play opt-in |
 | `assets/css/` | `tokens.css` (themes, fonts, frames), `page.css`, `hero.css` |
 | `tools/` | Checks (below) |
@@ -90,19 +103,22 @@ the moving disk.
 make check          # data and printed numbers against the paper's stated values
 make anonymity ANON_DENY="name one,name two"   # keep the list out of this folder
 make verify         # browser checks; needs Playwright (npm i -D playwright)
-make stills         # redraw the cameos' still frames after changing a scene
+make stills         # redraw the canvases' still frames after changing a scene
 ```
 
 - `tools/check-data.mjs` verifies that each hero order is a permutation that
   reproduces its caption (Figure 2: τ = −0.085, LIS = 0.50, 13 hops; Figure 1: +0.97,
   −1.00, −0.88), that the cards sit at told 01/03/16/18 with +1, +12, +1 between, that
-  the shape curves reproduce Figure 4's τ, that table splits give their rates, and that
+  the shape curves reproduce Figure 4's τ, that Figure 6's arrows keep the corpus
+  rules (all forward in chronology, REVEALS backward in the telling with one question
+  each) and match the lists in `index.html`, that table splits give their rates, and that
   every number printed in `index.html` with a `data-k` attribute matches `paper.json`.
 - `tools/verify.mjs` loads the page at 360, 768 and 1280 px, in day and night, with
   and without reduced motion. It fails on sideways scrolling, console errors, empty
   charts or any request to another origin, checks that the page opens at night, tests
-  narrative playback, the cameos' playback and the hero's keyboard controls, and
-  writes screenshots of every scene to `.preview/`.
+  narrative playback, the cameos' playback, the story graph's drift (five minutes at
+  every canvas size, nodes on the canvas and never touching) and pointer, and the
+  hero's keyboard controls, and writes screenshots of every scene to `.preview/`.
   Set `CHROME=/path/to/chromium` to use a browser that is already installed.
 
 ## Editing numbers

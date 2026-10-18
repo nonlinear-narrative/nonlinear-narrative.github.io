@@ -51,6 +51,7 @@
   <symbol id="i-caution" viewBox="0 0 24 24"><path d="M10 0h4v2H10zM10 2h4v2H10zM8 4h8v2H8zM8 6h2v2H8zM14 6h2v2H14zM6 8h4v2H6zM14 8h4v2H14zM6 10h2v2H6zM10 10h4v2H10zM16 10h2v2H16zM4 12h4v2H4zM10 12h4v2H10zM16 12h4v2H16zM4 14h2v2H4zM10 14h4v2H10zM18 14h2v2H18zM2 16h4v2H2zM18 16h4v2H18zM2 18h2v2H2zM10 18h4v2H10zM20 18h2v2H20zM0 20h24v2H0zM0 22h24v2H0z"/></symbol>
   <symbol id="i-quote" viewBox="0 0 24 24"><path d="M3 4h6v2H3zM15 4h6v2H15zM3 6h6v2H3zM15 6h6v2H15zM3 8h6v2H3zM15 8h6v2H15zM5 10h4v2H5zM17 10h4v2H17zM5 12h2v2H5zM15 12h4v2H15zM3 14h4v2H3zM15 14h2v2H15zM3 16h2v2H3zM13 16h4v2H13z"/></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24"><path d="M8 2h6v2H8zM6 4h4v2H6zM4 6h4v2H4zM2 8h4v8H2zM4 16h4v2H4zM6 18h12v2H6zM8 20h8v2H8zM10 4h2v6h-2zM12 10h2v2h-2zM14 12h6v2h-6zM18 14h4v2h-4zM16 16h4v2h-4z"/></symbol>
+  <symbol id="i-graph" viewBox="0 0 24 24"><path d="M16 0h6v2H16zM0 2h6v2H0zM10 2h8v2H10zM20 2h2v2H20zM0 4h2v2H0zM4 4h6v2H4zM16 4h6v2H16zM0 6h6v2H0zM14 6h2v2H14zM6 8h2v2H6zM14 8h2v2H14zM8 10h6v2H8zM8 12h2v2H8zM12 12h2v2H12zM8 14h6v2H8zM6 16h2v2H6zM14 16h4v2H14zM0 18h6v2H0zM18 18h6v2H18zM0 20h2v2H0zM4 20h2v2H4zM18 20h2v2H18zM22 20h2v2H22zM0 22h6v2H0zM18 22h6v2H18z"/></symbol>
 </svg>
 
 <a class="skip-link" href="#main">Skip to content</a>
@@ -183,7 +184,44 @@
     </div>
   </section>
 
-  <!-- 4. Seven shapes -->
+  <!-- 4. Story graph: Figure 6 as a web of pixel nodes, drawn on a canvas by
+       assets/js/eggs/story-graph.js. A node's place carries no data, so the
+       web drifts. The images inside are its still frames for pages without
+       scripts; the lists below give every arrow. -->
+  <section id="story-graph" class="section game-window" aria-labelledby="graph-title">
+    <div class="window-title"><h2 id="graph-title"><svg class="h2-icon" aria-hidden="true"><use href="#i-graph"/></svg>One story, one graph</h2><span class="window-index">§3 · Fig. 6</span></div>
+    <div class="window-body">
+      <p class="lead">Narrative order determines when readers get an explanation or an answer, which the chronological order of events alone does not capture. The story graph represents it: events are nodes, narrative relations are edges, and each node records the state of the story world and what characters and readers know at that point.</p>
+      <figure class="graph-figure">
+        <div class="graph-frame">
+          <div class="egg egg--story-graph" data-egg="story-graph" role="img" aria-label="Story graph of an annotated work: 14 events joined by 13 CAUSES, 3 FORESHADOWS and 4 REVEALS arrows. The lists below give every arrow."><picture class="egg-still egg-still--night"><img src="assets/img/egg-story-graph-night.png" alt="" width="520" height="260" decoding="async" draggable="false"></picture><picture class="egg-still egg-still--day"><img src="assets/img/egg-story-graph.png" alt="" width="520" height="260" decoding="async" draggable="false"></picture></div>
+        </div>
+        <ul class="graph-legend">
+          <li><svg class="graph-key graph-key--node" viewBox="0 0 17 24" aria-hidden="true"><path class="gk-shadow" d="M6 1h5v1H6zM4 2h9v1H4zM2 3h13v1H2zM2 4h13v1H2zM1 5h15v1H1zM1 6h15v1H1zM0 7h17v1H0zM0 8h17v1H0zM0 9h17v1H0zM0 10h17v1H0zM0 11h17v1H0zM1 12h15v1H1zM1 13h15v1H1zM2 14h13v1H2zM2 15h13v1H2zM4 16h9v1H4zM6 17h5v1H6z"/><path class="gk-fill" d="M6 1h5v1H6zM4 2h9v1H4zM3 3h11v1H3zM2 4h13v1H2zM2 5h13v1H2zM1 6h15v1H1zM1 7h15v1H1zM1 8h15v1H1zM1 9h15v1H1zM1 10h15v1H1zM2 11h13v1H2zM2 12h13v1H2zM3 13h11v1H3zM4 14h9v1H4zM6 15h5v1H6z"/><path class="gk-ring" d="M6 0h5v1H6zM4 1h2v1H4zM11 1h2v1H11zM2 2h2v1H2zM13 2h2v1H13zM2 3h1v1H2zM14 3h1v1H14zM1 4h1v1H1zM15 4h1v1H15zM1 5h1v1H1zM15 5h1v1H15zM0 6h1v1H0zM16 6h1v1H16zM0 7h1v1H0zM16 7h1v1H16zM0 8h1v1H0zM16 8h1v1H16zM0 9h1v1H0zM16 9h1v1H16zM0 10h1v1H0zM16 10h1v1H16zM1 11h1v1H1zM15 11h1v1H15zM1 12h1v1H1zM15 12h1v1H15zM2 13h1v1H2zM14 13h1v1H14zM2 14h2v1H2zM13 14h2v1H13zM4 15h2v1H4zM11 15h2v1H11zM6 16h5v1H6z"/><path class="gk-ink" d="M7 5h3v1H7zM6 6h1v1H6zM10 6h1v1H10zM6 7h1v1H6zM10 7h1v1H10zM7 8h4v1H7zM10 9h1v1H10zM9 10h1v1H9zM7 11h2v1H7z"/><path class="gk-muted" d="M7 19h3v1H7zM7 20h1v1H7zM7 21h3v1H7zM9 22h1v1H9zM7 23h3v1H7z"/></svg><span>chronological rank 9, told 5th</span></li>
+          <li><svg class="graph-key key-causes" viewBox="0 0 20 8" aria-hidden="true"><path d="M0 3h16v1H0zM16 0h1v7h-1zM17 1h1v5h-1zM18 2h1v3h-1zM19 3h1v1h-1z"/></svg><span class="graph-type">CAUSES</span></li>
+          <li><svg class="graph-key key-foreshadows" viewBox="0 0 20 8" aria-hidden="true"><path d="M0 3h3v1H0zM5 3h3v1H5zM10 3h3v1h-3zM15 3h1v1h-1zM16 0h1v7h-1zM17 1h1v5h-1zM18 2h1v3h-1zM19 3h1v1h-1z"/></svg><span class="graph-type">FORESHADOWS</span></li>
+          <li><svg class="graph-key key-reveals" viewBox="0 0 20 8" aria-hidden="true"><path d="M0 3h16v2H0zM16 0h1v8h-1zM17 1h1v6h-1zM18 2h1v4h-1zM19 3h1v2h-1z"/></svg><span><span class="graph-type">REVEALS</span>, with its question q<sub>i</sub></span></li>
+        </ul>
+        <p class="chart-note">A node’s place carries no data, so the web is free to drift. Point at a node, or tap it, to light its arrows.</p>
+        <figcaption><strong>Redrawn from Figure 6 of the paper</strong>, with the nodes spread as a web rather than lined up along chronology. <strong>Figure 6:</strong> Story graph of an annotated work. Node numbers give chronological ranks; smaller numbers give telling positions. Arrows encode causes, foreshadowing, and reveals. A <span class="edge-word">REVEALS</span> arrow points from a later-told explanation to the earlier-told event it explains; q<sub>i</sub> labels the associated reader question.</figcaption>
+      </figure>
+      <div class="graph-notes">
+        <p>Figure 6 shows four reveals and their four reader questions. The telling opens on event 14, which raises q<sub>4</sub>, and closes on event 13, which explains it. Event 9, told fifth, answers the q<sub>3</sub> that event 11 raised two places earlier, and raises q<sub>1</sub> and q<sub>2</sub>, which events 4 and 8 answer tenth and ninth.</p>
+        <p>Every arrow runs forward in chronology, from a lower rank to a higher one, and a <span class="edge-word">REVEALS</span> arrow also runs backward in the telling; the corpus build refuses any work whose graph breaks these rules. Graphs given to models omit the fields that state chronological and telling positions, but relations such as <span class="edge-word">REVEALS</span> still constrain which tellings are possible: the graph provides constraints rather than a generation algorithm. Whether it helps a model write the story is <a href="#findings">RQ3</a>.</p>
+      </div>
+      <details class="graph-lists">
+        <summary>The graph as lists</summary>
+        <div class="orders-lists">
+          <div><p class="orders-title">Telling (<em>syuzhet</em>)</p><ol class="order-list" data-graph-telling><li>e<sub>14</sub></li><li>e<sub>1</sub></li><li>e<sub>11</sub></li><li>e<sub>3</sub></li><li>e<sub>9</sub></li><li>e<sub>5</sub></li><li>e<sub>6</sub></li><li>e<sub>7</sub></li><li>e<sub>8</sub></li><li>e<sub>4</sub></li><li>e<sub>10</sub></li><li>e<sub>2</sub></li><li>e<sub>12</sub></li><li>e<sub>13</sub></li></ol></div>
+          <div><p class="orders-title">CAUSES, 13</p><ul class="edge-list" data-graph-edges="CAUSES"><li>e<sub>1</sub> → e<sub>2</sub></li><li>e<sub>3</sub> → e<sub>8</sub></li><li>e<sub>5</sub> → e<sub>6</sub></li><li>e<sub>6</sub> → e<sub>7</sub></li><li>e<sub>6</sub> → e<sub>8</sub></li><li>e<sub>7</sub> → e<sub>9</sub></li><li>e<sub>8</sub> → e<sub>9</sub></li><li>e<sub>8</sub> → e<sub>10</sub></li><li>e<sub>9</sub> → e<sub>11</sub></li><li>e<sub>10</sub> → e<sub>12</sub></li><li>e<sub>11</sub> → e<sub>12</sub></li><li>e<sub>12</sub> → e<sub>13</sub></li><li>e<sub>13</sub> → e<sub>14</sub></li></ul></div>
+          <div><p class="orders-title">FORESHADOWS, 3</p><ul class="edge-list" data-graph-edges="FORESHADOWS"><li>e<sub>4</sub> → e<sub>9</sub></li><li>e<sub>5</sub> → e<sub>13</sub></li><li>e<sub>6</sub> → e<sub>14</sub></li></ul></div>
+          <div><p class="orders-title">REVEALS, 4</p><ul class="edge-list" data-graph-edges="REVEALS"><li>e<sub>4</sub> → e<sub>9</sub>, q<sub>1</sub></li><li>e<sub>8</sub> → e<sub>9</sub>, q<sub>2</sub></li><li>e<sub>9</sub> → e<sub>11</sub>, q<sub>3</sub></li><li>e<sub>13</sub> → e<sub>14</sub>, q<sub>4</sub></li></ul></div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- 5. Seven shapes -->
   <section id="shapes" class="section game-window" aria-labelledby="shapes-title">
     <div class="window-title"><h2 id="shapes-title"><svg class="h2-icon" aria-hidden="true"><use href="#i-branch"/></svg>Seven shapes</h2><span class="window-index">§3 · Fig. 4 · Table 5</span></div>
     <div class="window-body">
@@ -327,7 +365,7 @@
     </div>
   </section>
 
-  <!-- 5. Corpus -->
+  <!-- 6. Corpus -->
   <section id="corpus" class="section game-window" aria-labelledby="corpus-title">
     <div class="window-title"><h2 id="corpus-title"><svg class="h2-icon" aria-hidden="true"><use href="#i-books"/></svg>The corpus</h2><span class="window-index">§3 · Table 4</span></div>
     <div class="window-body">
@@ -391,7 +429,7 @@
     </div>
   </section>
 
-  <!-- 6. Benchmark -->
+  <!-- 7. Benchmark -->
   <section id="benchmark" class="section game-window" aria-labelledby="benchmark-title">
     <div class="window-title"><h2 id="benchmark-title"><svg class="h2-icon" aria-hidden="true"><use href="#i-grid"/></svg>Five tasks, nineteen models</h2><span class="window-index">§4 · Table 1</span></div>
     <div class="window-body">
@@ -471,7 +509,7 @@
     </div>
   </section>
 
-  <!-- 7. Findings -->
+  <!-- 8. Findings -->
   <section id="findings" class="section game-window" aria-labelledby="findings-title">
     <div class="window-title"><h2 id="findings-title"><svg class="h2-icon" aria-hidden="true"><use href="#i-lens"/></svg>Findings</h2><span class="window-index">RQ1–RQ5 · Table 3</span></div>
     <div class="window-body findings">
@@ -617,7 +655,7 @@
     </div>
   </section>
 
-  <!-- 8. Reader study -->
+  <!-- 9. Reader study -->
   <section id="readers" class="section game-window" aria-labelledby="readers-title">
     <div class="window-title"><h2 id="readers-title"><svg class="h2-icon" aria-hidden="true"><use href="#i-readers"/></svg>What readers said</h2><span class="window-index">§5.5 · Table 2 · Fig. 3</span></div>
     <div class="window-body">
@@ -679,7 +717,7 @@
     </div>
   </section>
 
-  <!-- 9. Limitations -->
+  <!-- 10. Limitations -->
   <section id="limitations" class="section game-window" aria-labelledby="limitations-title">
     <div class="window-title"><h2 id="limitations-title"><svg class="h2-icon" aria-hidden="true"><use href="#i-caution"/></svg>What to be careful about</h2><span class="window-index">Table 3 · Limitations</span></div>
     <div class="window-body">
@@ -694,7 +732,7 @@
     </div>
   </section>
 
-  <!-- 10. Citation -->
+  <!-- 11. Citation -->
   <section id="cite" class="section game-window" aria-labelledby="cite-title">
     <div class="window-title"><h2 id="cite-title"><svg class="h2-icon" aria-hidden="true"><use href="#i-quote"/></svg>Cite</h2><span class="window-index">BibTeX</span></div>
     <div class="window-body">

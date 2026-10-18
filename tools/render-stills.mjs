@@ -25,6 +25,7 @@ const STILLS = [
   { scene: 'gargantua', w: 320, h: 180, night: false },
   { scene: 'epigraph', w: 120, h: 120, night: true },
   { scene: 'shell', w: 640, h: 140, night: true },
+  { scene: 'story-graph', w: 520, h: 260, night: true },
 ];
 
 const CRC = Array.from({ length: 256 }, (_, n) => {

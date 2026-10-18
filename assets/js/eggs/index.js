@@ -1,8 +1,9 @@
 // Pixel-art cameos from two films about time: from Arrival, the heptapod
 // logograms for "Time" (title) and "There is no linear time" (epigraph) and the
-// Montana shell; from Interstellar, Gargantua and the Endurance. Each [data-egg]
-// element gets a canvas drawn at art resolution (--egg-px CSS pixels per art
-// pixel, rounded to whole device pixels) and scaled up without smoothing.
+// Montana shell; from Interstellar, Gargantua and the Endurance. Figure 6's
+// story graph is drawn the same way. Each [data-egg] element gets a canvas
+// drawn at art resolution (--egg-px CSS pixels per art pixel, rounded to whole
+// device pixels) and scaled up without smoothing.
 //
 // One requestAnimationFrame loop advances every visible scene and redraws it
 // at the scene's own pixel frame rate. A scene's clock stops while it is
@@ -14,12 +15,14 @@ import { motionPreference } from '../motion.js';
 import { createLogogram, NO_LINEAR_TIME } from './logogram.js';
 import { createGargantua } from './gargantua.js';
 import { createShell } from './shell.js';
+import { createStoryGraph } from './story-graph.js';
 
 export const FACTORIES = {
   logogram: () => createLogogram(),
   epigraph: () => createLogogram(NO_LINEAR_TIME),
   gargantua: () => createGargantua(),
   shell: () => createShell(),
+  'story-graph': () => createStoryGraph(),
 };
 
 // How far a scroll-written scene is written: nothing while its top is below the
@@ -140,6 +143,8 @@ export function initEggs(root = document) {
       ready: false, live: false, w: 0, h: 0, k: 0, image: null, data: null,
     };
     items.push(item);
+    // A scene that answers the pointer (the story graph) redraws at once, moving or still.
+    item.scene.attach?.(node, () => { if (item.ready && item.w) draw(item); });
     node.dataset.playback = 'loading';
     setup = setup.then(() => item.scene.load?.()).then(nextTask).then(() => {
       item.ready = true;
