@@ -1,18 +1,43 @@
 // Figure 6's story graph as a web of pixel nodes. One annotated work: fourteen
 // events, each numbered by its chronological rank with its telling position in
 // small type beside it, joined by the figure's CAUSES, FORESHADOWS and REVEALS
-// arrows; each REVEALS arrow carries the reader question q1–q4 it answers. The
-// paper lines the nodes up along chronology. Here they rest in a crossing-free
-// web, and since a node's place carries no data, each one wanders slowly round
-// it while the arrows hold. The still frame is the web at rest. Pointing at a
-// node lights its arrows and lists them in the tooltip.
+// arrows; each REVEALS arrow carries the reader question q1–q4 it answers.
+//
+// The web opens as nodes alone. Then the arrows flow out in the story's own
+// chronology: the events no arrow reaches send theirs first, each arrow lands
+// on its target with a soft ring, and the event it reaches sends out its own.
+// As the last arrows land, the web begins, from rest, to drift: a node's place
+// carries no data, so each wanders slowly round it while the arrows hold. The
+// paper lines the nodes up along chronology; here they rest in a crossing-free
+// web. The still frame is the finished web at rest, and once it has been shown
+// the opening does not replay.
+//
+// Unlike the cameos, this scene paints a canvas at device resolution, in
+// art-pixel units: nodes and type stay pixel sprites but are placed to the
+// device pixel, and the arrows are smooth curves, so the motion glides instead
+// of stepping. Pointing at a node lights its arrows and lists them in the tooltip.
 
-import { mix, pack, rng, themeColors } from './pixel.js';
+import { clamp01, mix, rng, smooth, themeColors } from './pixel.js';
 import { showTip, hideTip } from '../tooltip.js';
 
 const DATA = new URL('../../data/story-graph.json', import.meta.url);
 const TYPES = ['CAUSES', 'FORESHADOWS', 'REVEALS'];
 const TAU = Math.PI * 2;
+// The opening, in seconds.
+const OPEN = {
+  fade: 0.6,            // each node fades in over this long,
+  stagger: 0.03,        // one rank after another;
+  first: 0.75,          // the first arrows leave,
+  roots: 0.14,          // from each event no arrow reaches in turn;
+  siblings: 0.08,       // an event's arrows leave this far apart;
+  flight: [0.55, 0.7],  // an arrow flies for the first plus the second times its share of the longest;
+  ring: 0.8,            // a landing's ring spreads and fades;
+  settle: 3,            // the drift grows from nothing over this long, from just before the last landing.
+};
+const STEPS = 32;       // segments per drawn arrow
+const DIM = 0.25;       // what a pointed node leaves of the opacity of everything it does not touch
+const FOCUS_MS = 180;   // the dimming fades in and out
+const ease = p => (p <= 0 ? 0 : p >= 1 ? 1 : p < 0.5 ? 4 * p * p * p : 1 - (2 - 2 * p) ** 3 / 2);
 
 // Pixel type: 5×7 digits number the nodes on roomy canvases; 3×5 digits number
 // them on small ones and give every telling position. q heads the questions.
@@ -128,32 +153,21 @@ function leave(p0, c, p1, end, dist) {
   }
   return (lo + hi) / 2;
 }
-// The pixels of a curve from t0 to t1, one pixel wide with no doubled corners.
-function trace(p0, c, p1, t0, t1) {
-  const steps = Math.max(2, Math.ceil(Math.hypot(p1[0] - p0[0], p1[1] - p0[1]) * 3 * Math.abs(t1 - t0)) + 4);
-  const raw = [];
-  for (let s = 0; s <= steps; s++) {
-    const [x, y] = bezier(p0, c, p1, t0 + ((t1 - t0) * s) / steps);
-    const px = Math.floor(x), py = Math.floor(y), last = raw[raw.length - 1];
-    if (!last || last[0] !== px || last[1] !== py) raw.push([px, py]);
-  }
-  const out = [];
-  for (let i = 0; i < raw.length; i++) {
-    const prev = out[out.length - 1], next = raw[i + 1];
-    if (prev && next && Math.abs(prev[0] - next[0]) === 1 && Math.abs(prev[1] - next[1]) === 1) continue;
-    out.push(raw[i]);
-  }
-  return out;
-}
+// The direction of the bow at parameter t.
+const slope = (p0, c, p1, t) => [2 * (1 - t) * (c[0] - p0[0]) + 2 * t * (p1[0] - c[0]), 2 * (1 - t) * (c[1] - p0[1]) + 2 * t * (p1[1] - c[1])];
 
 // ---- the scene -------------------------------------------------------------------
 export function createStoryGraph() {
   let graph = null;
-  let W = 0, H = 0, R = 6, big = false, font = FONT.small, dot = disc(6);
+  let W = 0, H = 0, K = 1;    // canvas in art pixels; device pixels per art pixel
+  let R = 6, big = false, font = FONT.small, dot = disc(6);
   let base = [], drift = [], sides = [], asks = [];
-  let colors = null;
-  let shown = [];             // node centres in the last frame, for pointing
-  let hover = 0;              // the node pointed at, by rank (0: none)
+  let start = [], flight = [], landed = 0;     // per arrow: when it leaves and how long it flies; the last landing
+  let colors = null, art = null;               // theme colours; the ground and sprites at this size and theme
+  let shown = [];                              // node centres in the last frame, for pointing
+  let hover = 0;                               // the node pointed at (0: none)
+  const focus = { node: 0, from: 0, to: 0, at: 0 };   // the node whose arrows stay lit, and the dimming's fade
+  let whole = false, resumed = null;           // the finished web has been shown; when motion came back after it
 
   function palette() {
     const c = themeColors([
@@ -163,12 +177,11 @@ export function createStoryGraph() {
       ['CAUSES', '--series-a', '#1d7a71'], ['FORESHADOWS', '--role-clue', '#a86c1e'],
       ['REVEALS', '--role-explanation', '#d45a3a'], ['question', '--role-explanation-text', '#a64a35'],
     ]);
-    // Everything not joined to the node pointed at fades toward the plot.
-    const pair = rgb => [pack(rgb), pack(mix(rgb, c.plot, 0.7))];
+    const css = rgb => `rgb(${rgb.join(',')})`;
     return {
-      plot: pack(c.plot), dot: pack(mix(c.plot, c.grid, 0.75)), lit: pack(c.accent), litFill: pack(c.accentSoft),
-      fill: pair(c.fill), frame: pair(c.frame), shadow: pair(c.frameMid), ink: pair(c.ink), muted: pair(c.muted),
-      question: pair(c.question), CAUSES: pair(c.CAUSES), FORESHADOWS: pair(c.FORESHADOWS), REVEALS: pair(c.REVEALS),
+      plot: css(c.plot), dot: css(mix(c.plot, c.grid, 0.75)), fill: css(c.fill), frame: css(c.frame),
+      shadow: css(c.frameMid), ink: css(c.ink), muted: css(c.muted), lit: css(c.accent), litFill: css(c.accentSoft),
+      question: css(c.question), CAUSES: css(c.CAUSES), FORESHADOWS: css(c.FORESHADOWS), REVEALS: css(c.REVEALS),
     };
   }
 
@@ -178,25 +191,22 @@ export function createStoryGraph() {
     font = big ? FONT.big : FONT.small;
     dot = disc(R);
     // Margins: the node and room to wander; labels choose sides that stay in.
-    const amp = Math.max(2, Math.min(10, Math.round(Math.min(W, H) * 0.035)));
+    const amp = Math.max(2, Math.min(9, Math.round(Math.min(W, H) * 0.035)));
     const pad = R + amp + 4;
-    base = layout(W, H, { left: pad, right: W - pad - 1, top: pad, bottom: H - pad - 1 });
+    base = layout(W, H, { left: pad, right: W - pad, top: pad, bottom: H - pad });
     // Telling positions, then questions, each where it collides least with the
     // nodes, the arrows and the labels placed before it, at rest.
     const curves = graph.edges.map(e => {
-      const p0 = base[e.from - 1].map(v => v + 0.5), p1 = base[e.to - 1].map(v => v + 0.5), c = control(p0, p1, e.bend);
+      const p0 = base[e.from - 1], p1 = base[e.to - 1], c = control(p0, p1, e.bend);
       return Array.from({ length: 25 }, (_, i) => bezier(p0, c, p1, i / 24));
     });
     const taken = [];
     const clash = (b, own) => {
-      const x0 = b.left - 1, y0 = b.top - 1, x1 = b.left + b.w, y1 = b.top + b.h;
-      let n = x0 < amp || y0 < amp || x1 >= W - amp || y1 >= H - amp ? 20 : 0;
-      for (const [x, y] of base) {
-        const dx = Math.max(x0 - x - 0.5, 0, x + 0.5 - x1 - 1), dy = Math.max(y0 - y - 0.5, 0, y + 0.5 - y1 - 1);
-        if (Math.hypot(dx, dy) < R + 1) n += 8;
-      }
-      for (const o of taken) if (x0 <= o.left + o.w && o.left - 1 <= x1 && y0 <= o.top + o.h && o.top - 1 <= y1) n += 8;
-      curves.forEach((pts, i) => { if (i !== own && pts.some(([x, y]) => x >= x0 && x <= x1 + 1 && y >= y0 && y <= y1 + 1)) n += 2; });
+      const x0 = b.left - 1, y0 = b.top - 1, x1 = b.left + b.w + 1, y1 = b.top + b.h + 1;
+      let n = x0 < amp || y0 < amp || x1 > W - amp || y1 > H - amp ? 20 : 0;
+      for (const [x, y] of base) if (Math.hypot(Math.max(x0 - x, 0, x - x1), Math.max(y0 - y, 0, y - y1)) < R + 1.5) n += 8;
+      for (const o of taken) if (x0 < o.left + o.w + 1 && o.left - 1 < x1 && y0 < o.top + o.h + 1 && o.top - 1 < y1) n += 8;
+      curves.forEach((pts, i) => { if (i !== own && pts.some(([x, y]) => x >= x0 && x <= x1 && y >= y0 && y <= y1)) n += 2; });
       return n;
     };
     const choose = (options, boxOf, own = -1) => {
@@ -210,6 +220,26 @@ export function createStoryGraph() {
     };
     sides = base.map((p, i) => choose(SIDES, side => tellingBox(i + 1, p, side)));
     asks = graph.edges.map((e, i) => (e.q ? choose(ASKS, ask => questionBox(e, base, ask), i) : null));
+    // The opening's timing. An event no arrow reaches is reached at the start,
+    // any other when its first arrow lands; its own arrows leave once it is
+    // reached, and an arrow flies longer the longer it is. Arrows only run
+    // forward in chronology, so taking events in rank order times every arrow
+    // into an event before any arrow out of it.
+    const length = graph.edges.map(e => Math.hypot(base[e.to - 1][0] - base[e.from - 1][0], base[e.to - 1][1] - base[e.from - 1][1]));
+    const longest = Math.max(...length);
+    start = []; flight = [];
+    let roots = 0;
+    for (let k = 1; k <= graph.n; k++) {
+      const arrivals = graph.edges.flatMap((e, i) => (e.to === k ? [start[i] + flight[i]] : []));
+      const reached = arrivals.length ? Math.min(...arrivals) : OPEN.first + OPEN.roots * roots++;
+      graph.edges.map((e, i) => i).filter(i => graph.edges[i].from === k)
+        .sort((a, b) => graph.edges[a].to - graph.edges[b].to || a - b)
+        .forEach((i, j) => {
+          start[i] = reached + OPEN.siblings * j;
+          flight[i] = OPEN.flight[0] + (OPEN.flight[1] * length[i]) / longest;
+        });
+    }
+    landed = Math.max(...start.map((s, i) => s + flight[i]));
     // Each node wanders on its own slow Lissajous path, never far enough to
     // touch a neighbour wandering toward it.
     const next = rng(6);
@@ -222,118 +252,227 @@ export function createStoryGraph() {
         wx: TAU / (10 + 8 * next()), wy: TAU / (12 + 9 * next()), k: 2.2 + 0.9 * next(),
       };
     });
+    art = null;
   }
 
-  // Node centres at time t, on whole pixels, so the web steps like sprites.
-  function at(t) {
+  // How far the opening has gone at time t: an arrow's growth (0–1), a node's
+  // fade (0–1), and how much of the drift has come in (0–1). Once the finished
+  // web has been shown, only the drift comes back, from the moment motion did.
+  const grown = (i, t) => (whole ? 1 : ease((t - start[i]) / flight[i]));
+  const appeared = (k, t) => (whole ? 1 : ease((t - OPEN.stagger * (k - 1)) / OPEN.fade));
+  const swayed = t => (whole ? smooth(resumed, resumed + OPEN.settle, t) : smooth(landed - 0.6, landed - 0.6 + OPEN.settle, t));
+
+  // Node centres at time t: at rest, plus each node's wander as far as the drift has come in.
+  function at(t, sway) {
     return base.map(([x, y], i) => {
-      const d = drift[i];
-      const ox = d.amp * d.sx * (0.56 * Math.sin(d.wx * t) + 0.14 * Math.sin(d.k * d.wx * t));
-      const oy = d.amp * d.sy * (0.56 * Math.sin(d.wy * t) + 0.14 * Math.sin(d.k * d.wy * t));
-      return [Math.round(x + ox), Math.round(y + oy)];
+      const d = drift[i], a = d.amp * sway;
+      return [
+        x + a * d.sx * (0.56 * Math.sin(d.wx * t) + 0.14 * Math.sin(d.k * d.wx * t)),
+        y + a * d.sy * (0.56 * Math.sin(d.wy * t) + 0.14 * Math.sin(d.k * d.wy * t)),
+      ];
     });
   }
 
-  function put(out, x, y, c) {
-    if (x >= 0 && y >= 0 && x < W && y < H) out[y * W + x] = c;
-  }
-  function stamp(out, cells, x, y, c) {
-    for (const [dx, dy] of cells) put(out, x + dx, y + dy, c);
-  }
-  function text(out, f, s, x, y, c) {
-    for (const ch of s) {
-      const g = f.g[ch];
-      for (const [dx, dy] of g.px) put(out, x + dx, y + dy, c);
-      x += g.w + 1;
-    }
-  }
-  function box(out, x, y, w, h, c) {
-    for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) put(out, i, j, c);
-  }
-  function triangle(out, a, b, d, c) {
-    const edge = (p, q, x, y) => (q[0] - p[0]) * (y - p[1]) - (q[1] - p[1]) * (x - p[0]);
-    const area = edge(a, b, d[0], d[1]);
-    for (let y = Math.floor(Math.min(a[1], b[1], d[1])); y <= Math.ceil(Math.max(a[1], b[1], d[1])); y++) {
-      for (let x = Math.floor(Math.min(a[0], b[0], d[0])); x <= Math.ceil(Math.max(a[0], b[0], d[0])); x++) {
-        const px = x + 0.5, py = y + 0.5;
-        const w0 = edge(a, b, px, py) * area, w1 = edge(b, d, px, py) * area, w2 = edge(d, a, px, py) * area;
-        if (w0 >= 0 && w1 >= 0 && w2 >= 0) put(out, x, y, c);
-      }
-    }
-  }
-
-  // One arrow: a bowed pixel line from the source's rim to an arrowhead at the
-  // target's rim. FORESHADOWS is dashed; REVEALS is heavier.
-  function arrow(out, e, P, faded) {
-    const a = P[e.from - 1], b = P[e.to - 1];
-    const p0 = [a[0] + 0.5, a[1] + 0.5], p1 = [b[0] + 0.5, b[1] + 0.5], c = control(p0, p1, e.bend);
-    const heavy = e.type === 'REVEALS';
-    const head = (big ? 5 : 4) + (heavy ? 1 : 0), half = (big ? 3 : 2.5) + (heavy ? 0.5 : 0);
-    const color = colors[e.type][faded ? 1 : 0];
-    const t0 = leave(p0, c, p1, 0, R + 1.5), tip = leave(p0, c, p1, 1, R + 1.5), t1 = leave(p0, c, p1, 1, R + head);
-    trace(p0, c, p1, t0, t1).forEach(([x, y], i) => {
-      if (e.type === 'FORESHADOWS' && i % 5 > 2) return;
-      put(out, x, y, color);
-      if (heavy) { put(out, x + 1, y, color); put(out, x, y + 1, color); put(out, x + 1, y + 1, color); }
-    });
-    const T = bezier(p0, c, p1, tip), back = bezier(p0, c, p1, tip - 0.03);
-    const ux = T[0] - back[0], uy = T[1] - back[1], ul = Math.hypot(ux, uy) || 1;
-    const fx = ux / ul, fy = uy / ul, bx = T[0] - fx * head, by = T[1] - fy * head;
-    triangle(out, T, [bx - fy * half, by + fx * half], [bx + fy * half, by - fx * half], color);
-  }
-
-  // Where node k's telling position goes on side [sx, sy]: the text's box,
-  // drawn with a one-pixel border of plot colour.
+  // Where node k's telling position goes on side [sx, sy]: the text's box, drawn
+  // with a one-pixel border of plot colour.
   function tellingBox(k, [x, y], [sx, sy]) {
     const w = textWidth(FONT.small, String(graph.told[k])), h = FONT.small.h;
-    const ax = x + 0.5 + sx * (R + 2.5), ay = y + 0.5 + sy * (R + 2.5);
-    return { left: Math.round(ax - (sx < -0.3 ? w : sx > 0.3 ? 0 : w / 2)), top: Math.round(ay - (sy < -0.3 ? h : sy > 0.3 ? 0 : h / 2)), w, h };
+    const ax = x + sx * (R + 2.5), ay = y + sy * (R + 2.5);
+    return { left: ax - (sx < -0.3 ? w : sx > 0.3 ? 0 : w / 2), top: ay - (sy < -0.3 ? h : sy > 0.3 ? 0 : h / 2), w, h };
   }
   // Where a REVEALS arrow's question goes: beside its bow at parameter t,
   // outside the bow or inside it, kept on the canvas.
   function questionBox(e, P, { t, outside }) {
-    const p0 = P[e.from - 1].map(v => v + 0.5), p1 = P[e.to - 1].map(v => v + 0.5), c = control(p0, p1, e.bend);
+    const p0 = P[e.from - 1], p1 = P[e.to - 1], c = control(p0, p1, e.bend);
     const L = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]) || 1, side = (Math.sign(e.bend) || 1) * (outside ? 1 : -1);
     const m = bezier(p0, c, p1, t), w = FONT.small.g.q.w + 1 + textWidth(FONT.small, String(e.q)), h = FONT.small.h + 2;
     const cx = m[0] + ((p0[1] - p1[1]) / L) * side * 7, cy = m[1] + ((p1[0] - p0[0]) / L) * side * 7;
-    return { left: Math.max(1, Math.min(W - w - 1, Math.round(cx - w / 2))), top: Math.max(1, Math.min(H - h - 1, Math.round(cy - h / 2))), w, h };
+    return { left: Math.max(1, Math.min(W - w - 1, cx - w / 2)), top: Math.max(1, Math.min(H - h - 1, cy - h / 2)), w, h };
   }
 
-  // q, then the question's number as a subscript.
-  function question(out, e, P, faded) {
-    const { left, top, w, h } = questionBox(e, P, asks[graph.edges.indexOf(e)]);
-    box(out, left - 1, top - 1, w + 2, h + 2, colors.plot);
-    const c = colors.question[faded];
-    text(out, FONT.small, 'q', left, top, c);
-    text(out, FONT.small, String(e.q), left + FONT.small.g.q.w + 1, top + 2, c);
+  // ---- sprites: pixel art at K device pixels per art pixel -----------------------
+  function sheet(w, h) {
+    const c = document.createElement('canvas');
+    c.width = Math.max(1, Math.ceil(w * K));
+    c.height = Math.max(1, Math.ceil(h * K));
+    return c;
+  }
+  function cells(ctx, list, x0, y0, color) {
+    ctx.fillStyle = color;
+    for (const [x, y] of list) ctx.fillRect((x0 + x) * K, (y0 + y) * K, K, K);
+  }
+  function type(ctx, f, s, x0, y0, color) {
+    ctx.fillStyle = color;
+    for (const ch of s) {
+      const g = f.g[ch];
+      for (const [x, y] of g.px) ctx.fillRect((x0 + x) * K, (y0 + y) * K, K, K);
+      x0 += g.w + 1;
+    }
+  }
+  function label(w, h, draw) {
+    const c = sheet(w + 2, h + 2), ctx = c.getContext('2d');
+    ctx.fillStyle = colors.plot;
+    ctx.fillRect(0, 0, c.width, c.height);
+    draw(ctx);
+    return c;
+  }
+  // The ground (plot colour and a faint pixel grid, so the drift reads against
+  // fixed ground), each node plain and lit, and the labels.
+  function paint() {
+    const ground = sheet(W, H), g = ground.getContext('2d');
+    g.fillStyle = colors.plot;
+    g.fillRect(0, 0, ground.width, ground.height);
+    g.fillStyle = colors.dot;
+    for (let y = 4; y < H; y += 8) for (let x = 4; x < W; x += 8) g.fillRect(x * K, y * K, K, K);
+    const node = (k, lit) => {
+      const c = sheet(2 * R + 1, 2 * R + 2), ctx = c.getContext('2d'), s = String(k), w = textWidth(font, s);
+      cells(ctx, dot.all, R, R + 1, colors.shadow);
+      cells(ctx, dot.fill, R, R, lit ? colors.litFill : colors.fill);
+      cells(ctx, dot.ring, R, R, lit ? colors.lit : colors.frame);
+      type(ctx, font, s, R - Math.floor((w - 1) / 2), R - Math.floor((font.h - 1) / 2), colors.ink);
+      return c;
+    };
+    const small = FONT.small;
+    art = {
+      ground,
+      nodes: Array.from({ length: graph.n }, (_, i) => [node(i + 1, false), node(i + 1, true)]),
+      told: Array.from({ length: graph.n }, (_, i) => {
+        const s = String(graph.told[i + 1]);
+        return label(textWidth(small, s), small.h, ctx => type(ctx, small, s, 1, 1, colors.muted));
+      }),
+      asks: graph.edges.map(e => (e.q ? label(small.g.q.w + 1 + textWidth(small, String(e.q)), small.h + 2, ctx => {
+        type(ctx, small, 'q', 1, 1, colors.question);
+        type(ctx, small, String(e.q), 2 + small.g.q.w, 3, colors.question);   // the subscript
+      }) : null)),
+    };
   }
 
-  function render(t, out, still) {
+  // One arrow, as far as it has grown: a bowed line from the source's rim whose
+  // head flies ahead of it and settles on the target's rim. FORESHADOWS is
+  // dashed; REVEALS is heavier.
+  function arrow(ctx, e, i, P, t, alpha) {
+    const grow = grown(i, t);
+    if (grow <= 0) return;
+    const p0 = P[e.from - 1], p1 = P[e.to - 1], c = control(p0, p1, e.bend);
+    const t0 = leave(p0, c, p1, 0, R + 1.5), t1 = leave(p0, c, p1, 1, R + 1.5);
+    const pts = [], len = [0];
+    for (let j = 0; j <= STEPS; j++) {
+      const q = bezier(p0, c, p1, t0 + ((t1 - t0) * j) / STEPS);
+      if (j) len.push(len[j - 1] + Math.hypot(q[0] - pts[j - 1][0], q[1] - pts[j - 1][1]));
+      pts.push(q);
+    }
+    // The point s along the arrow, and the bow's parameter there.
+    const along = s => {
+      let j = 1;
+      while (j < STEPS && len[j] < s) j++;
+      const f = clamp01((s - len[j - 1]) / (len[j] - len[j - 1] || 1));
+      return { j, x: pts[j - 1][0] + (pts[j][0] - pts[j - 1][0]) * f, y: pts[j - 1][1] + (pts[j][1] - pts[j - 1][1]) * f, u: t0 + ((t1 - t0) * (j - 1 + f)) / STEPS };
+    };
+    const heavy = e.type === 'REVEALS', tip = len[STEPS] * grow;
+    // The head grows in over its first few pixels, so nothing pokes out of the source.
+    const size = Math.min(1, tip / 8), head = ((big ? 5 : 4) + (heavy ? 1 : 0)) * size, half = ((big ? 3 : 2.5) + (heavy ? 0.5 : 0)) * size;
+    const end = along(Math.max(0, tip - head * 0.6));
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = ctx.fillStyle = colors[e.type];
+    ctx.lineWidth = heavy ? 2 : 1;
+    ctx.lineCap = e.type === 'FORESHADOWS' ? 'butt' : 'round';
+    ctx.setLineDash(e.type === 'FORESHADOWS' ? [3, 2] : []);
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let j = 1; j < end.j; j++) ctx.lineTo(pts[j][0], pts[j][1]);
+    ctx.lineTo(end.x, end.y);
+    ctx.stroke();
+    const T = along(tip), [dx, dy] = slope(p0, c, p1, T.u), dl = Math.hypot(dx, dy) || 1, fx = dx / dl, fy = dy / dl;
+    const bx = T.x - fx * head, by = T.y - fy * head;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(T.x, T.y);
+    ctx.lineTo(bx - fy * half, by + fx * half);
+    ctx.lineTo(bx + fy * half, by - fx * half);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // How far everything a pointed node does not touch has dimmed (0–1); the
+  // fade runs only while the web moves.
+  function dimming(still) {
+    const u = still ? 1 : smooth(0, FOCUS_MS, performance.now() - focus.at);
+    if (u >= 1 && !focus.to) focus.node = 0;
+    return focus.from + (focus.to - focus.from) * u;
+  }
+
+  function draw(ctx, t, still) {
     if (!colors) colors = palette();
-    out.fill(colors.plot);
-    // A faint pixel grid, so the drift reads against fixed ground.
-    for (let y = 4; y < H; y += 8) for (let x = 4; x < W; x += 8) out[y * W + x] = colors.dot;
-    if (!graph || !base.length) return;
-    const P = shown = at(still ? 0 : t);
-    const joined = e => !hover || e.from === hover || e.to === hover;
-    const near = new Set(graph.edges.filter(e => hover && joined(e)).flatMap(e => [e.from, e.to]));
-    for (const lit of [false, true]) for (const e of graph.edges) if (joined(e) === lit) arrow(out, e, P, !lit);
-    for (let k = 1; k <= graph.n; k++) {
-      const [x, y] = P[k - 1], pointed = k === hover, faded = hover && !pointed && !near.has(k) ? 1 : 0;
-      stamp(out, dot.all, x, y + 1, colors.shadow[faded]);
-      stamp(out, dot.fill, x, y, pointed ? colors.litFill : colors.fill[faded]);
-      stamp(out, dot.ring, x, y, pointed ? colors.lit : colors.frame[faded]);
-      const s = String(k), w = textWidth(font, s);
-      text(out, font, s, x - Math.floor((w - 1) / 2), y - Math.floor((font.h - 1) / 2), colors.ink[faded]);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 1;
+    if (!graph || !base.length) {
+      ctx.fillStyle = colors.plot;
+      ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      return;
     }
-    // Telling positions, small, each on its node's clearest side.
-    for (let k = 1; k <= graph.n; k++) {
-      const faded = hover && k !== hover && !near.has(k) ? 1 : 0;
-      const { left, top, w, h } = tellingBox(k, P[k - 1], sides[k - 1]);
-      box(out, left - 1, top - 1, w + 2, h + 2, colors.plot);
-      text(out, FONT.small, String(graph.told[k]), left, top, colors.muted[faded]);
+    if (!art) paint();
+    // A still frame is the finished web at rest; after one, motion resumes as drift.
+    if (still) { whole = true; resumed = null; } else if (whole && resumed === null) resumed = t;
+    const P = shown = at(t, still ? 0 : swayed(t));
+    const d = dimming(still);
+    const joined = e => !focus.node || e.from === focus.node || e.to === focus.node;
+    const near = new Set(graph.edges.filter(e => focus.node && joined(e)).flatMap(e => [e.from, e.to]));
+    const touched = k => !focus.node || k === focus.node || near.has(k);
+    const opacity = on => (on ? 1 : 1 - d * (1 - DIM));
+    const px = v => Math.round(v * K);
+    ctx.drawImage(art.ground, 0, 0);
+    ctx.setTransform(K, 0, 0, K, 0, 0);
+    ctx.lineJoin = 'round';
+    for (const lit of [false, true]) graph.edges.forEach((e, i) => { if (joined(e) === lit) arrow(ctx, e, i, P, t, opacity(lit)); });
+    // Each landing: a ring spreads from the target and fades.
+    ctx.setLineDash([]);
+    ctx.lineWidth = 1;
+    if (!whole) {
+      graph.edges.forEach((e, i) => {
+        const u = (t - start[i] - flight[i]) / OPEN.ring;
+        if (u < 0 || u >= 1) return;
+        const [x, y] = P[e.to - 1];
+        ctx.globalAlpha = 0.6 * (1 - u) * (1 - u) * opacity(joined(e));
+        ctx.strokeStyle = colors[e.type];
+        ctx.beginPath();
+        ctx.arc(x, y, R + 1 + 6 * ease(u), 0, TAU);
+        ctx.stroke();
+      });
     }
-    for (const lit of [false, true]) for (const e of graph.edges) if (e.q && joined(e) === lit) question(out, e, P, lit ? 0 : 1);
+    // Nodes, rising into place as they fade in, then their telling positions.
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    const rise = k => 3 * (1 - appeared(k, t));
+    for (let k = 1; k <= graph.n; k++) {
+      const show = appeared(k, t);
+      if (show <= 0) continue;
+      const [x, y] = P[k - 1], [plain, lit] = art.nodes[k - 1];
+      const left = px(x - R - 0.5), top = px(y - R - 0.5 + rise(k));
+      ctx.globalAlpha = show * opacity(touched(k));
+      ctx.drawImage(plain, left, top);
+      if (k === focus.node && d > 0) {
+        ctx.globalAlpha = show * d;
+        ctx.drawImage(lit, left, top);
+      }
+    }
+    for (let k = 1; k <= graph.n; k++) {
+      const show = appeared(k, t);
+      if (show <= 0) continue;
+      const [x, y] = P[k - 1], b = tellingBox(k, [x, y + rise(k)], sides[k - 1]);
+      ctx.globalAlpha = show * opacity(touched(k));
+      ctx.drawImage(art.told[k - 1], px(b.left - 1), px(b.top - 1));
+    }
+    // Each question comes in as its arrow lands.
+    for (const lit of [false, true]) {
+      graph.edges.forEach((e, i) => {
+        if (!e.q || joined(e) !== lit) return;
+        const show = whole ? 1 : smooth(start[i] + flight[i], start[i] + flight[i] + 0.5, t);
+        if (show <= 0) return;
+        const b = questionBox(e, P, asks[i]);
+        ctx.globalAlpha = show * opacity(lit);
+        ctx.drawImage(art.asks[i], px(b.left - 1), px(b.top - 1));
+      });
+    }
+    ctx.globalAlpha = 1;
   }
 
   // What the tooltip says about node k: its two positions, its arrows by type
@@ -355,14 +494,19 @@ export function createStoryGraph() {
 
   return {
     id: 'story-graph',
-    fps: 10,
+    vector: true,       // paints its own canvas at device resolution (see index.js)
+    fps: 120,           // every display frame
     still: 0,
+    share: 0.5,         // the opening waits until half the canvas is on screen
     async load() { graph = await loadGraph(); },
-    resize(w, h) { W = w; H = h; if (graph) place(); },
-    theme() { colors = palette(); },
-    render,
-    // Node centres and radius at time t, for the browser checks.
-    geometry(t) { return { r: R, nodes: at(t) }; },
+    resize(w, h, k) { W = w; H = h; K = k || 1; if (graph) place(); },
+    theme() { colors = palette(); art = null; },
+    draw,
+    // For the browser checks: node centres and radius, each arrow's growth and
+    // the last landing, at time t of an opening that has not been skipped.
+    geometry(t) {
+      return { r: R, nodes: at(t, swayed(t)), grown: graph.edges.map((e, i) => ease((t - start[i]) / flight[i])), landed };
+    },
     // Pointing (mouse, pen or a tap) lights a node's arrows; the scheduler
     // passes `redraw` so a still web answers too.
     attach(node, redraw) {
@@ -373,14 +517,17 @@ export function createStoryGraph() {
         const x = ((e.clientX - r.left) / r.width) * W, y = ((e.clientY - r.top) / r.height) * H;
         let best = 0, bestD = R + 4;
         shown.forEach(([px, py], i) => {
-          const d = Math.hypot(px + 0.5 - x, py + 0.5 - y);
+          const d = Math.hypot(px - x, py - y);
           if (d < bestD) { bestD = d; best = i + 1; }
         });
         return best;
       };
       const point = (k, e) => {
         if (k !== hover) {
+          const now = dimming(false);
           hover = k;
+          if (k) focus.node = k;     // leaving keeps the old node lit while it fades
+          Object.assign(focus, { from: now, to: k ? 1 : 0, at: performance.now() });
           if (k) node.dataset.hover = String(k); else delete node.dataset.hover;
           redraw();
         }

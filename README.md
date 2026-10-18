@@ -41,10 +41,17 @@ Each node shows its chronological rank, with its telling position in small type
 beside it; arrows keep the figure's types (CAUSES teal, FORESHADOWS dashed amber,
 REVEALS heavy coral with its question q1–q4). The paper lines the nodes up along
 chronology; here they rest in a crossing-free layout chosen for each canvas shape
-(2:1, 4:3 on tablets, 4:5 on phones), and since a node's place carries no data, each
-wanders slowly round it. Pointing at a node, or tapping it, lights its arrows and lists
-them in the tooltip. The figure's arrows and telling come from
-`assets/data/story-graph.json`, and a list under the figure gives every arrow as text.
+(2:1, 4:3 on tablets, 4:5 on phones). Once half the canvas is on screen, the web
+opens as nodes alone, and the arrows flow out in the story's chronology: the events
+no arrow reaches send theirs first, each arrow lands with a soft ring, and the event
+it reaches sends out its own; the last lands after about five seconds. The drift then
+grows in from rest: a node's place carries no data, so each wanders slowly round it.
+The canvas is painted at device resolution, so nodes and type stay pixel sprites while
+the motion glides; the still frame is the finished web, and once it has been shown
+(under reduced motion or a hold) the opening does not replay. Pointing at a node, or
+tapping it, lights its arrows and lists them in the tooltip. The figure's arrows and
+telling come from `assets/data/story-graph.json`, and a list under the figure gives
+every arrow as text.
 
 The title band, the epigraph and the closing shot hold pixel-art cameos from films
 told out of order, each drawn on a canvas by `assets/js/eggs/`:
@@ -116,9 +123,10 @@ make stills         # redraw the canvases' still frames after changing a scene
 - `tools/verify.mjs` loads the page at 360, 768 and 1280 px, in day and night, with
   and without reduced motion. It fails on sideways scrolling, console errors, empty
   charts or any request to another origin, checks that the page opens at night, tests
-  narrative playback, the cameos' playback, the story graph's drift (five minutes at
-  every canvas size, nodes on the canvas and never touching) and pointer, and the
-  hero's keyboard controls, and writes screenshots of every scene to `.preview/`.
+  narrative playback, the cameos' playback, the story graph's opening (nodes first,
+  each arrow leaving only once one has reached its source) and drift (five minutes at
+  every canvas size, nodes on the canvas, never touching, never jumping) and pointer,
+  and the hero's keyboard controls, and writes screenshots of every scene to `.preview/`.
   Set `CHROME=/path/to/chromium` to use a browser that is already installed.
 
 ## Editing numbers

@@ -1,15 +1,17 @@
 // Pixel-art cameos from two films about time: from Arrival, the heptapod
 // logograms for "Time" (title) and "There is no linear time" (epigraph) and the
-// Montana shell; from Interstellar, Gargantua and the Endurance. Figure 6's
-// story graph is drawn the same way. Each [data-egg] element gets a canvas
-// drawn at art resolution (--egg-px CSS pixels per art pixel, rounded to whole
-// device pixels) and scaled up without smoothing.
+// Montana shell; from Interstellar, Gargantua and the Endurance. Each
+// [data-egg] element gets a canvas drawn at art resolution (--egg-px CSS pixels
+// per art pixel, rounded to whole device pixels) and scaled up without
+// smoothing. Figure 6's story graph is a vector scene: its canvas is at device
+// resolution and the scene paints it itself, in art-pixel units.
 //
 // One requestAnimationFrame loop advances every visible scene and redraws it
 // at the scene's own pixel frame rate. A scene's clock stops while it is
-// off-screen or the tab is hidden. Scenes marked data-egg-scroll are written by
-// the page's scroll instead. Reduced motion shows one still frame until the
-// page's Play opt-in (motion.js) enables movement.
+// off-screen (or less of it is on screen than its `share`) or the tab is
+// hidden. Scenes marked data-egg-scroll are written by the page's scroll
+// instead. Reduced motion shows one still frame until the page's Play opt-in
+// (motion.js) enables movement.
 
 import { motionPreference } from '../motion.js';
 import { createLogogram, NO_LINEAR_TIME } from './logogram.js';
@@ -49,8 +51,11 @@ export function initEggs(root = document) {
     const still = motionPreference.reduced;
     const t = still ? item.scene.still : item.t;
     if (item.scrolled) item.scene.scroll = item.progress = scrollProgress(item.node);
-    item.scene.render(t, item.data, still);
-    item.ctx.putImageData(item.image, 0, 0);
+    if (item.scene.vector) item.scene.draw(item.ctx, t, still);
+    else {
+      item.scene.render(t, item.data, still);
+      item.ctx.putImageData(item.image, 0, 0);
+    }
     item.node.dataset.time = t.toFixed(2);
     if (item.scrolled) item.node.dataset.progress = item.progress.toFixed(2);
     if (!item.live) { item.live = true; item.node.classList.add('is-live'); }
@@ -66,12 +71,15 @@ export function initEggs(root = document) {
     const h = Math.max(8, Math.floor(rect.height * dpr / k));
     if (w === item.w && h === item.h && k === item.k) return false;
     Object.assign(item, { w, h, k });
-    item.canvas.width = w;
-    item.canvas.height = h;
+    const scale = item.scene.vector ? k : 1;
+    item.canvas.width = w * scale;
+    item.canvas.height = h * scale;
     item.canvas.style.width = `${(w * k) / dpr}px`;
-    item.image = item.ctx.createImageData(w, h);
-    item.data = new Uint32Array(item.image.data.buffer);
-    item.scene.resize(w, h);
+    if (!item.scene.vector) {
+      item.image = item.ctx.createImageData(w, h);
+      item.data = new Uint32Array(item.image.data.buffer);
+    }
+    item.scene.resize(w, h, k);
     item.frame = -1;
     return true;
   }
@@ -113,10 +121,10 @@ export function initEggs(root = document) {
   const io = new IntersectionObserver(entries => {
     for (const entry of entries) {
       const item = items.find(it => it.node === entry.target);
-      if (item) item.visible = entry.isIntersecting;
+      if (item) item.visible = entry.isIntersecting && entry.intersectionRatio >= (item.scene.share || 0);
     }
     sync();
-  });
+  }, { threshold: [0, 0.5] });
 
   let resizeTimer = 0;
   const ro = new ResizeObserver(() => {

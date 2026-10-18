@@ -8,7 +8,8 @@
 //   no sideways page scroll; no console errors; no request leaves the site's origin.
 // Then: controls, point-by-point playback/lifecycle checks with a virtual clock,
 // the pixel-art cameos' playback (on screen only, still under reduced motion),
-// the story graph's drift (on its canvas, nodes never touching) and pointer,
+// the story graph's opening (arrows flowing out along chronology), its drift
+// (on its canvas, nodes never touching, no jumps) and pointer,
 // the header's motion toggle, the benchmark grid's sticky header and the reading
 // progress bar,
 // and screenshots of every hero scene, representative shape loop frames, the
@@ -597,45 +598,73 @@ if (!motionOptInOnly) for (const theme of ['light', 'dark']) {
   finally { await context.close(); }
 }
 
-// ---- story graph (Figure 6): drifts on screen, never off its canvas or into a
-// neighbour, holds still otherwise, and lights a node's arrows when pointed at --
-// Node centres at time t in page coordinates, from a fresh scene the size of the live canvas.
+// ---- story graph (Figure 6): opens as nodes whose arrows flow out and connect,
+// then drifts on screen, never off its canvas or into a neighbour; holds still
+// otherwise, and lights a node's arrows when pointed at -----------------------------
+// Node centres at time t in page coordinates, from a fresh scene the size of the
+// live canvas (a vector scene: its canvas has k device pixels per art pixel).
 const graphNodes = (page, t) => page.evaluate(async t => {
-  const canvas = document.querySelector('[data-egg="story-graph"] canvas');
+  const node = document.querySelector('[data-egg="story-graph"]'), canvas = node.querySelector('canvas');
+  const k = Math.max(1, Math.round(parseFloat(getComputedStyle(node).getPropertyValue('--egg-px')) * devicePixelRatio));
+  const w = canvas.width / k, h = canvas.height / k;
   const { FACTORIES } = await import(new URL('assets/js/eggs/index.js', document.baseURI).href);
   const scene = FACTORIES['story-graph']();
   await scene.load();
-  scene.resize(canvas.width, canvas.height);
+  scene.resize(w, h, k);
   const r = canvas.getBoundingClientRect();
-  return scene.geometry(t).nodes.map(([x, y]) => [r.left + ((x + 0.5) / canvas.width) * r.width, r.top + ((y + 0.5) / canvas.height) * r.height]);
+  return scene.geometry(t).nodes.map(([x, y]) => [r.left + (x / w) * r.width, r.top + (y / h) * r.height]);
 }, t);
 
 if (!motionOptInOnly) {
   const { context, page, problems } = await open(1280, 'dark', 'no-preference', { clock: true });
   const label = 'story graph';
   try {
-    // Five minutes of drift at every canvas size the page uses (wide, narrow
-    // desktop, tablet, phone): nodes stay on the canvas, rims at least 3 px apart.
-    const drift = await page.evaluate(async () => {
+    // At every canvas size the page uses (wide, narrow desktop, tablet, phone):
+    // the opening shows nodes alone, then every arrow grows out of its source,
+    // only once an arrow has reached that source (or none ever will), and lands
+    // within six seconds, on a web at rest; five minutes of drift then keep the
+    // nodes on the canvas with rims at least 3 px apart, gliding under a third
+    // of an art pixel per frame.
+    const opening = await page.evaluate(async () => {
       const { FACTORIES } = await import(new URL('assets/js/eggs/index.js', document.baseURI).href);
+      const graph = await (await fetch('assets/data/story-graph.json')).json();
+      const arrows = ['CAUSES', 'FORESHADOWS', 'REVEALS'].flatMap(type => graph.figure6.edges[type]);
       const found = [];
       for (const [w, h] of [[522, 261], [457, 228], [336, 252], [154, 192]]) {
         const scene = FACTORIES['story-graph']();
         await scene.load();
-        scene.resize(w, h);
-        for (let t = 0; t <= 300; t += 0.1) {
-          const { r, nodes } = scene.geometry(t);
-          nodes.forEach(([x, y], i) => {
-            if (x - r < 1 || y - r < 1 || x + r > w - 2 || y + r > h - 2) found.push(`${w}×${h}, t = ${t.toFixed(1)} s: e${i + 1} leaves the canvas`);
-            for (let j = i + 1; j < nodes.length; j++) {
-              if (Math.hypot(x - nodes[j][0], y - nodes[j][1]) < 2 * r + 3) found.push(`${w}×${h}, t = ${t.toFixed(1)} s: e${i + 1} touches e${j + 1}`);
-            }
-          });
+        scene.resize(w, h, 2);
+        const rest = scene.geometry(0).nodes, { landed } = scene.geometry(0);
+        if (!(landed > 2 && landed <= 6)) found.push(`${w}×${h}: the last arrow lands at ${landed} s`);
+        if (scene.geometry(0.5).grown.some(g => g > 0)) found.push(`${w}×${h}: arrows before the nodes are in`);
+        let before = null, prev = null;
+        for (let t = 0; t <= 300; t += 1 / 60) {
+          const { r, nodes, grown } = scene.geometry(t);
+          if (t <= landed + 0.5) {
+            grown.forEach((g, i) => {
+              if (before && g < before[i]) found.push(`${w}×${h}, t = ${t.toFixed(2)} s: arrow ${i} shrinks`);
+              const [from] = arrows[i], into = arrows.flatMap(([a, b], j) => (b === from ? [j] : []));
+              if (g > 0 && into.length && !into.some(j => grown[j] === 1)) found.push(`${w}×${h}, t = ${t.toFixed(2)} s: e${from} sends an arrow before one reaches it`);
+            });
+            before = grown;
+          }
+          if (t < landed - 0.6 && nodes.some(([x, y], i) => x !== rest[i][0] || y !== rest[i][1])) found.push(`${w}×${h}, t = ${t.toFixed(2)} s: the web moves during the opening`);
+          if (Math.abs(t * 10 - Math.round(t * 10)) < 1e-6) {
+            nodes.forEach(([x, y], i) => {
+              if (x - r < 1 || y - r < 1 || x + r > w - 2 || y + r > h - 2) found.push(`${w}×${h}, t = ${t.toFixed(1)} s: e${i + 1} leaves the canvas`);
+              for (let j = i + 1; j < nodes.length; j++) {
+                if (Math.hypot(x - nodes[j][0], y - nodes[j][1]) < 2 * r + 3) found.push(`${w}×${h}, t = ${t.toFixed(1)} s: e${i + 1} touches e${j + 1}`);
+              }
+            });
+          }
+          if (prev && nodes.some(([x, y], i) => Math.hypot(x - prev[i][0], y - prev[i][1]) > 1 / 3)) found.push(`${w}×${h}, t = ${t.toFixed(2)} s: a node jumps`);
+          prev = nodes;
         }
+        if (scene.geometry(landed).grown.some(g => g !== 1)) found.push(`${w}×${h}: an arrow has not landed by the last landing`);
       }
       return found;
     });
-    for (const problem of drift.slice(0, 5)) fail(`${label}: ${problem}`);
+    for (const problem of opening.slice(0, 5)) fail(`${label}: ${problem}`);
 
     await page.addStyleTag({ content: '.site-header{position:static!important}' });
     await advance(page, 64);

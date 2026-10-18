@@ -5,8 +5,9 @@
 //   python3 -m http.server 8000            (in the site folder, another terminal)
 //   node tools/render-stills.mjs --url http://127.0.0.1:8000/
 // Needs Playwright, as tools/verify.mjs does (PLAYWRIGHT_MODULE and CHROME work the same way).
-// Frames are pixel art with fewer than 256 colours, so they are written as exact
-// indexed PNGs.
+// The cameos' frames are pixel art with fewer than 256 colours, so they are
+// written as exact indexed PNGs. The story graph paints smooth curves at k
+// device pixels per art pixel, so its frames are written as the browser encodes them.
 
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -25,7 +26,7 @@ const STILLS = [
   { scene: 'gargantua', w: 320, h: 180, night: false },
   { scene: 'epigraph', w: 120, h: 120, night: true },
   { scene: 'shell', w: 640, h: 140, night: true },
-  { scene: 'story-graph', w: 520, h: 260, night: true },
+  { scene: 'story-graph', w: 520, h: 260, k: 2, night: true },
 ];
 
 const CRC = Array.from({ length: 256 }, (_, n) => {
@@ -78,20 +79,27 @@ for (const theme of ['light', 'dark']) {
   await page.goto(url, { waitUntil: 'networkidle' });
   // The page's theme, not the system's, sets the palette.
   await page.evaluate(theme => { document.documentElement.dataset.theme = theme; }, theme);
-  for (const { scene, w, h, night } of STILLS) {
+  for (const { scene, w, h, k = 1, night } of STILLS) {
     if (theme === 'dark' && !night) continue;
-    const rgba = await page.evaluate(async ({ scene, w, h }) => {
+    const frame = await page.evaluate(async ({ scene, w, h, k }) => {
       const { FACTORIES } = await import(new URL('assets/js/eggs/index.js', document.baseURI).href);
       const s = FACTORIES[scene]();
       if (s.load) await s.load();
-      s.resize(w, h);
+      s.resize(w, h, k);
       s.theme();
+      if (s.vector) {
+        const canvas = document.createElement('canvas');
+        canvas.width = w * k;
+        canvas.height = h * k;
+        s.draw(canvas.getContext('2d'), s.still, true);
+        return { png: canvas.toDataURL('image/png').split(',')[1] };
+      }
       const image = new ImageData(w, h);
       s.render(s.still, new Uint32Array(image.data.buffer), true);
-      return Array.from(image.data);
-    }, { scene, w, h });
+      return { rgba: Array.from(image.data) };
+    }, { scene, w, h, k });
     const name = `egg-${scene}${theme === 'dark' ? '-night' : ''}.png`;
-    writeFileSync(join(root, 'assets', 'img', name), indexedPng(w, h, rgba));
+    writeFileSync(join(root, 'assets', 'img', name), frame.png ? Buffer.from(frame.png, 'base64') : indexedPng(w, h, frame.rgba));
     console.log(`wrote assets/img/${name}`);
   }
   await page.close();
