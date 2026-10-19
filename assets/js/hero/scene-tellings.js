@@ -41,14 +41,15 @@ function marker(parent, shape, x, y, s = 4) {
 
 export function createTellingsScene() {
   let f1, nodes, wide, W;
-  const STEP = 0.45, HOLD = 1.4;
-  // All three Figure 1 tellings contain twelve events. Each next telling
-  // starts only after the preceding curve has held its completed shape.
-  const BLOCK = 11 * STEP + HOLD;
+  // All three Figure 1 tellings contain twelve events. They draw together, one
+  // event every STEP, then hold their completed curves and scores long enough
+  // to read all three.
+  const STEP = 0.45, HOLD = 3.6;
+  const DRAW = 11 * STEP;
   return {
     id: 'tellings',
     title: 'Three tellings',
-    duration: 3 * BLOCK,
+    duration: DRAW + HOLD,
     mount(stage, ctx) {
       f1 = ctx.data.figure1;
       wide = ctx.G.layout === 'wide';
@@ -111,7 +112,7 @@ export function createTellingsScene() {
           points: wide ? `${lx - 6},${ly + 17} ${lx - 26},${ly + 17} ${hc[0]},${hc[1]}` : `${lx - 6},${ly + 16} ${hc[0] + 12},${hc[1]}`,
           style: 'stroke:currentColor;stroke-opacity:.8',
         });
-        nodes.blocks.push({ g, line, markers, current, pts, labels, tauText, leader, callout, tau: kendallTau(tell.order), order: tell.order, k });
+        nodes.blocks.push({ g, line, markers, current, pts, labels, tauText, leader, callout, tau: kendallTau(tell.order), order: tell.order });
       });
 
       if (wide) {
@@ -144,10 +145,9 @@ export function createTellingsScene() {
     },
     update(t) {
       nodes.blocks.forEach(b => {
-        const elapsed = t - b.k * BLOCK;
-        const count = elapsed < 0 ? 0 : Math.min(b.pts.length, Math.floor((elapsed + 1e-8) / STEP) + 1);
+        const count = t < 0 ? 0 : Math.min(b.pts.length, Math.floor((t + 1e-8) / STEP) + 1);
         const complete = count === b.pts.length;
-        const active = elapsed >= 0 && elapsed < BLOCK;
+        const active = t >= 0 && t < DRAW + HOLD;
         set(b.g, { 'data-visible-points': count, 'data-current-event': count ? b.order[count - 1] : '', 'data-phase': complete ? 'hold' : count ? 'drawing' : 'pending' });
         b.line.setAttribute('points', b.pts.slice(0, count).map(([x, y]) => `${x},${y}`).join(' '));
         b.markers.forEach((m, i) => m.setAttribute('visibility', i < count ? 'visible' : 'hidden'));
@@ -161,7 +161,7 @@ export function createTellingsScene() {
         b.labels.setAttribute('visibility', on ? 'visible' : 'hidden');
         b.tauText.textContent = on ? fmtTau(b.tau) : '';
       });
-      nodes.closing.setAttribute('visibility', t >= 2 * BLOCK + (f1.n - 1) * STEP ? 'visible' : 'hidden');
+      nodes.closing.setAttribute('visibility', t >= DRAW ? 'visible' : 'hidden');
     },
   };
 }

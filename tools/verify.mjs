@@ -444,17 +444,17 @@ if (!motionOptInOnly) {
     await page.addStyleTag({ content: '.site-header{position:static!important}' });
     await center(page, '[data-hero-stage]');
     await clickWithoutScroll(page, '[data-scene="0"]');
-    for (const [k, telling] of hero.figure1.tellings.entries()) {
-      const selector = `[data-telling="${telling.id}"]`;
-      for (let count = 1; count <= telling.order.length; count++) {
-        await advanceHeroTo(page, k * 6.35 + (count - 1) * 0.45 + 0.05);
-        const state = await curveState(page, selector);
+    // The three tellings draw together, one event every 450 ms, then hold
+    // their scores until the scene ends at 8.55 s.
+    for (let count = 1; count <= hero.figure1.n; count++) {
+      await advanceHeroTo(page, (count - 1) * 0.45 + 0.05);
+      for (const [k, telling] of hero.figure1.tellings.entries()) {
+        const state = await curveState(page, `[data-telling="${telling.id}"]`);
         checkOrderCurve(state, telling.order, count, (i, rank) => [60 + i / 11 * 320 + (rank - 1) / 11 * 104, 148 + k * 136 + i / 11 * 112 - (rank - 1) / 11 * 74], `overview ${telling.id}: step ${count}`);
-        for (const later of hero.figure1.tellings.slice(k + 1)) check((await curveState(page, `[data-telling="${later.id}"]`)).count === 0, `overview: ${later.id} started before ${telling.id} finished`);
       }
-      await advanceHeroTo(page, k * 6.35 + 6.25);
-      check((await curveState(page, selector)).phase === 'hold', `overview ${telling.id}: completed-state hold is missing`);
     }
+    await advanceHeroTo(page, 8.45);
+    for (const telling of hero.figure1.tellings) check((await curveState(page, `[data-telling="${telling.id}"]`)).phase === 'hold', `overview ${telling.id}: completed-state hold is missing`);
     await advance(page, 150);
     check((await heroState(page)).scene === 'reveal', 'overview did not advance from Three tellings to The reveal');
     await advanceHeroTo(page, 13.45);

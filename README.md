@@ -15,7 +15,8 @@ Then open <http://localhost:8000>. The page must be served over HTTP: browsers b
 JavaScript modules and JSON loaded from `file://`. Opened from a file, the text and
 tables still read correctly, and a notice explains how to start the server.
 
-The narrative-order plots advance one event every 450 ms. Shape examples hold
+The narrative-order plots advance one event every 450 ms. The overview's three
+tellings draw together and hold their scores for 3.6 seconds. Shape examples hold
 their completed curve for 1.4 seconds before repeating; the overview plays all
 three scenes and loops. Use the shape browser's Pause/Play button or the overview's
 existing playback controls to stop or resume motion. Playback pauses when the plot
